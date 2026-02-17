@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Bouncing Ball - Catch Game</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    canvas { display: block; cursor: crosshair; }
+
+    #hud {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .hud-item {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 10px 20px;
+      color: #fff;
+      text-align: center;
+    }
+    .hud-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 2px;
+    }
+    .hud-value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    #score-value { color: #4fc3f7; }
+    #streak-value { color: #ffb74d; }
+    #time-value { color: #80cbc4; }
+    #bonus-value { color: #66bb6a; transition: color 0.3s; }
+    #bonus-value.low { color: #ef5350; }
+
+    #message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 22px;
+      font-weight: 600;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 10;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      transition: opacity 0.3s;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      color: #fff;
+    }
+    .overlay h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #4fc3f7, #ce93d8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .overlay p {
+      font-size: 18px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 30px;
+    }
+    .overlay-btn {
+      padding: 14px 40px;
+      font-size: 18px;
+      font-weight: 600;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #4fc3f7, #7c4dff);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin: 6px;
+    }
+    .overlay-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(79, 195, 247, 0.4);
+    }
+    .overlay-btn.secondary {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .overlay-btn.secondary:hover {
+      background: rgba(255,255,255,0.18);
+      box-shadow: none;
+    }
+
+    #end-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 15;
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      display: none;
+    }
+    #end-btn:hover { background: rgba(239,83,80,0.4); color: #fff; }
+
+    /* Leaderboard */
+    #leaderboard { display: none; }
+    #leaderboard h1 { margin-bottom: 6px; }
+    .lb-session-summary {
+      margin-bottom: 24px;
+      text-align: center;
+      line-height: 1.8;
+    }
+    .lb-session-summary span {
+      display: inline-block;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 4px 14px;
+      margin: 0 6px;
+      font-weight: 600;
+    }
+    .lb-columns {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .lb-col {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 18px 22px;
+      min-width: 200px;
+      text-align: center;
+    }
+    .lb-col h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+    }
+    .lb-col ol {
+      list-style: none;
+      padding: 0;
+    }
+    .lb-col li {
+      padding: 6px 0;
+      font-size: 16px;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .lb-col li:last-child { border-bottom: none; }
+    .lb-rank { color: rgba(255,255,255,0.35); font-size: 13px; }
+    .lb-val { color: #4fc3f7; }
+    .lb-col.streak .lb-val { color: #ffb74d; }
+    .lb-col.session .lb-val { color: #80cbc4; }
+    .lb-new { color: #66bb6a; font-size: 11px; margin-left: 6px; }
+  </style>
+</head>
+<body>
+  <div id="start-screen" class="overlay">
+    <h1>Bouncing Ball</h1>
+    <p>Catch the ball fast! Smaller ball = more points, quicker catch = higher bonus</p>
+    <div>
+      <button id="start-btn" class="overlay-btn">Play</button>
+      <button id="start-lb-btn" class="overlay-btn secondary">Leaderboard</button>
+    </div>
+  </div>
+
+  <div id="leaderboard" class="overlay">
+    <h1>Leaderboard</h1>
+    <div class="lb-session-summary" id="lb-session-summary"></div>
+    <div class="lb-columns" id="lb-columns"></div>
+    <div>
+      <button id="lb-play-btn" class="overlay-btn">Play Again</button>
+      <button id="lb-back-btn" class="overlay-btn secondary">Back</button>
+    </div>
+  </div>
+
+  <button id="end-btn">End Session</button>
+
+  <div id="hud">
+    <div class="hud-item">
+      <div class="hud-label">Score</div>
+      <div class="hud-value" id="score-value">0</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">Streak</div>
+      <div class="hud-value" id="streak-value">0</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">Time</div>
+      <div class="hud-value" id="time-value">0:00</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">Bonus</div>
+      <div class="hud-value" id="bonus-value">--</div>
+    </div>
+  </div>
+
+  <div id="message"></div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    // ── Game State ──────────────────────────────────────────────
+    const state = {
+      score: 0,
+      streak: 0,
+      bestStreak: 0,
+      running: false,
+      sessionStart: 0,   // clock.elapsedTime when Play was pressed
+      sessionTime: 0,    // seconds of current session
+    };
+
+    // ── Leaderboard (localStorage) ────────────────────────────
+    const LB_KEY = 'bouncingBall_leaderboard';
+    const LB_MAX = 5;
+
+    function loadLeaderboard() {
+      try { return JSON.parse(localStorage.getItem(LB_KEY)) || { score: [], streak: [], session: [] }; }
+      catch { return { score: [], streak: [], session: [] }; }
+    }
+
+    function saveLeaderboard(lb) {
+      localStorage.setItem(LB_KEY, JSON.stringify(lb));
+    }
+
+    // Returns { score: idx|null, streak: idx|null, session: idx|null } for new entries
+    function recordSession(score, bestStreak, sessionSecs) {
+      const lb = loadLeaderboard();
+      const newFlags = { score: null, streak: null, session: null };
+
+      function insert(list, value) {
+        const entry = { value, date: Date.now() };
+        let idx = list.findIndex(e => value > e.value);
+        if (idx === -1) idx = list.length;
+        if (idx >= LB_MAX) return null;
+        list.splice(idx, 0, entry);
+        if (list.length > LB_MAX) list.pop();
+        return idx;
+      }
+
+      if (score > 0) newFlags.score = insert(lb.score, score);
+      if (bestStreak > 0) newFlags.streak = insert(lb.streak, bestStreak);
+      if (sessionSecs > 0) newFlags.session = insert(lb.session, Math.round(sessionSecs));
+
+      saveLeaderboard(lb);
+      return newFlags;
+    }
+
+    function formatTime(secs) {
+      const s = Math.round(secs);
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function renderLeaderboard(newFlags, sessionScore, sessionStreak, sessionSecs) {
+      const lb = loadLeaderboard();
+      const summaryEl = document.getElementById('lb-session-summary');
+      const colsEl = document.getElementById('lb-columns');
+
+      // Session summary (only shown if we just ended a session)
+      if (sessionScore != null) {
+        summaryEl.innerHTML =
+          `<span style="color:#4fc3f7">Score: ${sessionScore}</span>` +
+          `<span style="color:#ffb74d">Best Streak: ${sessionStreak}</span>` +
+          `<span style="color:#80cbc4">Time: ${formatTime(sessionSecs)}</span>`;
+        summaryEl.style.display = '';
+      } else {
+        summaryEl.style.display = 'none';
+      }
+
+      const categories = [
+        { key: 'score', title: 'Highest Score', cls: 'score', fmt: v => v.toLocaleString() },
+        { key: 'streak', title: 'Best Streak', cls: 'streak', fmt: v => v },
+        { key: 'session', title: 'Longest Session', cls: 'session', fmt: v => formatTime(v) },
+      ];
+
+      colsEl.innerHTML = categories.map(cat => {
+        const rows = lb[cat.key].length > 0
+          ? lb[cat.key].map((e, i) => {
+              const isNew = newFlags && newFlags[cat.key] === i;
+              return `<li><span class="lb-rank">#${i + 1}</span> <span class="lb-val">${cat.fmt(e.value)}${isNew ? '<span class="lb-new">NEW</span>' : ''}</span></li>`;
+            }).join('')
+          : '<li style="color:rgba(255,255,255,0.3)">No records yet</li>';
+        return `<div class="lb-col ${cat.cls}"><h3>${cat.title}</h3><ol>${rows}</ol></div>`;
+      }).join('');
+    }
+
+    // ── Room Dimensions ─────────────────────────────────────────
+    const ROOM = { w: 10, h: 7, d: 10 };
+    const BALL_BASE_RADIUS = 0.4;
+    const BALL_MIN_RADIUS = 0.15;
+    const BALL_MAX_RADIUS = 0.65;
+    let currentBallRadius = BALL_BASE_RADIUS;
+
+    // Scoring coefficients
+    const SIZE_COEFF = 3.0;   // at smallest ball: 4x multiplier; at largest: 1x
+    const TIME_COEFF = 0.1;   // lose 0.1x per second elapsed
+    const TIME_MIN_MULT = 0.1; // time multiplier floor
+    let ballSpawnTime = 0;     // timestamp when current ball appeared
+
+    // ── Scene Setup ─────────────────────────────────────────────
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x1a1a2e, 0.035);
+
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(0, 2, ROOM.d / 2 + 4);
+    camera.lookAt(0, 1, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    document.body.appendChild(renderer.domElement);
+
+    // ── Lighting ────────────────────────────────────────────────
+    const ambientLight = new THREE.AmbientLight(0x404060, 0.8);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.PointLight(0xffffff, 60, 30);
+    mainLight.position.set(0, ROOM.h - 1, 0);
+    mainLight.castShadow = true;
+    mainLight.shadow.mapSize.set(1024, 1024);
+    scene.add(mainLight);
+
+    // Light fixture visual
+    const bulbGeo = new THREE.SphereGeometry(0.2, 16, 16);
+    const bulbMat = new THREE.MeshBasicMaterial({ color: 0xffffee });
+    const bulb = new THREE.Mesh(bulbGeo, bulbMat);
+    bulb.position.copy(mainLight.position);
+    scene.add(bulb);
+
+    const accentLight1 = new THREE.PointLight(0x4fc3f7, 15, 15);
+    accentLight1.position.set(-ROOM.w / 2 + 1, 1, -ROOM.d / 2 + 1);
+    scene.add(accentLight1);
+
+    const accentLight2 = new THREE.PointLight(0xce93d8, 15, 15);
+    accentLight2.position.set(ROOM.w / 2 - 1, 1, ROOM.d / 2 - 1);
+    scene.add(accentLight2);
+
+    // ── Room Construction ───────────────────────────────────────
+    const wallMat = new THREE.MeshStandardMaterial({
+      color: 0x2c2c3e,
+      roughness: 0.85,
+      metalness: 0.05,
+    });
+
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: 0x3a3a4e,
+      roughness: 0.6,
+      metalness: 0.1,
+    });
+
+    // Floor
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.w, ROOM.d), floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Ceiling
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.w, ROOM.d), wallMat);
+    ceiling.rotation.x = Math.PI / 2;
+    ceiling.position.y = ROOM.h;
+    scene.add(ceiling);
+
+    // Back wall
+    const backWall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.w, ROOM.h), wallMat);
+    backWall.position.set(0, ROOM.h / 2, -ROOM.d / 2);
+    backWall.receiveShadow = true;
+    scene.add(backWall);
+
+    // Front wall (transparent so we can see in)
+    // Left wall
+    const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.d, ROOM.h), wallMat);
+    leftWall.rotation.y = Math.PI / 2;
+    leftWall.position.set(-ROOM.w / 2, ROOM.h / 2, 0);
+    leftWall.receiveShadow = true;
+    scene.add(leftWall);
+
+    // Right wall
+    const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.d, ROOM.h), wallMat);
+    rightWall.rotation.y = -Math.PI / 2;
+    rightWall.position.set(ROOM.w / 2, ROOM.h / 2, 0);
+    rightWall.receiveShadow = true;
+    scene.add(rightWall);
+
+    // ── Decorative Edge Lines ───────────────────────────────────
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0x5a5a7a, transparent: true, opacity: 0.4 });
+    function addEdge(points) {
+      const geo = new THREE.BufferGeometry().setFromPoints(points.map(p => new THREE.Vector3(...p)));
+      scene.add(new THREE.Line(geo, edgeMat));
+    }
+    const hw = ROOM.w / 2, hd = ROOM.d / 2, h = ROOM.h;
+    // Floor edges
+    addEdge([[-hw, 0, -hd], [hw, 0, -hd]]);
+    addEdge([[-hw, 0, -hd], [-hw, 0, hd]]);
+    addEdge([[hw, 0, -hd], [hw, 0, hd]]);
+    // Ceiling edges
+    addEdge([[-hw, h, -hd], [hw, h, -hd]]);
+    addEdge([[-hw, h, -hd], [-hw, h, hd]]);
+    addEdge([[hw, h, -hd], [hw, h, hd]]);
+    // Vertical edges
+    addEdge([[-hw, 0, -hd], [-hw, h, -hd]]);
+    addEdge([[hw, 0, -hd], [hw, h, -hd]]);
+
+    // ── Ball ────────────────────────────────────────────────────
+    const ballGeo = new THREE.SphereGeometry(1, 32, 32); // unit sphere, scaled dynamically
+    const ballMat = new THREE.MeshStandardMaterial({
+      color: 0xff5252,
+      roughness: 0.2,
+      metalness: 0.6,
+      emissive: 0xff5252,
+      emissiveIntensity: 0.15,
+    });
+    const ball = new THREE.Mesh(ballGeo, ballMat);
+    ball.castShadow = true;
+    ball.scale.setScalar(currentBallRadius);
+    scene.add(ball);
+
+    // Ball glow
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0xff5252,
+      transparent: true,
+      opacity: 0.12,
+    });
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(1.6, 16, 16), glowMat);
+    ball.add(glow);
+
+    // Randomize ball size and update visuals
+    function randomizeBallSize() {
+      currentBallRadius = BALL_MIN_RADIUS + Math.random() * (BALL_MAX_RADIUS - BALL_MIN_RADIUS);
+      ball.scale.setScalar(currentBallRadius);
+    }
+
+    // Ball shadow blob on floor
+    const shadowBlobGeo = new THREE.PlaneGeometry(1.2, 1.2);
+    const shadowBlobMat = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.3,
+      depthWrite: false,
+    });
+    const shadowBlob = new THREE.Mesh(shadowBlobGeo, shadowBlobMat);
+    shadowBlob.rotation.x = -Math.PI / 2;
+    shadowBlob.position.y = 0.01;
+    scene.add(shadowBlob);
+
+    // ── Ball Physics ────────────────────────────────────────────
+    const ballPos = new THREE.Vector3(0, ROOM.h / 2, 0);
+    const ballVel = new THREE.Vector3(
+      (Math.random() - 0.5) * 6,
+      (Math.random() - 0.5) * 4,
+      (Math.random() - 0.5) * 6
+    );
+    const gravity = -12;
+    const restitution = 0.85;
+    const airDrag = 0.998;
+    const minBounceVel = 2;
+
+    // ── Particles ───────────────────────────────────────────────
+    const MAX_PARTICLES = 200;
+    const particlePositions = new Float32Array(MAX_PARTICLES * 3);
+    const particleColors = new Float32Array(MAX_PARTICLES * 3);
+    const particleGeo = new THREE.BufferGeometry();
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+
+    const particleMat = new THREE.PointsMaterial({
+      size: 0.12,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.9,
+      depthWrite: false,
+    });
+    const particleSystem = new THREE.Points(particleGeo, particleMat);
+    scene.add(particleSystem);
+
+    const particles = [];
+
+    function spawnParticles(pos, color, count) {
+      const c = new THREE.Color(color);
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          pos: pos.clone(),
+          vel: new THREE.Vector3(
+            (Math.random() - 0.5) * 8,
+            Math.random() * 6 + 2,
+            (Math.random() - 0.5) * 8
+          ),
+          color: c,
+          life: 1.0,
+          decay: 0.6 + Math.random() * 0.8,
+        });
+      }
+      // Cap total
+      while (particles.length > MAX_PARTICLES) particles.shift();
+    }
+
+    // ── Raycaster for Mouse Interaction ─────────────────────────
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    // ── Score Pop Text (CSS) ────────────────────────────────────
+    const messageEl = document.getElementById('message');
+    function showMessage(text, color) {
+      messageEl.textContent = text;
+      messageEl.style.color = color || '#fff';
+      messageEl.style.opacity = 1;
+      setTimeout(() => { messageEl.style.opacity = 0; }, 800);
+    }
+
+    // ── Click Handler ───────────────────────────────────────────
+    renderer.domElement.addEventListener('click', (e) => {
+      if (!state.running) return;
+
+      mouse.x = (e.clientX / innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const hits = raycaster.intersectObject(ball);
+
+      if (hits.length > 0) {
+        catchBall();
+      } else {
+        // Miss
+        state.streak = 0;
+        updateHUD();
+      }
+    });
+
+    function catchBall() {
+      state.streak++;
+      const streakMult = Math.min(state.streak, 10);
+
+      // Size multiplier: smaller ball = higher score (linear)
+      const normalizedSize = (currentBallRadius - BALL_MIN_RADIUS) / (BALL_MAX_RADIUS - BALL_MIN_RADIUS);
+      const sizeMult = 1 + SIZE_COEFF * (1 - normalizedSize);
+
+      // Time multiplier: longer time = lower score (linear)
+      const elapsed = clock.elapsedTime - ballSpawnTime;
+      const timeMult = Math.max(TIME_MIN_MULT, 1 - TIME_COEFF * elapsed);
+
+      const points = Math.round(10 * streakMult * sizeMult * timeMult);
+      state.score += points;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+
+      updateHUD();
+
+      // Feedback — show breakdown
+      const sizeLabel = sizeMult >= 3 ? 'TINY' : sizeMult >= 2 ? 'SMALL' : 'BIG';
+      const timeLabel = timeMult >= 0.7 ? 'FAST' : timeMult >= 0.4 ? '' : 'SLOW';
+      let msg = `+${points}`;
+      if (streakMult >= 5) msg += ` x${streakMult}`;
+      if (sizeMult >= 2) msg += ` ${sizeLabel}!`;
+      if (timeLabel === 'FAST') msg += ' QUICK!';
+      const msgColor = sizeMult >= 3 ? '#ff9800' : streakMult >= 5 ? '#ffb74d' : '#4fc3f7';
+      showMessage(msg, msgColor);
+
+      // Particles — more for better catches
+      spawnParticles(ballPos, sizeMult >= 3 ? 0xff9800 : streakMult >= 5 ? 0xffb74d : 0x4fc3f7, 30 + state.streak * 5);
+
+      // Flash ball
+      ballMat.emissiveIntensity = 1.0;
+
+      // Relaunch ball — new random size, position, velocity
+      randomizeBallSize();
+      ballSpawnTime = clock.elapsedTime;
+
+      ballPos.set(
+        (Math.random() - 0.5) * (ROOM.w - 2),
+        ROOM.h * 0.5 + Math.random() * 2,
+        (Math.random() - 0.5) * (ROOM.d - 2)
+      );
+      ballVel.set(
+        (Math.random() - 0.5) * 8,
+        (Math.random() - 0.5) * 5 + 3,
+        (Math.random() - 0.5) * 8
+      );
+    }
+
+    // ── HUD Update ──────────────────────────────────────────────
+    function updateHUD() {
+      document.getElementById('score-value').textContent = state.score;
+      document.getElementById('streak-value').textContent = state.streak;
+    }
+
+    function updateTimerHUD() {
+      state.sessionTime = clock.elapsedTime - state.sessionStart;
+      document.getElementById('time-value').textContent = formatTime(state.sessionTime);
+    }
+
+    // Live bonus display updated every frame
+    function updateBonusHUD() {
+      const normalizedSize = (currentBallRadius - BALL_MIN_RADIUS) / (BALL_MAX_RADIUS - BALL_MIN_RADIUS);
+      const sizeMult = 1 + SIZE_COEFF * (1 - normalizedSize);
+      const elapsed = clock.elapsedTime - ballSpawnTime;
+      const timeMult = Math.max(TIME_MIN_MULT, 1 - TIME_COEFF * elapsed);
+      const totalBonus = sizeMult * timeMult;
+      const bonusEl = document.getElementById('bonus-value');
+      bonusEl.textContent = `x${totalBonus.toFixed(1)}`;
+      bonusEl.classList.toggle('low', timeMult < 0.4);
+    }
+
+    // ── Resize Handler ──────────────────────────────────────────
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+    // ── Screen Helpers ──────────────────────────────────────────
+    function showScreen(id) {
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('leaderboard').style.display = 'none';
+      document.getElementById('end-btn').style.display = 'none';
+      if (id) document.getElementById(id).style.display = '';
+    }
+
+    function startGame() {
+      showScreen(null);
+      document.getElementById('end-btn').style.display = '';
+      state.running = true;
+      state.score = 0;
+      state.streak = 0;
+      state.bestStreak = 0;
+      state.sessionStart = clock.elapsedTime;
+      state.sessionTime = 0;
+      randomizeBallSize();
+      ballSpawnTime = clock.elapsedTime;
+      ballPos.set(0, ROOM.h / 2, 0);
+      ballVel.set(
+        (Math.random() - 0.5) * 6,
+        (Math.random() - 0.5) * 4,
+        (Math.random() - 0.5) * 6
+      );
+      updateHUD();
+      document.getElementById('time-value').textContent = '0:00';
+      document.getElementById('bonus-value').textContent = '--';
+    }
+
+    function endSession() {
+      if (!state.running) return;
+      state.running = false;
+      state.sessionTime = clock.elapsedTime - state.sessionStart;
+      const newFlags = recordSession(state.score, state.bestStreak, state.sessionTime);
+      renderLeaderboard(newFlags, state.score, state.bestStreak, state.sessionTime);
+      showScreen('leaderboard');
+    }
+
+    // ── Button Wiring ────────────────────────────────────────────
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('start-lb-btn').addEventListener('click', () => {
+      renderLeaderboard(null, null, null, null);
+      showScreen('leaderboard');
+      document.getElementById('lb-back-btn').onclick = () => showScreen('start-screen');
+    });
+    document.getElementById('end-btn').addEventListener('click', endSession);
+    document.getElementById('lb-play-btn').addEventListener('click', startGame);
+    document.getElementById('lb-back-btn').addEventListener('click', () => showScreen('start-screen'));
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.running) endSession(); });
+
+    // ── Animation Loop ──────────────────────────────────────────
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), 0.05);
+
+      if (state.running) {
+        // ── Ball Physics ──────────────────────────────
+        ballVel.y += gravity * dt;
+        ballVel.multiplyScalar(airDrag);
+
+        ballPos.addScaledVector(ballVel, dt);
+
+        // Bounce off walls
+        const halfW = ROOM.w / 2 - currentBallRadius;
+        const halfD = ROOM.d / 2 - currentBallRadius;
+
+        if (ballPos.x < -halfW) { ballPos.x = -halfW; ballVel.x = Math.abs(ballVel.x) * restitution; }
+        if (ballPos.x > halfW)  { ballPos.x = halfW;  ballVel.x = -Math.abs(ballVel.x) * restitution; }
+        if (ballPos.z < -halfD) { ballPos.z = -halfD; ballVel.z = Math.abs(ballVel.z) * restitution; }
+        if (ballPos.z > halfD)  { ballPos.z = halfD;  ballVel.z = -Math.abs(ballVel.z) * restitution; }
+
+        // Floor bounce
+        if (ballPos.y < currentBallRadius) {
+          ballPos.y = currentBallRadius;
+          ballVel.y = Math.abs(ballVel.y) * restitution;
+          // Ensure it keeps bouncing
+          if (ballVel.y < minBounceVel) ballVel.y = minBounceVel + Math.random() * 3;
+          // Add random horizontal kick to keep it interesting
+          ballVel.x += (Math.random() - 0.5) * 2;
+          ballVel.z += (Math.random() - 0.5) * 2;
+        }
+
+        // Ceiling bounce
+        if (ballPos.y > ROOM.h - currentBallRadius) {
+          ballPos.y = ROOM.h - currentBallRadius;
+          ballVel.y = -Math.abs(ballVel.y) * restitution;
+        }
+
+        ball.position.copy(ballPos);
+
+        // Shadow blob follows ball on floor
+        shadowBlob.position.x = ballPos.x;
+        shadowBlob.position.z = ballPos.z;
+        const shadowScale = 1.0 - (ballPos.y / ROOM.h) * 0.5;
+        shadowBlob.scale.set(shadowScale, shadowScale, 1);
+        shadowBlobMat.opacity = 0.3 * (1.0 - ballPos.y / ROOM.h);
+
+        // Ease emissive back
+        ballMat.emissiveIntensity += (0.15 - ballMat.emissiveIntensity) * 3 * dt;
+
+        // Ball rotation
+        ball.rotation.x += ballVel.z * dt;
+        ball.rotation.z -= ballVel.x * dt;
+
+        // ── Particles ─────────────────────────────────
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.vel.y -= 10 * dt;
+          p.pos.addScaledVector(p.vel, dt);
+          p.life -= p.decay * dt;
+          if (p.life <= 0) { particles.splice(i, 1); }
+        }
+
+        // Update particle buffers
+        for (let i = 0; i < MAX_PARTICLES; i++) {
+          if (i < particles.length) {
+            const p = particles[i];
+            particlePositions[i * 3] = p.pos.x;
+            particlePositions[i * 3 + 1] = p.pos.y;
+            particlePositions[i * 3 + 2] = p.pos.z;
+            particleColors[i * 3] = p.color.r * p.life;
+            particleColors[i * 3 + 1] = p.color.g * p.life;
+            particleColors[i * 3 + 2] = p.color.b * p.life;
+          } else {
+            particlePositions[i * 3] = 0;
+            particlePositions[i * 3 + 1] = -100;
+            particlePositions[i * 3 + 2] = 0;
+          }
+        }
+        particleGeo.attributes.position.needsUpdate = true;
+        particleGeo.attributes.color.needsUpdate = true;
+
+        // ── Live HUD updates ────────────────────────────
+        updateTimerHUD();
+        updateBonusHUD();
+
+        // ── Accent light pulse ────────────────────────
+        const t = clock.elapsedTime;
+        accentLight1.intensity = 12 + Math.sin(t * 1.5) * 5;
+        accentLight2.intensity = 12 + Math.cos(t * 1.8) * 5;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
