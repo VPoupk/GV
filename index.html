@@ -41,7 +41,7 @@
     }
     #score-value { color: #4fc3f7; }
     #streak-value { color: #ffb74d; }
-    #best-value { color: #ce93d8; }
+    #time-value { color: #80cbc4; }
     #bonus-value { color: #66bb6a; transition: color 0.3s; }
     #bonus-value.low { color: #ef5350; }
 
@@ -60,10 +60,10 @@
       transition: opacity 0.3s;
     }
 
-    #start-screen {
+    .overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -71,19 +71,19 @@
       z-index: 20;
       color: #fff;
     }
-    #start-screen h1 {
+    .overlay h1 {
       font-size: 48px;
       margin-bottom: 10px;
       background: linear-gradient(135deg, #4fc3f7, #ce93d8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    #start-screen p {
+    .overlay p {
       font-size: 18px;
       color: rgba(255,255,255,0.6);
       margin-bottom: 30px;
     }
-    #start-btn {
+    .overlay-btn {
       padding: 14px 40px;
       font-size: 18px;
       font-weight: 600;
@@ -93,19 +93,120 @@
       color: #fff;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
+      margin: 6px;
     }
-    #start-btn:hover {
+    .overlay-btn:hover {
       transform: scale(1.05);
       box-shadow: 0 0 30px rgba(79, 195, 247, 0.4);
     }
+    .overlay-btn.secondary {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .overlay-btn.secondary:hover {
+      background: rgba(255,255,255,0.18);
+      box-shadow: none;
+    }
+
+    #end-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 15;
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      display: none;
+    }
+    #end-btn:hover { background: rgba(239,83,80,0.4); color: #fff; }
+
+    /* Leaderboard */
+    #leaderboard { display: none; }
+    #leaderboard h1 { margin-bottom: 6px; }
+    .lb-session-summary {
+      margin-bottom: 24px;
+      text-align: center;
+      line-height: 1.8;
+    }
+    .lb-session-summary span {
+      display: inline-block;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 4px 14px;
+      margin: 0 6px;
+      font-weight: 600;
+    }
+    .lb-columns {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .lb-col {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 18px 22px;
+      min-width: 200px;
+      text-align: center;
+    }
+    .lb-col h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+    }
+    .lb-col ol {
+      list-style: none;
+      padding: 0;
+    }
+    .lb-col li {
+      padding: 6px 0;
+      font-size: 16px;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .lb-col li:last-child { border-bottom: none; }
+    .lb-rank { color: rgba(255,255,255,0.35); font-size: 13px; }
+    .lb-val { color: #4fc3f7; }
+    .lb-col.streak .lb-val { color: #ffb74d; }
+    .lb-col.session .lb-val { color: #80cbc4; }
+    .lb-new { color: #66bb6a; font-size: 11px; margin-left: 6px; }
   </style>
 </head>
 <body>
-  <div id="start-screen">
+  <div id="start-screen" class="overlay">
     <h1>Bouncing Ball</h1>
     <p>Catch the ball fast! Smaller ball = more points, quicker catch = higher bonus</p>
-    <button id="start-btn">Play</button>
+    <div>
+      <button id="start-btn" class="overlay-btn">Play</button>
+      <button id="start-lb-btn" class="overlay-btn secondary">Leaderboard</button>
+    </div>
   </div>
+
+  <div id="leaderboard" class="overlay">
+    <h1>Leaderboard</h1>
+    <div class="lb-session-summary" id="lb-session-summary"></div>
+    <div class="lb-columns" id="lb-columns"></div>
+    <div>
+      <button id="lb-play-btn" class="overlay-btn">Play Again</button>
+      <button id="lb-back-btn" class="overlay-btn secondary">Back</button>
+    </div>
+  </div>
+
+  <button id="end-btn">End Session</button>
 
   <div id="hud">
     <div class="hud-item">
@@ -117,8 +218,8 @@
       <div class="hud-value" id="streak-value">0</div>
     </div>
     <div class="hud-item">
-      <div class="hud-label">Best</div>
-      <div class="hud-value" id="best-value">0</div>
+      <div class="hud-label">Time</div>
+      <div class="hud-value" id="time-value">0:00</div>
     </div>
     <div class="hud-item">
       <div class="hud-label">Bonus</div>
@@ -144,9 +245,87 @@
     const state = {
       score: 0,
       streak: 0,
-      best: 0,
+      bestStreak: 0,
       running: false,
+      sessionStart: 0,   // clock.elapsedTime when Play was pressed
+      sessionTime: 0,    // seconds of current session
     };
+
+    // ── Leaderboard (localStorage) ────────────────────────────
+    const LB_KEY = 'bouncingBall_leaderboard';
+    const LB_MAX = 5;
+
+    function loadLeaderboard() {
+      try { return JSON.parse(localStorage.getItem(LB_KEY)) || { score: [], streak: [], session: [] }; }
+      catch { return { score: [], streak: [], session: [] }; }
+    }
+
+    function saveLeaderboard(lb) {
+      localStorage.setItem(LB_KEY, JSON.stringify(lb));
+    }
+
+    // Returns { score: idx|null, streak: idx|null, session: idx|null } for new entries
+    function recordSession(score, bestStreak, sessionSecs) {
+      const lb = loadLeaderboard();
+      const newFlags = { score: null, streak: null, session: null };
+
+      function insert(list, value) {
+        const entry = { value, date: Date.now() };
+        let idx = list.findIndex(e => value > e.value);
+        if (idx === -1) idx = list.length;
+        if (idx >= LB_MAX) return null;
+        list.splice(idx, 0, entry);
+        if (list.length > LB_MAX) list.pop();
+        return idx;
+      }
+
+      if (score > 0) newFlags.score = insert(lb.score, score);
+      if (bestStreak > 0) newFlags.streak = insert(lb.streak, bestStreak);
+      if (sessionSecs > 0) newFlags.session = insert(lb.session, Math.round(sessionSecs));
+
+      saveLeaderboard(lb);
+      return newFlags;
+    }
+
+    function formatTime(secs) {
+      const s = Math.round(secs);
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function renderLeaderboard(newFlags, sessionScore, sessionStreak, sessionSecs) {
+      const lb = loadLeaderboard();
+      const summaryEl = document.getElementById('lb-session-summary');
+      const colsEl = document.getElementById('lb-columns');
+
+      // Session summary (only shown if we just ended a session)
+      if (sessionScore != null) {
+        summaryEl.innerHTML =
+          `<span style="color:#4fc3f7">Score: ${sessionScore}</span>` +
+          `<span style="color:#ffb74d">Best Streak: ${sessionStreak}</span>` +
+          `<span style="color:#80cbc4">Time: ${formatTime(sessionSecs)}</span>`;
+        summaryEl.style.display = '';
+      } else {
+        summaryEl.style.display = 'none';
+      }
+
+      const categories = [
+        { key: 'score', title: 'Highest Score', cls: 'score', fmt: v => v.toLocaleString() },
+        { key: 'streak', title: 'Best Streak', cls: 'streak', fmt: v => v },
+        { key: 'session', title: 'Longest Session', cls: 'session', fmt: v => formatTime(v) },
+      ];
+
+      colsEl.innerHTML = categories.map(cat => {
+        const rows = lb[cat.key].length > 0
+          ? lb[cat.key].map((e, i) => {
+              const isNew = newFlags && newFlags[cat.key] === i;
+              return `<li><span class="lb-rank">#${i + 1}</span> <span class="lb-val">${cat.fmt(e.value)}${isNew ? '<span class="lb-new">NEW</span>' : ''}</span></li>`;
+            }).join('')
+          : '<li style="color:rgba(255,255,255,0.3)">No records yet</li>';
+        return `<div class="lb-col ${cat.cls}"><h3>${cat.title}</h3><ol>${rows}</ol></div>`;
+      }).join('');
+    }
 
     // ── Room Dimensions ─────────────────────────────────────────
     const ROOM = { w: 10, h: 7, d: 10 };
@@ -407,7 +586,7 @@
 
       const points = Math.round(10 * streakMult * sizeMult * timeMult);
       state.score += points;
-      if (state.score > state.best) state.best = state.score;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
 
       updateHUD();
 
@@ -447,7 +626,11 @@
     function updateHUD() {
       document.getElementById('score-value').textContent = state.score;
       document.getElementById('streak-value').textContent = state.streak;
-      document.getElementById('best-value').textContent = state.best;
+    }
+
+    function updateTimerHUD() {
+      state.sessionTime = clock.elapsedTime - state.sessionStart;
+      document.getElementById('time-value').textContent = formatTime(state.sessionTime);
     }
 
     // Live bonus display updated every frame
@@ -469,16 +652,56 @@
       renderer.setSize(innerWidth, innerHeight);
     });
 
-    // ── Start Button ────────────────────────────────────────────
-    document.getElementById('start-btn').addEventListener('click', () => {
+    // ── Screen Helpers ──────────────────────────────────────────
+    function showScreen(id) {
       document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('leaderboard').style.display = 'none';
+      document.getElementById('end-btn').style.display = 'none';
+      if (id) document.getElementById(id).style.display = '';
+    }
+
+    function startGame() {
+      showScreen(null);
+      document.getElementById('end-btn').style.display = '';
       state.running = true;
       state.score = 0;
       state.streak = 0;
+      state.bestStreak = 0;
+      state.sessionStart = clock.elapsedTime;
+      state.sessionTime = 0;
       randomizeBallSize();
       ballSpawnTime = clock.elapsedTime;
+      ballPos.set(0, ROOM.h / 2, 0);
+      ballVel.set(
+        (Math.random() - 0.5) * 6,
+        (Math.random() - 0.5) * 4,
+        (Math.random() - 0.5) * 6
+      );
       updateHUD();
+      document.getElementById('time-value').textContent = '0:00';
+      document.getElementById('bonus-value').textContent = '--';
+    }
+
+    function endSession() {
+      if (!state.running) return;
+      state.running = false;
+      state.sessionTime = clock.elapsedTime - state.sessionStart;
+      const newFlags = recordSession(state.score, state.bestStreak, state.sessionTime);
+      renderLeaderboard(newFlags, state.score, state.bestStreak, state.sessionTime);
+      showScreen('leaderboard');
+    }
+
+    // ── Button Wiring ────────────────────────────────────────────
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('start-lb-btn').addEventListener('click', () => {
+      renderLeaderboard(null, null, null, null);
+      showScreen('leaderboard');
+      document.getElementById('lb-back-btn').onclick = () => showScreen('start-screen');
     });
+    document.getElementById('end-btn').addEventListener('click', endSession);
+    document.getElementById('lb-play-btn').addEventListener('click', startGame);
+    document.getElementById('lb-back-btn').addEventListener('click', () => showScreen('start-screen'));
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.running) endSession(); });
 
     // ── Animation Loop ──────────────────────────────────────────
     const clock = new THREE.Clock();
@@ -564,7 +787,8 @@
         particleGeo.attributes.position.needsUpdate = true;
         particleGeo.attributes.color.needsUpdate = true;
 
-        // ── Live bonus HUD ──────────────────────────────
+        // ── Live HUD updates ────────────────────────────
+        updateTimerHUD();
         updateBonusHUD();
 
         // ── Accent light pulse ────────────────────────
