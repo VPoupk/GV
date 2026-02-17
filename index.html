@@ -42,6 +42,8 @@
     #score-value { color: #4fc3f7; }
     #streak-value { color: #ffb74d; }
     #best-value { color: #ce93d8; }
+    #bonus-value { color: #66bb6a; transition: color 0.3s; }
+    #bonus-value.low { color: #ef5350; }
 
     #message {
       position: fixed;
@@ -101,7 +103,7 @@
 <body>
   <div id="start-screen">
     <h1>Bouncing Ball</h1>
-    <p>Click the bouncing ball to score points</p>
+    <p>Catch the ball fast! Smaller ball = more points, quicker catch = higher bonus</p>
     <button id="start-btn">Play</button>
   </div>
 
@@ -117,6 +119,10 @@
     <div class="hud-item">
       <div class="hud-label">Best</div>
       <div class="hud-value" id="best-value">0</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">Bonus</div>
+      <div class="hud-value" id="bonus-value">--</div>
     </div>
   </div>
 
@@ -144,7 +150,16 @@
 
     // ── Room Dimensions ─────────────────────────────────────────
     const ROOM = { w: 10, h: 7, d: 10 };
-    const BALL_RADIUS = 0.4;
+    const BALL_BASE_RADIUS = 0.4;
+    const BALL_MIN_RADIUS = 0.15;
+    const BALL_MAX_RADIUS = 0.65;
+    let currentBallRadius = BALL_BASE_RADIUS;
+
+    // Scoring coefficients
+    const SIZE_COEFF = 3.0;   // at smallest ball: 4x multiplier; at largest: 1x
+    const TIME_COEFF = 0.1;   // lose 0.1x per second elapsed
+    const TIME_MIN_MULT = 0.1; // time multiplier floor
+    let ballSpawnTime = 0;     // timestamp when current ball appeared
 
     // ── Scene Setup ─────────────────────────────────────────────
     const scene = new THREE.Scene();
@@ -254,7 +269,7 @@
     addEdge([[hw, 0, -hd], [hw, h, -hd]]);
 
     // ── Ball ────────────────────────────────────────────────────
-    const ballGeo = new THREE.SphereGeometry(BALL_RADIUS, 32, 32);
+    const ballGeo = new THREE.SphereGeometry(1, 32, 32); // unit sphere, scaled dynamically
     const ballMat = new THREE.MeshStandardMaterial({
       color: 0xff5252,
       roughness: 0.2,
@@ -264,6 +279,7 @@
     });
     const ball = new THREE.Mesh(ballGeo, ballMat);
     ball.castShadow = true;
+    ball.scale.setScalar(currentBallRadius);
     scene.add(ball);
 
     // Ball glow
@@ -272,8 +288,14 @@
       transparent: true,
       opacity: 0.12,
     });
-    const glow = new THREE.Mesh(new THREE.SphereGeometry(BALL_RADIUS * 1.6, 16, 16), glowMat);
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(1.6, 16, 16), glowMat);
     ball.add(glow);
+
+    // Randomize ball size and update visuals
+    function randomizeBallSize() {
+      currentBallRadius = BALL_MIN_RADIUS + Math.random() * (BALL_MAX_RADIUS - BALL_MIN_RADIUS);
+      ball.scale.setScalar(currentBallRadius);
+    }
 
     // Ball shadow blob on floor
     const shadowBlobGeo = new THREE.PlaneGeometry(1.2, 1.2);
@@ -373,27 +395,42 @@
 
     function catchBall() {
       state.streak++;
-      const multiplier = Math.min(state.streak, 10);
-      const points = 10 * multiplier;
+      const streakMult = Math.min(state.streak, 10);
+
+      // Size multiplier: smaller ball = higher score (linear)
+      const normalizedSize = (currentBallRadius - BALL_MIN_RADIUS) / (BALL_MAX_RADIUS - BALL_MIN_RADIUS);
+      const sizeMult = 1 + SIZE_COEFF * (1 - normalizedSize);
+
+      // Time multiplier: longer time = lower score (linear)
+      const elapsed = clock.elapsedTime - ballSpawnTime;
+      const timeMult = Math.max(TIME_MIN_MULT, 1 - TIME_COEFF * elapsed);
+
+      const points = Math.round(10 * streakMult * sizeMult * timeMult);
       state.score += points;
       if (state.score > state.best) state.best = state.score;
 
       updateHUD();
 
-      // Feedback
-      if (state.streak >= 5) {
-        showMessage(`+${points}  x${multiplier} COMBO!`, '#ffb74d');
-      } else {
-        showMessage(`+${points}`, '#4fc3f7');
-      }
+      // Feedback — show breakdown
+      const sizeLabel = sizeMult >= 3 ? 'TINY' : sizeMult >= 2 ? 'SMALL' : 'BIG';
+      const timeLabel = timeMult >= 0.7 ? 'FAST' : timeMult >= 0.4 ? '' : 'SLOW';
+      let msg = `+${points}`;
+      if (streakMult >= 5) msg += ` x${streakMult}`;
+      if (sizeMult >= 2) msg += ` ${sizeLabel}!`;
+      if (timeLabel === 'FAST') msg += ' QUICK!';
+      const msgColor = sizeMult >= 3 ? '#ff9800' : streakMult >= 5 ? '#ffb74d' : '#4fc3f7';
+      showMessage(msg, msgColor);
 
-      // Particles
-      spawnParticles(ballPos, multiplier >= 5 ? 0xffb74d : 0x4fc3f7, 30 + state.streak * 5);
+      // Particles — more for better catches
+      spawnParticles(ballPos, sizeMult >= 3 ? 0xff9800 : streakMult >= 5 ? 0xffb74d : 0x4fc3f7, 30 + state.streak * 5);
 
       // Flash ball
       ballMat.emissiveIntensity = 1.0;
 
-      // Relaunch ball to random position with new velocity
+      // Relaunch ball — new random size, position, velocity
+      randomizeBallSize();
+      ballSpawnTime = clock.elapsedTime;
+
       ballPos.set(
         (Math.random() - 0.5) * (ROOM.w - 2),
         ROOM.h * 0.5 + Math.random() * 2,
@@ -413,6 +450,18 @@
       document.getElementById('best-value').textContent = state.best;
     }
 
+    // Live bonus display updated every frame
+    function updateBonusHUD() {
+      const normalizedSize = (currentBallRadius - BALL_MIN_RADIUS) / (BALL_MAX_RADIUS - BALL_MIN_RADIUS);
+      const sizeMult = 1 + SIZE_COEFF * (1 - normalizedSize);
+      const elapsed = clock.elapsedTime - ballSpawnTime;
+      const timeMult = Math.max(TIME_MIN_MULT, 1 - TIME_COEFF * elapsed);
+      const totalBonus = sizeMult * timeMult;
+      const bonusEl = document.getElementById('bonus-value');
+      bonusEl.textContent = `x${totalBonus.toFixed(1)}`;
+      bonusEl.classList.toggle('low', timeMult < 0.4);
+    }
+
     // ── Resize Handler ──────────────────────────────────────────
     window.addEventListener('resize', () => {
       camera.aspect = innerWidth / innerHeight;
@@ -426,6 +475,8 @@
       state.running = true;
       state.score = 0;
       state.streak = 0;
+      randomizeBallSize();
+      ballSpawnTime = clock.elapsedTime;
       updateHUD();
     });
 
@@ -444,8 +495,8 @@
         ballPos.addScaledVector(ballVel, dt);
 
         // Bounce off walls
-        const halfW = ROOM.w / 2 - BALL_RADIUS;
-        const halfD = ROOM.d / 2 - BALL_RADIUS;
+        const halfW = ROOM.w / 2 - currentBallRadius;
+        const halfD = ROOM.d / 2 - currentBallRadius;
 
         if (ballPos.x < -halfW) { ballPos.x = -halfW; ballVel.x = Math.abs(ballVel.x) * restitution; }
         if (ballPos.x > halfW)  { ballPos.x = halfW;  ballVel.x = -Math.abs(ballVel.x) * restitution; }
@@ -453,8 +504,8 @@
         if (ballPos.z > halfD)  { ballPos.z = halfD;  ballVel.z = -Math.abs(ballVel.z) * restitution; }
 
         // Floor bounce
-        if (ballPos.y < BALL_RADIUS) {
-          ballPos.y = BALL_RADIUS;
+        if (ballPos.y < currentBallRadius) {
+          ballPos.y = currentBallRadius;
           ballVel.y = Math.abs(ballVel.y) * restitution;
           // Ensure it keeps bouncing
           if (ballVel.y < minBounceVel) ballVel.y = minBounceVel + Math.random() * 3;
@@ -464,8 +515,8 @@
         }
 
         // Ceiling bounce
-        if (ballPos.y > ROOM.h - BALL_RADIUS) {
-          ballPos.y = ROOM.h - BALL_RADIUS;
+        if (ballPos.y > ROOM.h - currentBallRadius) {
+          ballPos.y = ROOM.h - currentBallRadius;
           ballVel.y = -Math.abs(ballVel.y) * restitution;
         }
 
@@ -512,6 +563,9 @@
         }
         particleGeo.attributes.position.needsUpdate = true;
         particleGeo.attributes.color.needsUpdate = true;
+
+        // ── Live bonus HUD ──────────────────────────────
+        updateBonusHUD();
 
         // ── Accent light pulse ────────────────────────
         const t = clock.elapsedTime;
