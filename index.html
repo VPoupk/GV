@@ -108,6 +108,23 @@
       box-shadow: none;
     }
 
+    #name-input {
+      padding: 12px 20px;
+      font-size: 18px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      text-align: center;
+      outline: none;
+      width: 220px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+    #name-input::placeholder { color: rgba(255,255,255,0.3); }
+    #name-input:focus { border-color: rgba(79,195,247,0.6); }
+
     #end-btn {
       position: fixed;
       top: 20px;
@@ -183,6 +200,7 @@
     .lb-val { color: #4fc3f7; }
     .lb-col.streak .lb-val { color: #ffb74d; }
     .lb-col.session .lb-val { color: #80cbc4; }
+    .lb-name { color: rgba(255,255,255,0.7); font-size: 14px; flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .lb-new { color: #66bb6a; font-size: 11px; margin-left: 6px; }
   </style>
 </head>
@@ -190,6 +208,7 @@
   <div id="start-screen" class="overlay">
     <h1>Bouncing Ball</h1>
     <p>Catch the ball fast! Smaller ball = more points, quicker catch = higher bonus</p>
+    <input id="name-input" type="text" placeholder="Your name" maxlength="16" autocomplete="off" spellcheck="false">
     <div>
       <button id="start-btn" class="overlay-btn">Play</button>
       <button id="start-lb-btn" class="overlay-btn secondary">Leaderboard</button>
@@ -247,12 +266,20 @@
       streak: 0,
       bestStreak: 0,
       running: false,
-      sessionStart: 0,   // clock.elapsedTime when Play was pressed
-      sessionTime: 0,    // seconds of current session
+      sessionStart: 0,       // clock.elapsedTime when Play was pressed
+      sessionTime: 0,        // seconds of current session
+      sessionStartWall: 0,   // Date.now() when Play was pressed (for crash recovery)
+      playerName: '',
     };
+
+    // ── Name persistence ──────────────────────────────────────
+    const NAME_KEY = 'bouncingBall_playerName';
+    const nameInput = document.getElementById('name-input');
+    nameInput.value = localStorage.getItem(NAME_KEY) || '';
 
     // ── Leaderboard (localStorage) ────────────────────────────
     const LB_KEY = 'bouncingBall_leaderboard';
+    const LIVE_KEY = 'bouncingBall_liveSession';
     const LB_MAX = 5;
 
     function loadLeaderboard() {
@@ -265,12 +292,12 @@
     }
 
     // Returns { score: idx|null, streak: idx|null, session: idx|null } for new entries
-    function recordSession(score, bestStreak, sessionSecs) {
+    function recordSession(name, score, bestStreak, sessionSecs) {
       const lb = loadLeaderboard();
       const newFlags = { score: null, streak: null, session: null };
 
       function insert(list, value) {
-        const entry = { value, date: Date.now() };
+        const entry = { value, name: name || 'Anonymous', date: Date.now() };
         let idx = list.findIndex(e => value > e.value);
         if (idx === -1) idx = list.length;
         if (idx >= LB_MAX) return null;
@@ -287,11 +314,49 @@
       return newFlags;
     }
 
+    // ── Live Session Persistence (crash/tab-close recovery) ───
+    function saveLiveSession() {
+      if (!state.running) return;
+      const elapsed = (Date.now() - state.sessionStartWall) / 1000;
+      localStorage.setItem(LIVE_KEY, JSON.stringify({
+        name: state.playerName,
+        score: state.score,
+        bestStreak: state.bestStreak,
+        startWall: state.sessionStartWall,
+        elapsed,
+      }));
+    }
+
+    function clearLiveSession() {
+      localStorage.removeItem(LIVE_KEY);
+    }
+
+    function recoverCrashedSession() {
+      try {
+        const raw = localStorage.getItem(LIVE_KEY);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        // Calculate total session time using wall-clock timestamps
+        const totalSecs = (Date.now() - s.startWall) / 1000;
+        // Only recover sessions that are at least 2 seconds and not absurdly old (>24h)
+        if (totalSecs < 2 || totalSecs > 86400) { clearLiveSession(); return; }
+        recordSession(s.name, s.score, s.bestStreak, totalSecs);
+        clearLiveSession();
+      } catch { clearLiveSession(); }
+    }
+
+    // Recover any orphaned session from a previous crash/tab close
+    recoverCrashedSession();
+
     function formatTime(secs) {
       const s = Math.round(secs);
       const m = Math.floor(s / 60);
       const sec = s % 60;
       return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     function renderLeaderboard(newFlags, sessionScore, sessionStreak, sessionSecs) {
@@ -320,7 +385,8 @@
         const rows = lb[cat.key].length > 0
           ? lb[cat.key].map((e, i) => {
               const isNew = newFlags && newFlags[cat.key] === i;
-              return `<li><span class="lb-rank">#${i + 1}</span> <span class="lb-val">${cat.fmt(e.value)}${isNew ? '<span class="lb-new">NEW</span>' : ''}</span></li>`;
+              const name = escapeHtml(e.name || 'Anonymous');
+              return `<li><span class="lb-rank">#${i + 1}</span><span class="lb-name">${name}</span> <span class="lb-val">${cat.fmt(e.value)}${isNew ? '<span class="lb-new">NEW</span>' : ''}</span></li>`;
             }).join('')
           : '<li style="color:rgba(255,255,255,0.3)">No records yet</li>';
         return `<div class="lb-col ${cat.cls}"><h3>${cat.title}</h3><ol>${rows}</ol></div>`;
@@ -661,6 +727,11 @@
     }
 
     function startGame() {
+      // Capture and persist player name
+      const name = nameInput.value.trim() || 'Anonymous';
+      state.playerName = name;
+      localStorage.setItem(NAME_KEY, name);
+
       showScreen(null);
       document.getElementById('end-btn').style.display = '';
       state.running = true;
@@ -669,6 +740,7 @@
       state.bestStreak = 0;
       state.sessionStart = clock.elapsedTime;
       state.sessionTime = 0;
+      state.sessionStartWall = Date.now();
       randomizeBallSize();
       ballSpawnTime = clock.elapsedTime;
       ballPos.set(0, ROOM.h / 2, 0);
@@ -680,13 +752,17 @@
       updateHUD();
       document.getElementById('time-value').textContent = '0:00';
       document.getElementById('bonus-value').textContent = '--';
+
+      // Start live session persistence
+      saveLiveSession();
     }
 
     function endSession() {
       if (!state.running) return;
       state.running = false;
       state.sessionTime = clock.elapsedTime - state.sessionStart;
-      const newFlags = recordSession(state.score, state.bestStreak, state.sessionTime);
+      clearLiveSession();
+      const newFlags = recordSession(state.playerName, state.score, state.bestStreak, state.sessionTime);
       renderLeaderboard(newFlags, state.score, state.bestStreak, state.sessionTime);
       showScreen('leaderboard');
     }
@@ -696,12 +772,19 @@
     document.getElementById('start-lb-btn').addEventListener('click', () => {
       renderLeaderboard(null, null, null, null);
       showScreen('leaderboard');
-      document.getElementById('lb-back-btn').onclick = () => showScreen('start-screen');
     });
     document.getElementById('end-btn').addEventListener('click', endSession);
     document.getElementById('lb-play-btn').addEventListener('click', startGame);
     document.getElementById('lb-back-btn').addEventListener('click', () => showScreen('start-screen'));
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.running) endSession(); });
+
+    // ── Crash / Tab-close Recovery ───────────────────────────────
+    // Save live session periodically (every 5s) and on every visibility change / tab close
+    setInterval(saveLiveSession, 5000);
+    window.addEventListener('beforeunload', saveLiveSession);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') saveLiveSession();
+    });
 
     // ── Animation Loop ──────────────────────────────────────────
     const clock = new THREE.Clock();
