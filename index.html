@@ -208,10 +208,20 @@
   <div id="start-screen" class="overlay">
     <h1>Bouncing Ball</h1>
     <p>Catch the ball fast! Smaller ball = more points, quicker catch = higher bonus</p>
-    <input id="name-input" type="text" placeholder="Your name" maxlength="16" autocomplete="off" spellcheck="false">
     <div>
       <button id="start-btn" class="overlay-btn">Play</button>
       <button id="start-lb-btn" class="overlay-btn secondary">Leaderboard</button>
+    </div>
+  </div>
+
+  <div id="name-screen" class="overlay" style="display:none;">
+    <h1>Enter Your Name</h1>
+    <p>Choose a name before you start playing</p>
+    <input id="name-input" type="text" placeholder="Your name" maxlength="16" autocomplete="off" spellcheck="false">
+    <div id="name-error" style="color:#ef5350;font-size:14px;margin-bottom:12px;min-height:20px;"></div>
+    <div>
+      <button id="name-go-btn" class="overlay-btn">Start</button>
+      <button id="name-cancel-btn" class="overlay-btn secondary">Back</button>
     </div>
   </div>
 
@@ -221,7 +231,7 @@
     <div class="lb-columns" id="lb-columns"></div>
     <div>
       <button id="lb-play-btn" class="overlay-btn">Play Again</button>
-      <button id="lb-back-btn" class="overlay-btn secondary">Back</button>
+      <button id="lb-back-btn" class="overlay-btn secondary">Main Menu</button>
     </div>
   </div>
 
@@ -721,6 +731,7 @@
     // ── Screen Helpers ──────────────────────────────────────────
     function showScreen(id) {
       document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('name-screen').style.display = 'none';
       document.getElementById('leaderboard').style.display = 'none';
       document.getElementById('end-btn').style.display = 'none';
       if (id) document.getElementById(id).style.display = '';
@@ -768,13 +779,36 @@
     }
 
     // ── Button Wiring ────────────────────────────────────────────
-    document.getElementById('start-btn').addEventListener('click', startGame);
+    const nameError = document.getElementById('name-error');
+
+    function showNameScreen() {
+      nameInput.value = localStorage.getItem(NAME_KEY) || '';
+      nameError.textContent = '';
+      showScreen('name-screen');
+      nameInput.focus();
+    }
+
+    function tryStartFromName() {
+      const name = nameInput.value.trim();
+      if (!name) {
+        nameError.textContent = 'Please enter a name to play.';
+        nameInput.focus();
+        return;
+      }
+      nameError.textContent = '';
+      startGame();
+    }
+
+    document.getElementById('start-btn').addEventListener('click', showNameScreen);
     document.getElementById('start-lb-btn').addEventListener('click', () => {
       renderLeaderboard(null, null, null, null);
       showScreen('leaderboard');
     });
+    document.getElementById('name-go-btn').addEventListener('click', tryStartFromName);
+    document.getElementById('name-cancel-btn').addEventListener('click', () => showScreen('start-screen'));
+    nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryStartFromName(); });
     document.getElementById('end-btn').addEventListener('click', endSession);
-    document.getElementById('lb-play-btn').addEventListener('click', startGame);
+    document.getElementById('lb-play-btn').addEventListener('click', showNameScreen);
     document.getElementById('lb-back-btn').addEventListener('click', () => showScreen('start-screen'));
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.running) endSession(); });
 
