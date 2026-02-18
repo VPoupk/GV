@@ -144,7 +144,8 @@
     }
     #end-btn:hover { background: rgba(239,83,80,0.4); color: #fff; }
 
-    /* Leaderboard */
+    /* Screens - hidden by default (shown via JS) */
+    #name-screen { display: none; }
     #leaderboard { display: none; }
     #leaderboard h1 { margin-bottom: 6px; }
     .lb-session-summary {
@@ -214,7 +215,7 @@
     </div>
   </div>
 
-  <div id="name-screen" class="overlay" style="display:none;">
+  <div id="name-screen" class="overlay">
     <h1>Enter Your Name</h1>
     <p>Choose a name before you start playing</p>
     <input id="name-input" type="text" placeholder="Your name" maxlength="16" autocomplete="off" spellcheck="false">
@@ -734,7 +735,10 @@
       document.getElementById('name-screen').style.display = 'none';
       document.getElementById('leaderboard').style.display = 'none';
       document.getElementById('end-btn').style.display = 'none';
-      if (id) document.getElementById(id).style.display = '';
+      if (id) {
+        const el = document.getElementById(id);
+        el.style.display = el.classList.contains('overlay') ? 'flex' : '';
+      }
     }
 
     function startGame() {
