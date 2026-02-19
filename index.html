@@ -416,7 +416,7 @@
     const SIZE_COEFF = 3.0;   // at smallest ball: 4x multiplier; at largest: 1x
     const TIME_COEFF = 0.1;   // lose 0.1x per second elapsed
     const TIME_MIN_MULT = 0.1; // time multiplier floor
-    const MERCY_GROW_STEP = 0.1; // how much radius grows per 5 misses
+    const MERCY_GROW_STEP = 0.15; // how much radius grows per 5 misses
     let ballSpawnTime = 0;     // timestamp when current ball appeared
 
     // ── Scene Setup ─────────────────────────────────────────────
@@ -813,9 +813,11 @@
         state.missStreak++;
 
         // Mercy mechanic: grow ball every 5 consecutive misses
-        if (state.missStreak % 5 === 0) {
+        if (state.missStreak % 5 === 0 && currentBallRadius < BALL_MAX_RADIUS) {
           currentBallRadius = Math.min(currentBallRadius + MERCY_GROW_STEP, BALL_MAX_RADIUS);
           ball.scale.setScalar(currentBallRadius);
+          ball.geometry.computeBoundingSphere();
+          showMessage('MERCY +SIZE', '#ff8a65');
         }
 
         updateHUD();
