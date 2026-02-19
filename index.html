@@ -579,9 +579,10 @@
     const minBounceVel = 2;
 
     // ── Particles ───────────────────────────────────────────────
-    const MAX_PARTICLES = 200;
+    const MAX_PARTICLES = 500;
     const particlePositions = new Float32Array(MAX_PARTICLES * 3);
     const particleColors = new Float32Array(MAX_PARTICLES * 3);
+    const particleSizes = new Float32Array(MAX_PARTICLES);
     const particleGeo = new THREE.BufferGeometry();
     particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
     particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
@@ -612,6 +613,168 @@
           life: 1.0,
           decay: 0.6 + Math.random() * 0.8,
         });
+      }
+      // Cap total
+      while (particles.length > MAX_PARTICLES) particles.shift();
+    }
+
+    // ── Streak Explosion Effects ──────────────────────────────
+    // Tier 1 (streak 1-2): Simple pop — small cyan burst
+    // Tier 2 (streak 3-4): Sparkle burst — multi-color with wider spread
+    // Tier 3 (streak 5-7): Ring explosion — fast ring + upward fountain
+    // Tier 4 (streak 8-9): Firework — multi-wave staggered bursts with rainbow
+    // Tier 5 (streak 10+): Supernova — massive expanding sphere + spiral trails
+
+    function streakExplosion(pos, streak) {
+      if (streak >= 10) {
+        // ── TIER 5: SUPERNOVA ──
+        // Huge expanding sphere of particles + spinning spiral trails
+        const count = 120;
+        for (let i = 0; i < count; i++) {
+          // Sphere burst — evenly distributed directions
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.acos(2 * Math.random() - 1);
+          const speed = 6 + Math.random() * 6;
+          const c = new THREE.Color().setHSL((i / count + Math.random() * 0.1) % 1, 1, 0.6);
+          particles.push({
+            pos: pos.clone(),
+            vel: new THREE.Vector3(
+              Math.sin(phi) * Math.cos(theta) * speed,
+              Math.sin(phi) * Math.sin(theta) * speed,
+              Math.cos(phi) * speed
+            ),
+            color: c,
+            life: 1.0,
+            decay: 0.3 + Math.random() * 0.3,
+          });
+        }
+        // Spiral trails
+        for (let i = 0; i < 40; i++) {
+          const angle = (i / 40) * Math.PI * 6; // 3 full rotations
+          const r = 3 + Math.random() * 2;
+          const c = new THREE.Color().setHSL((i / 40) % 1, 1, 0.75);
+          particles.push({
+            pos: pos.clone(),
+            vel: new THREE.Vector3(
+              Math.cos(angle) * r,
+              8 + Math.random() * 4,
+              Math.sin(angle) * r
+            ),
+            color: c,
+            life: 1.0,
+            decay: 0.25 + Math.random() * 0.2,
+          });
+        }
+        // Central flash particles (bright white core)
+        for (let i = 0; i < 20; i++) {
+          particles.push({
+            pos: pos.clone(),
+            vel: new THREE.Vector3(
+              (Math.random() - 0.5) * 2,
+              Math.random() * 3,
+              (Math.random() - 0.5) * 2
+            ),
+            color: new THREE.Color(1, 1, 1),
+            life: 1.0,
+            decay: 1.5 + Math.random() * 0.5,
+          });
+        }
+      } else if (streak >= 8) {
+        // ── TIER 4: FIREWORK ──
+        // Multi-wave bursts with rainbow colors
+        const waves = 3;
+        for (let w = 0; w < waves; w++) {
+          const hueOffset = w / waves;
+          const count = 30;
+          for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 2;
+            const speed = 4 + w * 2 + Math.random() * 2;
+            const elevation = (Math.random() - 0.3) * 6;
+            const c = new THREE.Color().setHSL((hueOffset + i / count * 0.3) % 1, 0.9, 0.6);
+            particles.push({
+              pos: pos.clone(),
+              vel: new THREE.Vector3(
+                Math.cos(angle) * speed,
+                elevation + 3 + w * 2,
+                Math.sin(angle) * speed
+              ),
+              color: c,
+              life: 1.0,
+              decay: 0.35 + Math.random() * 0.3 + w * 0.1,
+            });
+          }
+        }
+        // Gold sparkle core
+        for (let i = 0; i < 15; i++) {
+          particles.push({
+            pos: pos.clone(),
+            vel: new THREE.Vector3(
+              (Math.random() - 0.5) * 3,
+              Math.random() * 8 + 2,
+              (Math.random() - 0.5) * 3
+            ),
+            color: new THREE.Color(0xffd700),
+            life: 1.0,
+            decay: 0.8 + Math.random() * 0.4,
+          });
+        }
+      } else if (streak >= 5) {
+        // ── TIER 3: RING EXPLOSION ──
+        // Fast horizontal ring + upward fountain
+        const ringCount = 36;
+        for (let i = 0; i < ringCount; i++) {
+          const angle = (i / ringCount) * Math.PI * 2;
+          const speed = 7 + Math.random() * 2;
+          const c = new THREE.Color().setHSL(0.08 + Math.random() * 0.05, 1, 0.55); // Orange-gold
+          particles.push({
+            pos: pos.clone(),
+            vel: new THREE.Vector3(
+              Math.cos(angle) * speed,
+              (Math.random() - 0.5) * 2,
+              Math.sin(angle) * speed
+            ),
+            color: c,
+            life: 1.0,
+            decay: 0.5 + Math.random() * 0.3,
+          });
+        }
+        // Upward fountain
+        for (let i = 0; i < 25; i++) {
+          const c = new THREE.Color().setHSL(0.12 + Math.random() * 0.08, 1, 0.65);
+          particles.push({
+            pos: pos.clone(),
+            vel: new THREE.Vector3(
+              (Math.random() - 0.5) * 3,
+              6 + Math.random() * 6,
+              (Math.random() - 0.5) * 3
+            ),
+            color: c,
+            life: 1.0,
+            decay: 0.4 + Math.random() * 0.4,
+          });
+        }
+      } else if (streak >= 3) {
+        // ── TIER 2: SPARKLE BURST ──
+        // Multi-color with wider spread
+        const count = 40;
+        for (let i = 0; i < count; i++) {
+          const c = new THREE.Color().setHSL(Math.random(), 0.8, 0.6);
+          particles.push({
+            pos: pos.clone(),
+            vel: new THREE.Vector3(
+              (Math.random() - 0.5) * 10,
+              Math.random() * 7 + 1,
+              (Math.random() - 0.5) * 10
+            ),
+            color: c,
+            life: 1.0,
+            decay: 0.5 + Math.random() * 0.6,
+          });
+        }
+      } else {
+        // ── TIER 1: SIMPLE POP ──
+        // Small cyan burst (original style)
+        spawnParticles(pos, 0x4fc3f7, 20 + streak * 5);
       }
       // Cap total
       while (particles.length > MAX_PARTICLES) particles.shift();
@@ -677,8 +840,8 @@
       const msgColor = sizeMult >= 3 ? '#ff9800' : streakMult >= 5 ? '#ffb74d' : '#4fc3f7';
       showMessage(msg, msgColor);
 
-      // Particles — more for better catches
-      spawnParticles(ballPos, sizeMult >= 3 ? 0xff9800 : streakMult >= 5 ? 0xffb74d : 0x4fc3f7, 30 + state.streak * 5);
+      // Particles — streak-based explosions
+      streakExplosion(ballPos.clone(), state.streak);
 
       // Flash ball
       ballMat.emissiveIntensity = 1.0;
