@@ -549,6 +549,148 @@
     const glow = new THREE.Mesh(new THREE.SphereGeometry(1.6, 16, 16), glowMat);
     ball.add(glow);
 
+    // ── Streak-Based Ball Designs ─────────────────────────────
+    // Ball visual tiers that match the explosion effects
+    const BALL_TIERS = {
+      // Tier 1 (streak 0-2): Default red
+      default: { color: 0xff5252, emissive: 0xff5252, roughness: 0.2, metalness: 0.6, glowColor: 0xff5252, glowOpacity: 0.12 },
+      // Tier 2 (streak 3-4): Rainbow sparkle
+      sparkle: { color: 0xee82ee, emissive: 0xee44ee, roughness: 0.1, metalness: 0.8, glowColor: 0xff66ff, glowOpacity: 0.18 },
+      // Tier 3 (streak 5-7): Fire
+      fire: { color: 0xff6600, emissive: 0xff4400, roughness: 0.3, metalness: 0.4, glowColor: 0xff4400, glowOpacity: 0.25 },
+      // Tier 4 (streak 8-11): Ice
+      ice: { color: 0x88ddff, emissive: 0x44aaff, roughness: 0.05, metalness: 0.9, glowColor: 0x66ccff, glowOpacity: 0.22 },
+      // Tier 5 (streak 12-16): Electric
+      electric: { color: 0x6666ff, emissive: 0x4444ff, roughness: 0.15, metalness: 0.7, glowColor: 0x8888ff, glowOpacity: 0.28 },
+      // Tier 6 (streak 17-21): Wind
+      wind: { color: 0x66ffaa, emissive: 0x33cc77, roughness: 0.25, metalness: 0.5, glowColor: 0x66ffaa, glowOpacity: 0.20 },
+      // Tier 7 (streak 22+): Elemental Storm
+      storm: { color: 0xffffff, emissive: 0xaaaaff, roughness: 0.0, metalness: 1.0, glowColor: 0xffffff, glowOpacity: 0.35 },
+    };
+
+    let currentBallTier = 'default';
+
+    function getBallTierForStreak(streak) {
+      if (streak >= 22) return 'storm';
+      if (streak >= 17) return 'wind';
+      if (streak >= 12) return 'electric';
+      if (streak >= 8) return 'ice';
+      if (streak >= 5) return 'fire';
+      if (streak >= 3) return 'sparkle';
+      return 'default';
+    }
+
+    function applyBallTier(tierName) {
+      if (tierName === currentBallTier) return;
+      currentBallTier = tierName;
+      const t = BALL_TIERS[tierName];
+      ballMat.color.setHex(t.color);
+      ballMat.emissive.setHex(t.emissive);
+      ballMat.roughness = t.roughness;
+      ballMat.metalness = t.metalness;
+      glowMat.color.setHex(t.glowColor);
+      glowMat.opacity = t.glowOpacity;
+    }
+
+    // Animated ball effect — called every frame for dynamic tier visuals
+    function animateBallTier(time, dt) {
+      const streak = state.streak;
+      const tier = currentBallTier;
+
+      if (tier === 'sparkle') {
+        // Rainbow hue shift
+        const hue = (time * 0.4) % 1;
+        ballMat.color.setHSL(hue, 0.8, 0.6);
+        ballMat.emissive.setHSL(hue, 0.9, 0.35);
+        glowMat.color.setHSL(hue, 0.8, 0.6);
+
+      } else if (tier === 'fire') {
+        // Flickering fire glow — pulse emissive intensity + warm color shift
+        const flicker = 0.3 + 0.2 * Math.sin(time * 12) + 0.1 * Math.sin(time * 23);
+        ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, flicker);
+        // Shift between orange and red-yellow
+        const f = 0.5 + 0.5 * Math.sin(time * 8);
+        ballMat.color.setRGB(1, 0.35 + f * 0.3, 0.05 + f * 0.1);
+        ballMat.emissive.setRGB(1, 0.25 + f * 0.2, 0.0);
+        glowMat.color.setRGB(1, 0.3 + f * 0.2, 0.05);
+        glowMat.opacity = 0.2 + 0.1 * Math.sin(time * 15);
+
+      } else if (tier === 'ice') {
+        // Crystalline shimmer — subtle sparkle in emissive
+        const shimmer = 0.6 + 0.4 * Math.sin(time * 10 + Math.sin(time * 3) * 2);
+        ballMat.emissive.setRGB(0.25 * shimmer, 0.5 * shimmer, 0.9 * shimmer);
+        ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.15 + shimmer * 0.15);
+        // Slight color oscillation
+        ballMat.color.setRGB(0.5 + 0.1 * shimmer, 0.85 + 0.1 * shimmer, 1.0);
+        glowMat.opacity = 0.18 + 0.08 * shimmer;
+
+      } else if (tier === 'electric') {
+        // Random bright flashes + jitter between blue and purple
+        const flash = Math.random();
+        if (flash > 0.92) {
+          // Bright white flash
+          ballMat.emissiveIntensity = 1.0;
+          ballMat.emissive.setRGB(1, 1, 1);
+          glowMat.color.setRGB(1, 1, 1);
+          glowMat.opacity = 0.45;
+        } else {
+          // Normal blue-purple pulse
+          const pulse = 0.5 + 0.5 * Math.sin(time * 14);
+          ballMat.color.setRGB(0.3 + pulse * 0.2, 0.3 + pulse * 0.1, 0.9 + pulse * 0.1);
+          ballMat.emissive.setRGB(0.2 + pulse * 0.3, 0.2 + pulse * 0.1, 0.8 + pulse * 0.2);
+          glowMat.color.setRGB(0.4, 0.4 + pulse * 0.2, 1.0);
+          glowMat.opacity = 0.22 + pulse * 0.1;
+        }
+
+      } else if (tier === 'wind') {
+        // Swirling green-cyan color shift
+        const sw = time * 3;
+        const r = 0.3 + 0.2 * Math.sin(sw);
+        const g = 0.85 + 0.15 * Math.sin(sw + 2);
+        const b = 0.55 + 0.2 * Math.sin(sw + 4);
+        ballMat.color.setRGB(r, g, b);
+        ballMat.emissive.setRGB(r * 0.5, g * 0.6, b * 0.5);
+        glowMat.color.setRGB(r, g, b);
+        glowMat.opacity = 0.16 + 0.08 * Math.sin(time * 5);
+        // Gentle emissive pulse
+        ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.2 + 0.1 * Math.sin(time * 4));
+
+      } else if (tier === 'storm') {
+        // Elemental storm: rapidly cycles through all element colors
+        const cycle = (time * 2) % 4; // 4 elements, each 1 second
+        let cr, cg, cb;
+        if (cycle < 1) {
+          // Fire phase
+          const t = cycle;
+          cr = 1; cg = 0.4 + t * 0.3; cb = 0.1;
+        } else if (cycle < 2) {
+          // Ice phase
+          const t = cycle - 1;
+          cr = 0.5 + 0.2 * t; cg = 0.85; cb = 1.0;
+        } else if (cycle < 3) {
+          // Electric phase
+          const t = cycle - 2;
+          cr = 0.4 + 0.4 * t; cg = 0.4 + 0.3 * t; cb = 1.0;
+        } else {
+          // Wind phase
+          const t = cycle - 3;
+          cr = 0.4; cg = 0.9 + 0.1 * t; cb = 0.65 + 0.15 * t;
+        }
+        ballMat.color.setRGB(cr, cg, cb);
+        ballMat.emissive.setRGB(cr * 0.7, cg * 0.7, cb * 0.7);
+        glowMat.color.setRGB(cr, cg, cb);
+        // Intense pulsing glow
+        const stormPulse = 0.6 + 0.4 * Math.sin(time * 10);
+        ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.3 + stormPulse * 0.3);
+        glowMat.opacity = 0.25 + stormPulse * 0.15;
+        // Random white flashes
+        if (Math.random() > 0.95) {
+          ballMat.emissiveIntensity = 1.2;
+          ballMat.emissive.setRGB(1, 1, 1);
+        }
+      }
+    }
+
     // Randomize ball size and update visuals
     function randomizeBallSize() {
       currentBallRadius = BALL_MIN_RADIUS + Math.random() * (BALL_MAX_RADIUS - BALL_MIN_RADIUS);
@@ -986,6 +1128,7 @@
         // Miss
         state.streak = 0;
         state.missStreak++;
+        applyBallTier('default');
 
         // Mercy mechanic: grow ball every 3 consecutive misses
         if (state.missStreak % 3 === 0 && currentBallRadius < BALL_MAX_RADIUS) {
@@ -1038,6 +1181,9 @@
 
       // Particles — streak-based explosions
       streakExplosion(ballPos.clone(), state.streak);
+
+      // Update ball design to match new streak tier
+      applyBallTier(getBallTierForStreak(state.streak));
 
       // Flash ball
       ballMat.emissiveIntensity = 1.0;
@@ -1118,6 +1264,7 @@
       state.sessionStartWall = Date.now();
       randomizeBallSize();
       ballSpawnTime = clock.elapsedTime;
+      applyBallTier('default');
       ballPos.set(0, ROOM.h / 2, 0);
       ballVel.set(
         (Math.random() - 0.5) * 6,
@@ -1239,6 +1386,9 @@
         // Ball rotation
         ball.rotation.x += ballVel.z * dt;
         ball.rotation.z -= ballVel.x * dt;
+
+        // Animate ball tier visuals (color shifts, flashes, etc.)
+        animateBallTier(clock.elapsedTime, dt);
 
         // ── Particles ─────────────────────────────────
         for (let i = particles.length - 1; i >= 0; i--) {
