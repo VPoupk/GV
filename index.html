@@ -722,373 +722,310 @@
     const airDrag = 0.995;
     const minBounceVel = 1.5;
 
-    // ── Particles ───────────────────────────────────────────────
-    const MAX_PARTICLES = 600;
-    const particlePositions = new Float32Array(MAX_PARTICLES * 3);
-    const particleColors = new Float32Array(MAX_PARTICLES * 3);
-    const particleSizes = new Float32Array(MAX_PARTICLES);
-    const particleGeo = new THREE.BufferGeometry();
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
-    particleGeo.setAttribute('size', new THREE.BufferAttribute(particleSizes, 1));
+    // ── Element Explosion Textures (512x512 canvas-drawn shapes) ──
+    const TEX_SIZE = 512;
+    const TEX_HALF = TEX_SIZE / 2;
 
-    // High-res soft glow texture (256x256)
-    const particleCanvas = document.createElement('canvas');
-    particleCanvas.width = 256;
-    particleCanvas.height = 256;
-    const pctx = particleCanvas.getContext('2d');
-    const gradient = pctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-    gradient.addColorStop(0, 'rgba(255,255,255,1)');
-    gradient.addColorStop(0.15, 'rgba(255,255,255,0.9)');
-    gradient.addColorStop(0.4, 'rgba(255,255,255,0.4)');
-    gradient.addColorStop(0.65, 'rgba(255,255,255,0.1)');
-    gradient.addColorStop(1, 'rgba(255,255,255,0)');
-    pctx.fillStyle = gradient;
-    pctx.fillRect(0, 0, 256, 256);
-    const particleTexture = new THREE.CanvasTexture(particleCanvas);
-
-    // Custom shader material for per-particle sizes
-    const particleMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uTexture: { value: particleTexture },
-      },
-      vertexShader: `
-        attribute float size;
-        attribute vec3 color;
-        varying vec3 vColor;
-        void main() {
-          vColor = color;
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          gl_PointSize = size * (300.0 / -mvPosition.z);
-          gl_Position = projectionMatrix * mvPosition;
-        }
-      `,
-      fragmentShader: `
-        uniform sampler2D uTexture;
-        varying vec3 vColor;
-        void main() {
-          vec4 tex = texture2D(uTexture, gl_PointCoord);
-          gl_FragColor = vec4(vColor, 1.0) * tex;
-        }
-      `,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-    const particleSystem = new THREE.Points(particleGeo, particleMat);
-    scene.add(particleSystem);
-
-    const particles = [];
-
-    function spawnParticles(pos, color, count, baseSize) {
-      const sz = baseSize || 0.35;
-      const c = new THREE.Color(color);
-      for (let i = 0; i < count; i++) {
-        particles.push({
-          pos: pos.clone(),
-          vel: new THREE.Vector3(
-            (Math.random() - 0.5) * 8,
-            Math.random() * 6 + 2,
-            (Math.random() - 0.5) * 8
-          ),
-          color: c,
-          life: 1.0,
-          decay: 0.6 + Math.random() * 0.8,
-          size: sz + Math.random() * sz * 0.6,
-        });
-      }
-      // Cap total
-      while (particles.length > MAX_PARTICLES) particles.shift();
+    function makeExplosionTexture(drawFn) {
+      const c = document.createElement('canvas');
+      c.width = c.height = TEX_SIZE;
+      const ctx = c.getContext('2d');
+      drawFn(ctx, TEX_SIZE, TEX_HALF);
+      return new THREE.CanvasTexture(c);
     }
 
-    // ── Streak Explosion Effects ──────────────────────────────
-    // Tier 1 (streak 1-2):  Simple pop — small cyan burst
-    // Tier 2 (streak 3-4):  Sparkle burst — multi-color spread
-    // Tier 3 (streak 5-7):  FIRE — rising flames + embers
-    // Tier 4 (streak 8-11): ICE — frost shards + crystalline shimmer
-    // Tier 5 (streak 12-16): ELECTRIC — lightning bolts + spark swarm
-    // Tier 6 (streak 17-21): WIND — spiraling tornado + leaves
-    // Tier 7 (streak 22+):  ELEMENTAL STORM — all four combined
+    // Default / Tier 1: cyan radial burst
+    const texDefault = makeExplosionTexture((ctx, S, H) => {
+      const g = ctx.createRadialGradient(H, H, 0, H, H, H);
+      g.addColorStop(0, 'rgba(79,195,247,1)');
+      g.addColorStop(0.3, 'rgba(79,195,247,0.7)');
+      g.addColorStop(0.6, 'rgba(79,195,247,0.2)');
+      g.addColorStop(1, 'rgba(79,195,247,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, S, S);
+    });
 
-    function streakExplosion(pos, streak) {
-      if (streak >= 22) {
-        // ── TIER 7: ELEMENTAL STORM ──
-        // All four elements in a massive combined blast
-        // Fire core — big soft glowing particles
-        for (let i = 0; i < 20; i++) {
-          const theta = Math.random() * Math.PI * 2;
-          const speed = 3 + Math.random() * 3;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(Math.cos(theta) * speed, 4 + Math.random() * 6, Math.sin(theta) * speed),
-            color: new THREE.Color(1, 0.6, 0.1),
-            life: 1.0, decay: 0.35 + Math.random() * 0.25,
-            behavior: 'fire', seed: Math.random() * 100, age: 0,
-            size: 0.6 + Math.random() * 0.5,
-          });
-        }
-        // Ice ring — medium crystalline
-        for (let i = 0; i < 20; i++) {
-          const angle = (i / 20) * Math.PI * 2;
-          const speed = 5 + Math.random() * 3;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(Math.cos(angle) * speed, (Math.random() - 0.3) * 4, Math.sin(angle) * speed),
-            color: new THREE.Color(0.6, 0.85, 1),
-            life: 1.0, decay: 0.3 + Math.random() * 0.2,
-            behavior: 'ice', seed: Math.random() * 100, age: 0,
-            size: 0.4 + Math.random() * 0.3,
-          });
-        }
-        // Electric bolts — small sharp
-        for (let i = 0; i < 20; i++) {
-          const theta = Math.random() * Math.PI * 2;
-          const phi = Math.acos(2 * Math.random() - 1);
-          const speed = 6 + Math.random() * 5;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(
-              Math.sin(phi) * Math.cos(theta) * speed,
-              Math.sin(phi) * Math.sin(theta) * speed,
-              Math.cos(phi) * speed
-            ),
-            color: new THREE.Color(0.5, 0.6, 1),
-            life: 1.0, decay: 0.5 + Math.random() * 0.4,
-            behavior: 'electric', seed: Math.random() * 100, age: 0,
-            size: 0.2 + Math.random() * 0.15,
-          });
-        }
-        // Wind spiral — wispy medium
-        for (let i = 0; i < 20; i++) {
-          const angle = (i / 20) * Math.PI * 4;
-          const r = 2 + Math.random() * 3;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(Math.cos(angle) * r, 3 + Math.random() * 4, Math.sin(angle) * r),
-            color: new THREE.Color(0.7, 1, 0.8),
-            life: 1.0, decay: 0.25 + Math.random() * 0.2,
-            behavior: 'wind', seed: Math.random() * 100, age: 0,
-            size: 0.5 + Math.random() * 0.4,
-          });
-        }
-        // White flash core — large glow bloom
-        for (let i = 0; i < 12; i++) {
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3((Math.random() - 0.5) * 2, Math.random() * 3, (Math.random() - 0.5) * 2),
-            color: new THREE.Color(1, 1, 1),
-            life: 1.0, decay: 1.2 + Math.random() * 0.5,
-            behavior: 'default', age: 0,
-            size: 0.8 + Math.random() * 0.6,
-          });
-        }
+    // Tier 2: rainbow starburst
+    const texSparkle = makeExplosionTexture((ctx, S, H) => {
+      const rays = 12;
+      for (let i = 0; i < rays; i++) {
+        const angle = (i / rays) * Math.PI * 2;
+        const hue = (i / rays) * 360;
+        ctx.save();
+        ctx.translate(H, H);
+        ctx.rotate(angle);
+        const g = ctx.createLinearGradient(0, 0, H, 0);
+        g.addColorStop(0, `hsla(${hue},90%,70%,1)`);
+        g.addColorStop(0.5, `hsla(${hue},80%,60%,0.5)`);
+        g.addColorStop(1, `hsla(${hue},80%,60%,0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(0, -12);
+        ctx.lineTo(H * 0.95, 0);
+        ctx.lineTo(0, 12);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+      // Center glow
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.3);
+      cg.addColorStop(0, 'rgba(255,255,255,1)');
+      cg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = cg;
+      ctx.fillRect(0, 0, S, S);
+    });
 
-      } else if (streak >= 17) {
-        // ── TIER 6: WIND TORNADO ──
-        const count = 40;
-        for (let i = 0; i < count; i++) {
-          const angle = (i / count) * Math.PI * 6;
-          const r = 2 + (i / count) * 4;
-          const height = (i / count) * 8;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(Math.cos(angle) * r, height + Math.random() * 2, Math.sin(angle) * r),
-            color: new THREE.Color(0.7, 1, 0.85),
-            life: 1.0, decay: 0.25 + Math.random() * 0.2,
-            behavior: 'wind', seed: Math.random() * 100, age: 0,
-            size: 0.4 + Math.random() * 0.35,
-          });
-        }
-        // Floating leaves — larger soft particles
-        for (let i = 0; i < 14; i++) {
-          const c = new THREE.Color().setHSL(0.25 + Math.random() * 0.15, 0.7, 0.45);
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3((Math.random() - 0.5) * 6, 2 + Math.random() * 5, (Math.random() - 0.5) * 6),
-            color: c,
-            life: 1.0, decay: 0.2 + Math.random() * 0.25,
-            behavior: 'leaf', seed: Math.random() * 100, age: 0,
-            size: 0.55 + Math.random() * 0.3,
-          });
-        }
-        // Dust wisps — large soft spread
-        for (let i = 0; i < 14; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(Math.cos(angle) * 5, Math.random() * 1, Math.sin(angle) * 5),
-            color: new THREE.Color(0.8, 0.9, 0.8),
-            life: 1.0, decay: 0.5 + Math.random() * 0.3,
-            behavior: 'wind', seed: Math.random() * 100, age: 0,
-            size: 0.6 + Math.random() * 0.4,
-          });
-        }
+    // Tier 3: fire burst — flame tendrils
+    const texFire = makeExplosionTexture((ctx, S, H) => {
+      const rays = 16;
+      for (let i = 0; i < rays; i++) {
+        const angle = (i / rays) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+        const len = H * (0.5 + Math.random() * 0.5);
+        ctx.save();
+        ctx.translate(H, H);
+        ctx.rotate(angle);
+        const g = ctx.createLinearGradient(0, 0, len, 0);
+        g.addColorStop(0, 'rgba(255,255,180,1)');
+        g.addColorStop(0.25, 'rgba(255,160,30,0.9)');
+        g.addColorStop(0.6, 'rgba(255,60,0,0.5)');
+        g.addColorStop(1, 'rgba(200,0,0,0)');
+        ctx.fillStyle = g;
+        const w = 15 + Math.random() * 20;
+        ctx.beginPath();
+        ctx.moveTo(0, -w);
+        ctx.quadraticCurveTo(len * 0.6, -w * 0.3, len, 0);
+        ctx.quadraticCurveTo(len * 0.6, w * 0.3, 0, w);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+      // Hot white core
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
+      cg.addColorStop(0, 'rgba(255,255,220,1)');
+      cg.addColorStop(0.5, 'rgba(255,180,50,0.6)');
+      cg.addColorStop(1, 'rgba(255,100,0,0)');
+      ctx.fillStyle = cg;
+      ctx.fillRect(0, 0, S, S);
+    });
 
-      } else if (streak >= 12) {
-        // ── TIER 5: ELECTRIC STORM ──
-        // Bolt branches — small sharp points
-        for (let i = 0; i < 8; i++) {
-          const baseAngle = (i / 8) * Math.PI * 2;
-          const segments = 5;
-          let bx = pos.x, by = pos.y, bz = pos.z;
-          for (let s = 0; s < segments; s++) {
-            const speed = 3 + Math.random() * 4;
-            particles.push({
-              pos: new THREE.Vector3(bx, by, bz),
-              vel: new THREE.Vector3(
-                Math.cos(baseAngle) * speed + (Math.random() - 0.5) * 4,
-                (Math.random() - 0.5) * 6 + 2,
-                Math.sin(baseAngle) * speed + (Math.random() - 0.5) * 4
-              ),
-              color: new THREE.Color(0.6, 0.8, 1),
-              life: 1.0, decay: 0.7 + Math.random() * 0.5,
-              behavior: 'bolt', seed: Math.random() * 100, age: 0,
-              size: 0.15 + Math.random() * 0.1,
-            });
-            bx += Math.cos(baseAngle) * 0.3 + (Math.random() - 0.5) * 0.5;
-            by += (Math.random() - 0.5) * 0.4;
-            bz += Math.sin(baseAngle) * 0.3 + (Math.random() - 0.5) * 0.5;
+    // Tier 4: ice crystal — 6-armed snowflake
+    const texIce = makeExplosionTexture((ctx, S, H) => {
+      const arms = 6;
+      ctx.strokeStyle = 'rgba(180,220,255,0)';
+      for (let i = 0; i < arms; i++) {
+        const angle = (i / arms) * Math.PI * 2;
+        ctx.save();
+        ctx.translate(H, H);
+        ctx.rotate(angle);
+        // Main arm
+        const g = ctx.createLinearGradient(0, 0, H * 0.9, 0);
+        g.addColorStop(0, 'rgba(200,235,255,1)');
+        g.addColorStop(0.5, 'rgba(130,200,255,0.7)');
+        g.addColorStop(1, 'rgba(100,180,255,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(0, -4);
+        ctx.lineTo(H * 0.9, -1);
+        ctx.lineTo(H * 0.9, 1);
+        ctx.lineTo(0, 4);
+        ctx.closePath();
+        ctx.fill();
+        // Side branches
+        for (const bPos of [0.35, 0.6]) {
+          for (const side of [-1, 1]) {
+            ctx.save();
+            ctx.translate(H * bPos, 0);
+            ctx.rotate(side * 0.6);
+            const bg = ctx.createLinearGradient(0, 0, H * 0.3, 0);
+            bg.addColorStop(0, 'rgba(180,225,255,0.8)');
+            bg.addColorStop(1, 'rgba(150,210,255,0)');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, -2, H * 0.3, 4);
+            ctx.restore();
           }
         }
-        // Spark swarm — tiny erratic sparks
-        for (let i = 0; i < 35; i++) {
-          const theta = Math.random() * Math.PI * 2;
-          const phi = Math.acos(2 * Math.random() - 1);
-          const speed = 4 + Math.random() * 5;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(
-              Math.sin(phi) * Math.cos(theta) * speed,
-              Math.sin(phi) * Math.sin(theta) * speed,
-              Math.cos(phi) * speed
-            ),
-            color: new THREE.Color(0.5, 0.6, 1),
-            life: 1.0, decay: 0.45 + Math.random() * 0.35,
-            behavior: 'electric', seed: Math.random() * 100, age: 0,
-            size: 0.18 + Math.random() * 0.12,
-          });
-        }
-        // Core flash — large bright bloom
-        for (let i = 0; i < 8; i++) {
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3((Math.random() - 0.5) * 2, Math.random() * 2, (Math.random() - 0.5) * 2),
-            color: new THREE.Color(1, 1, 1),
-            life: 1.0, decay: 1.5 + Math.random() * 0.5,
-            behavior: 'bolt', seed: Math.random() * 100, age: 0,
-            size: 0.7 + Math.random() * 0.5,
-          });
-        }
-
-      } else if (streak >= 8) {
-        // ── TIER 4: ICE SHATTER ──
-        // Frost ring — medium glowing orbs
-        const ringCount = 28;
-        for (let i = 0; i < ringCount; i++) {
-          const angle = (i / ringCount) * Math.PI * 2;
-          const speed = 5 + Math.random() * 3;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(Math.cos(angle) * speed, (Math.random() - 0.3) * 3, Math.sin(angle) * speed),
-            color: new THREE.Color(0.6, 0.85, 1),
-            life: 1.0, decay: 0.3 + Math.random() * 0.25,
-            behavior: 'ice', seed: Math.random() * 100, age: 0,
-            size: 0.35 + Math.random() * 0.25,
-          });
-        }
-        // Icicle shards — elongated feel via small bright points
-        for (let i = 0; i < 12; i++) {
-          const angle = (i / 12) * Math.PI * 2;
-          const up = i % 2 === 0 ? 1 : -1;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(Math.cos(angle) * 2, up * (5 + Math.random() * 4), Math.sin(angle) * 2),
-            color: new THREE.Color(0.8, 0.95, 1),
-            life: 1.0, decay: 0.4 + Math.random() * 0.3,
-            behavior: 'frost', seed: Math.random() * 100, age: 0,
-            size: 0.2 + Math.random() * 0.15,
-          });
-        }
-        // Crystal dust — large soft shimmer
-        for (let i = 0; i < 14; i++) {
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3((Math.random() - 0.5) * 4, Math.random() * 3 + 1, (Math.random() - 0.5) * 4),
-            color: new THREE.Color(0.9, 0.95, 1),
-            life: 1.0, decay: 0.2 + Math.random() * 0.2,
-            behavior: 'ice', seed: Math.random() * 100, age: 0,
-            size: 0.5 + Math.random() * 0.35,
-          });
-        }
-
-      } else if (streak >= 5) {
-        // ── TIER 3: FIRE BURST ──
-        // Flame column — large soft rising blobs
-        for (let i = 0; i < 30; i++) {
-          const spread = Math.random() * 2;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(
-              (Math.random() - 0.5) * spread * 3,
-              3 + Math.random() * 8,
-              (Math.random() - 0.5) * spread * 3
-            ),
-            color: new THREE.Color(1, 0.6, 0.1),
-            life: 1.0, decay: 0.35 + Math.random() * 0.3,
-            behavior: 'fire', seed: Math.random() * 100, age: 0,
-            size: 0.5 + Math.random() * 0.45,
-          });
-        }
-        // Ember ring — medium glowing specks
-        for (let i = 0; i < 18; i++) {
-          const angle = (i / 18) * Math.PI * 2;
-          const speed = 4 + Math.random() * 2;
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(Math.cos(angle) * speed, 0.5 + Math.random() * 2, Math.sin(angle) * speed),
-            color: new THREE.Color(1, 0.3, 0.05),
-            life: 1.0, decay: 0.3 + Math.random() * 0.3,
-            behavior: 'ember', seed: Math.random() * 100, age: 0,
-            size: 0.3 + Math.random() * 0.2,
-          });
-        }
-        // Hot core flash — large bright bloom
-        for (let i = 0; i < 8; i++) {
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3((Math.random() - 0.5) * 1.5, Math.random() * 2, (Math.random() - 0.5) * 1.5),
-            color: new THREE.Color(1, 1, 0.7),
-            life: 1.0, decay: 1.0 + Math.random() * 0.5,
-            behavior: 'fire', seed: Math.random() * 100, age: 0,
-            size: 0.8 + Math.random() * 0.5,
-          });
-        }
-
-      } else if (streak >= 3) {
-        // ── TIER 2: SPARKLE BURST ──
-        const count = 28;
-        for (let i = 0; i < count; i++) {
-          const c = new THREE.Color().setHSL(Math.random(), 0.8, 0.6);
-          particles.push({
-            pos: pos.clone(),
-            vel: new THREE.Vector3(
-              (Math.random() - 0.5) * 10,
-              Math.random() * 7 + 1,
-              (Math.random() - 0.5) * 10
-            ),
-            color: c,
-            life: 1.0,
-            decay: 0.5 + Math.random() * 0.6,
-            behavior: 'default', age: 0,
-            size: 0.3 + Math.random() * 0.3,
-          });
-        }
-      } else {
-        // ── TIER 1: SIMPLE POP ──
-        spawnParticles(pos, 0x4fc3f7, 14 + streak * 4, 0.3);
+        ctx.restore();
       }
-      // Cap total
-      while (particles.length > MAX_PARTICLES) particles.shift();
+      // Center glow
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.2);
+      cg.addColorStop(0, 'rgba(220,240,255,1)');
+      cg.addColorStop(1, 'rgba(180,220,255,0)');
+      ctx.fillStyle = cg;
+      ctx.fillRect(0, 0, S, S);
+    });
+
+    // Tier 5: electric — jagged lightning bolts from center
+    const texElectric = makeExplosionTexture((ctx, S, H) => {
+      const bolts = 10;
+      for (let i = 0; i < bolts; i++) {
+        const angle = (i / bolts) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        ctx.save();
+        ctx.translate(H, H);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        let x = 0;
+        const segments = 6 + Math.floor(Math.random() * 4);
+        const totalLen = H * (0.6 + Math.random() * 0.35);
+        const step = totalLen / segments;
+        for (let s = 0; s < segments; s++) {
+          x += step;
+          const jitter = (Math.random() - 0.5) * 30;
+          ctx.lineTo(x, jitter);
+        }
+        const bright = Math.random() > 0.5;
+        ctx.strokeStyle = bright ? 'rgba(220,230,255,0.95)' : 'rgba(100,140,255,0.8)';
+        ctx.lineWidth = bright ? 4 : 2.5;
+        ctx.shadowColor = 'rgba(100,150,255,0.8)';
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+        ctx.restore();
+      }
+      // Core flash
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.2);
+      cg.addColorStop(0, 'rgba(220,230,255,1)');
+      cg.addColorStop(0.5, 'rgba(100,140,255,0.5)');
+      cg.addColorStop(1, 'rgba(80,100,255,0)');
+      ctx.fillStyle = cg;
+      ctx.fillRect(0, 0, S, S);
+    });
+
+    // Tier 6: wind — spiral vortex
+    const texWind = makeExplosionTexture((ctx, S, H) => {
+      const spirals = 3;
+      for (let s = 0; s < spirals; s++) {
+        const offset = (s / spirals) * Math.PI * 2;
+        ctx.beginPath();
+        for (let t = 0; t < 200; t++) {
+          const frac = t / 200;
+          const angle = offset + frac * Math.PI * 4;
+          const r = frac * H * 0.9;
+          const x = H + Math.cos(angle) * r;
+          const y = H + Math.sin(angle) * r;
+          if (t === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        const alpha = 0.6 + s * 0.15;
+        ctx.strokeStyle = `rgba(120,255,180,${alpha})`;
+        ctx.lineWidth = 6 - s;
+        ctx.shadowColor = 'rgba(100,255,170,0.5)';
+        ctx.shadowBlur = 8;
+        ctx.stroke();
+      }
+      // Center glow
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
+      cg.addColorStop(0, 'rgba(150,255,200,1)');
+      cg.addColorStop(1, 'rgba(100,255,170,0)');
+      ctx.fillStyle = cg;
+      ctx.fillRect(0, 0, S, S);
+    });
+
+    // Tier 7: storm — all elements combined
+    const texStorm = makeExplosionTexture((ctx, S, H) => {
+      // Fire quadrant (top-right)
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(H, H); ctx.arc(H, H, H, -Math.PI/2, 0); ctx.closePath(); ctx.clip();
+      const fg = ctx.createRadialGradient(H, H, 0, H, H, H);
+      fg.addColorStop(0, 'rgba(255,255,180,1)');
+      fg.addColorStop(0.4, 'rgba(255,120,20,0.7)');
+      fg.addColorStop(1, 'rgba(200,0,0,0)');
+      ctx.fillStyle = fg; ctx.fillRect(0, 0, S, S);
+      ctx.restore();
+      // Ice quadrant (top-left)
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(H, H); ctx.arc(H, H, H, -Math.PI, -Math.PI/2); ctx.closePath(); ctx.clip();
+      const ig = ctx.createRadialGradient(H, H, 0, H, H, H);
+      ig.addColorStop(0, 'rgba(200,235,255,1)');
+      ig.addColorStop(0.4, 'rgba(100,180,255,0.7)');
+      ig.addColorStop(1, 'rgba(80,150,255,0)');
+      ctx.fillStyle = ig; ctx.fillRect(0, 0, S, S);
+      ctx.restore();
+      // Electric quadrant (bottom-right)
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(H, H); ctx.arc(H, H, H, 0, Math.PI/2); ctx.closePath(); ctx.clip();
+      const eg = ctx.createRadialGradient(H, H, 0, H, H, H);
+      eg.addColorStop(0, 'rgba(200,210,255,1)');
+      eg.addColorStop(0.4, 'rgba(80,100,255,0.7)');
+      eg.addColorStop(1, 'rgba(60,60,200,0)');
+      ctx.fillStyle = eg; ctx.fillRect(0, 0, S, S);
+      ctx.restore();
+      // Wind quadrant (bottom-left)
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(H, H); ctx.arc(H, H, H, Math.PI/2, Math.PI); ctx.closePath(); ctx.clip();
+      const wg = ctx.createRadialGradient(H, H, 0, H, H, H);
+      wg.addColorStop(0, 'rgba(150,255,200,1)');
+      wg.addColorStop(0.4, 'rgba(80,220,140,0.7)');
+      wg.addColorStop(1, 'rgba(50,180,100,0)');
+      ctx.fillStyle = wg; ctx.fillRect(0, 0, S, S);
+      ctx.restore();
+      // White center
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.2);
+      cg.addColorStop(0, 'rgba(255,255,255,1)');
+      cg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = cg; ctx.fillRect(0, 0, S, S);
+    });
+
+    const explosionTextures = {
+      default: texDefault, sparkle: texSparkle, fire: texFire,
+      ice: texIce, electric: texElectric, wind: texWind, storm: texStorm,
+    };
+
+    // ── Explosion Sprite Pool ──────────────────────────────────
+    const POOL_SIZE = 8;
+    const explosionPool = [];
+    const activeExplosions = [];
+
+    for (let i = 0; i < POOL_SIZE; i++) {
+      const mat = new THREE.SpriteMaterial({
+        map: texDefault,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      const sprite = new THREE.Sprite(mat);
+      sprite.visible = false;
+      scene.add(sprite);
+      explosionPool.push({ sprite, mat, active: false });
+    }
+
+    function spawnExplosion(pos, tier, sizeMult) {
+      const tex = explosionTextures[tier] || texDefault;
+      const maxScale = (sizeMult || 1) * 5;
+      const duration = tier === 'storm' ? 2.0 : tier === 'default' ? 0.8 : 1.4;
+      // Find a free sprite
+      let slot = explosionPool.find(s => !s.active);
+      if (!slot) {
+        // Steal oldest active
+        const oldest = activeExplosions.shift();
+        if (oldest) { oldest.active = false; oldest.sprite.visible = false; }
+        slot = oldest || explosionPool[0];
+      }
+      slot.active = true;
+      slot.mat.map = tex;
+      slot.mat.opacity = 1;
+      slot.mat.needsUpdate = true;
+      slot.sprite.position.copy(pos);
+      slot.sprite.scale.set(0.1, 0.1, 0.1);
+      slot.sprite.visible = true;
+      slot.sprite.material.rotation = Math.random() * Math.PI * 2;
+      activeExplosions.push({
+        ...slot,
+        age: 0,
+        duration,
+        maxScale,
+      });
+    }
+
+    function streakExplosion(pos, streak) {
+      const tier = getBallTierForStreak(streak);
+      // Scale up explosion with streak
+      const sizeMult = streak >= 22 ? 1.8 : streak >= 12 ? 1.4 : streak >= 5 ? 1.2 : 1.0;
+      spawnExplosion(pos, tier, sizeMult);
+      // Storm gets a second delayed ring
+      if (streak >= 22) {
+        setTimeout(() => spawnExplosion(pos, 'default', 2.2), 80);
+      }
     }
 
     // ── Raycaster for Mouse Interaction ─────────────────────────
@@ -1393,110 +1330,26 @@
         // Animate ball tier visuals (color shifts, flashes, etc.)
         animateBallTier(clock.elapsedTime, dt);
 
-        // ── Particles ─────────────────────────────────
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i];
-          p.age = (p.age || 0) + dt;
-          const b = p.behavior || 'default';
-
-          if (b === 'fire') {
-            // Fire: rises, slows horizontally, flickers color
-            p.vel.y += 4 * dt; // buoyancy — rises instead of falling
-            p.vel.x *= 0.96; p.vel.z *= 0.96; // drag
-            p.vel.x += (Math.random() - 0.5) * 6 * dt; // flicker
-            p.vel.z += (Math.random() - 0.5) * 6 * dt;
-            // Shift color: yellow → orange → red as life fades
-            const t = p.life;
-            p.color.r = 1;
-            p.color.g = t * 0.7;
-            p.color.b = t * 0.15;
-          } else if (b === 'ember') {
-            // Embers: float up slowly, gentle sway
-            p.vel.y += 1.5 * dt;
-            p.vel.x += Math.sin(p.age * 5 + p.seed) * 2 * dt;
-            p.vel.z += Math.cos(p.age * 5 + p.seed) * 2 * dt;
-            p.vel.multiplyScalar(0.98);
-          } else if (b === 'ice') {
-            // Ice: gentle gravity, drifts sideways, sparkles
-            p.vel.y -= 3 * dt;
-            p.vel.x += Math.sin(p.age * 3 + p.seed) * 1.5 * dt;
-            p.vel.z += Math.cos(p.age * 4 + p.seed) * 1.5 * dt;
-            p.vel.multiplyScalar(0.97);
-            // Shimmer: pulse brightness
-            const shimmer = 0.7 + 0.3 * Math.sin(p.age * 15 + p.seed * 10);
-            p.color.r = 0.6 * shimmer;
-            p.color.g = 0.85 * shimmer;
-            p.color.b = 1.0 * shimmer;
-          } else if (b === 'frost') {
-            // Frost crystals: expand outward slowly, barely fall
-            p.vel.y -= 1 * dt;
-            p.vel.multiplyScalar(0.95);
-          } else if (b === 'electric') {
-            // Electric: zigzag erratically, bright flashes
-            p.vel.x += (Math.random() - 0.5) * 40 * dt;
-            p.vel.y += (Math.random() - 0.5) * 30 * dt;
-            p.vel.z += (Math.random() - 0.5) * 40 * dt;
-            p.vel.multiplyScalar(0.92);
-            // Flash between white and blue/purple
-            const flash = Math.random();
-            if (flash > 0.7) { p.color.r = 1; p.color.g = 1; p.color.b = 1; }
-            else { p.color.r = 0.4; p.color.g = 0.5 + Math.random() * 0.3; p.color.b = 1; }
-          } else if (b === 'bolt') {
-            // Lightning bolt segments: fast, short-lived
-            p.vel.multiplyScalar(0.85);
-            const flash = Math.random() > 0.5 ? 1 : 0.6;
-            p.color.r = 0.8 * flash; p.color.g = 0.9 * flash; p.color.b = flash;
-          } else if (b === 'wind') {
-            // Wind: spiral outward, float up
-            const angle = Math.atan2(p.vel.z, p.vel.x) + 2.5 * dt;
-            const spd = Math.sqrt(p.vel.x * p.vel.x + p.vel.z * p.vel.z);
-            p.vel.x = Math.cos(angle) * spd;
-            p.vel.z = Math.sin(angle) * spd;
-            p.vel.y += 2 * dt;
-            p.vel.multiplyScalar(0.99);
-            // Color shifts: white → cyan → green wisps
-            const wt = p.life;
-            p.color.r = 0.7 * wt;
-            p.color.g = 0.9 + 0.1 * Math.sin(p.age * 6);
-            p.color.b = 0.8 * wt + 0.2;
-          } else if (b === 'leaf') {
-            // Leaf: floats, wobbles, slow fall
-            p.vel.y -= 2 * dt;
-            p.vel.x += Math.sin(p.age * 4 + p.seed) * 3 * dt;
-            p.vel.z += Math.cos(p.age * 3 + p.seed * 2) * 3 * dt;
-            p.vel.multiplyScalar(0.97);
-          } else {
-            // Default: normal gravity
-            p.vel.y -= 10 * dt;
-          }
-
-          p.pos.addScaledVector(p.vel, dt);
-          p.life -= p.decay * dt;
-          if (p.life <= 0) { particles.splice(i, 1); }
-        }
-
-        // Update particle buffers (position, color faded by life, size shrinks with life)
-        for (let i = 0; i < MAX_PARTICLES; i++) {
-          if (i < particles.length) {
-            const p = particles[i];
-            particlePositions[i * 3] = p.pos.x;
-            particlePositions[i * 3 + 1] = p.pos.y;
-            particlePositions[i * 3 + 2] = p.pos.z;
-            const fade = p.life * p.life; // quadratic fade for smoother falloff
-            particleColors[i * 3] = p.color.r * fade;
-            particleColors[i * 3 + 1] = p.color.g * fade;
-            particleColors[i * 3 + 2] = p.color.b * fade;
-            particleSizes[i] = (p.size || 0.35) * p.life;
-          } else {
-            particlePositions[i * 3] = 0;
-            particlePositions[i * 3 + 1] = -100;
-            particlePositions[i * 3 + 2] = 0;
-            particleSizes[i] = 0;
+        // ── Explosion Sprites ─────────────────────────
+        for (let i = activeExplosions.length - 1; i >= 0; i--) {
+          const e = activeExplosions[i];
+          e.age += dt;
+          const t = Math.min(e.age / e.duration, 1);
+          // Fast expand, slow settle (ease-out)
+          const easeOut = 1 - Math.pow(1 - t, 3);
+          const scale = e.maxScale * easeOut;
+          e.sprite.scale.set(scale, scale, scale);
+          // Stay bright longer, then fade in last 30%
+          const fadeStart = 0.7;
+          e.mat.opacity = t < fadeStart ? 1.0 : 1.0 - ((t - fadeStart) / (1 - fadeStart));
+          // Slow rotation
+          e.sprite.material.rotation += dt * 0.5;
+          if (t >= 1) {
+            e.active = false;
+            e.sprite.visible = false;
+            activeExplosions.splice(i, 1);
           }
         }
-        particleGeo.attributes.position.needsUpdate = true;
-        particleGeo.attributes.color.needsUpdate = true;
-        particleGeo.attributes.size.needsUpdate = true;
 
         // ── Live HUD updates ────────────────────────────
         updateTimerHUD();
