@@ -589,12 +589,28 @@
     particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
     particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
 
+    // Create a soft circular glow texture for particles
+    const particleCanvas = document.createElement('canvas');
+    particleCanvas.width = 64;
+    particleCanvas.height = 64;
+    const pctx = particleCanvas.getContext('2d');
+    const gradient = pctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'rgba(255,255,255,1)');
+    gradient.addColorStop(0.3, 'rgba(255,255,255,0.8)');
+    gradient.addColorStop(0.7, 'rgba(255,255,255,0.2)');
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    pctx.fillStyle = gradient;
+    pctx.fillRect(0, 0, 64, 64);
+    const particleTexture = new THREE.CanvasTexture(particleCanvas);
+
     const particleMat = new THREE.PointsMaterial({
-      size: 0.12,
+      size: 0.18,
+      map: particleTexture,
       vertexColors: true,
       transparent: true,
       opacity: 0.9,
       depthWrite: false,
+      blending: THREE.AdditiveBlending,
     });
     const particleSystem = new THREE.Points(particleGeo, particleMat);
     scene.add(particleSystem);
