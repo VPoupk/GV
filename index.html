@@ -408,8 +408,8 @@
     // ── Room Dimensions ─────────────────────────────────────────
     const ROOM = { w: 10, h: 7, d: 10 };
     const BALL_BASE_RADIUS = 0.4;
-    const BALL_MIN_RADIUS = 0.15;
-    const BALL_MAX_RADIUS = 0.65;
+    const BALL_MIN_RADIUS = 0.25;
+    const BALL_MAX_RADIUS = 0.7;
     let currentBallRadius = BALL_BASE_RADIUS;
 
     // Scoring coefficients
@@ -575,10 +575,10 @@
       (Math.random() - 0.5) * 4,
       (Math.random() - 0.5) * 6
     );
-    const gravity = -12;
-    const restitution = 0.85;
-    const airDrag = 0.998;
-    const minBounceVel = 2;
+    const gravity = -10;
+    const restitution = 0.82;
+    const airDrag = 0.995;
+    const minBounceVel = 1.5;
 
     // ── Particles ───────────────────────────────────────────────
     const MAX_PARTICLES = 800;
@@ -953,15 +953,26 @@
       raycaster.setFromCamera(mouse, camera);
       const hits = raycaster.intersectObject(ball);
 
-      if (hits.length > 0) {
+      // Forgiving hitbox: if ray passes close to ball center, count as hit
+      let nearHit = false;
+      if (hits.length === 0) {
+        const ray = raycaster.ray;
+        const closest = new THREE.Vector3();
+        ray.closestPointToPoint(ball.position, closest);
+        const dist = closest.distanceTo(ball.position);
+        const forgiveness = currentBallRadius * 1.5; // 50% larger effective hitbox
+        if (dist < forgiveness) nearHit = true;
+      }
+
+      if (hits.length > 0 || nearHit) {
         catchBall();
       } else {
         // Miss
         state.streak = 0;
         state.missStreak++;
 
-        // Mercy mechanic: grow ball every 5 consecutive misses
-        if (state.missStreak % 5 === 0 && currentBallRadius < BALL_MAX_RADIUS) {
+        // Mercy mechanic: grow ball every 3 consecutive misses
+        if (state.missStreak % 3 === 0 && currentBallRadius < BALL_MAX_RADIUS) {
           currentBallRadius = Math.min(currentBallRadius + MERCY_GROW_STEP, BALL_MAX_RADIUS);
           ball.scale.setScalar(currentBallRadius);
           ball.geometry.computeBoundingSphere();
@@ -1021,13 +1032,13 @@
 
       ballPos.set(
         (Math.random() - 0.5) * (ROOM.w - 2),
-        ROOM.h * 0.5 + Math.random() * 2,
-        (Math.random() - 0.5) * (ROOM.d - 2)
+        ROOM.h * 0.4 + Math.random() * 2,
+        (Math.random() - 0.3) * (ROOM.d - 2)
       );
       ballVel.set(
-        (Math.random() - 0.5) * 8,
-        (Math.random() - 0.5) * 5 + 3,
-        (Math.random() - 0.5) * 8
+        (Math.random() - 0.5) * 5,
+        (Math.random() - 0.5) * 4 + 2,
+        (Math.random() - 0.5) * 5
       );
     }
 
@@ -1185,10 +1196,10 @@
           ballPos.y = currentBallRadius;
           ballVel.y = Math.abs(ballVel.y) * restitution;
           // Ensure it keeps bouncing
-          if (ballVel.y < minBounceVel) ballVel.y = minBounceVel + Math.random() * 3;
+          if (ballVel.y < minBounceVel) ballVel.y = minBounceVel + Math.random() * 2;
           // Add random horizontal kick to keep it interesting
-          ballVel.x += (Math.random() - 0.5) * 2;
-          ballVel.z += (Math.random() - 0.5) * 2;
+          ballVel.x += (Math.random() - 0.5) * 1.2;
+          ballVel.z += (Math.random() - 0.5) * 1.2;
         }
 
         // Ceiling bounce
