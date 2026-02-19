@@ -276,6 +276,7 @@
       score: 0,
       streak: 0,
       bestStreak: 0,
+      missStreak: 0,         // consecutive misses — grows ball every 5
       running: false,
       sessionStart: 0,       // clock.elapsedTime when Play was pressed
       sessionTime: 0,        // seconds of current session
@@ -415,6 +416,7 @@
     const SIZE_COEFF = 3.0;   // at smallest ball: 4x multiplier; at largest: 1x
     const TIME_COEFF = 0.1;   // lose 0.1x per second elapsed
     const TIME_MIN_MULT = 0.1; // time multiplier floor
+    const MERCY_GROW_STEP = 0.1; // how much radius grows per 5 misses
     let ballSpawnTime = 0;     // timestamp when current ball appeared
 
     // ── Scene Setup ─────────────────────────────────────────────
@@ -808,12 +810,21 @@
       } else {
         // Miss
         state.streak = 0;
+        state.missStreak++;
+
+        // Mercy mechanic: grow ball every 5 consecutive misses
+        if (state.missStreak % 5 === 0) {
+          currentBallRadius = Math.min(currentBallRadius + MERCY_GROW_STEP, BALL_MAX_RADIUS);
+          ball.scale.setScalar(currentBallRadius);
+        }
+
         updateHUD();
       }
     });
 
     function catchBall() {
       state.streak++;
+      state.missStreak = 0;
       const streakMult = Math.min(state.streak, 10);
 
       // Size multiplier: smaller ball = higher score (linear)
@@ -916,6 +927,7 @@
       state.score = 0;
       state.streak = 0;
       state.bestStreak = 0;
+      state.missStreak = 0;
       state.sessionStart = clock.elapsedTime;
       state.sessionTime = 0;
       state.sessionStartWall = Date.now();
