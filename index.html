@@ -469,6 +469,142 @@
       50% { transform: scale(1.1); }
       100% { transform: scale(1); }
     }
+
+    /* Combo Timer Bar */
+    #combo-bar-wrap {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #combo-bar-wrap.visible { opacity: 1; }
+    #combo-bar {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #4fc3f7, #7c4dff);
+      width: 100%;
+      transition: background 0.3s;
+    }
+    #combo-bar.urgent { background: linear-gradient(90deg, #ef5350, #ff7043); }
+    #combo-label {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.3);
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #combo-label.visible { opacity: 1; }
+
+    /* Floating Score Popups */
+    .float-score {
+      position: fixed;
+      font-size: 22px;
+      font-weight: 800;
+      pointer-events: none;
+      z-index: 12;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+      animation: float-up 1s ease-out forwards;
+      white-space: nowrap;
+    }
+    @keyframes float-up {
+      0% { opacity: 1; transform: translateY(0) scale(1.2); }
+      60% { opacity: 1; transform: translateY(-60px) scale(1); }
+      100% { opacity: 0; transform: translateY(-100px) scale(0.8); }
+    }
+
+    /* Achievement Toasts */
+    #achievement-container {
+      position: fixed;
+      top: 90px;
+      right: 20px;
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .achievement-toast {
+      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,180,0,0.08));
+      border: 1px solid rgba(255,215,0,0.4);
+      border-radius: 14px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: toast-in 0.5s cubic-bezier(0.34,1.56,0.64,1), toast-out 0.4s ease 3.5s forwards;
+      backdrop-filter: blur(10px);
+      min-width: 220px;
+    }
+    @keyframes toast-in {
+      from { transform: translateX(120%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes toast-out {
+      to { transform: translateX(120%); opacity: 0; }
+    }
+    .achievement-icon { font-size: 28px; flex-shrink: 0; }
+    .achievement-info { display: flex; flex-direction: column; }
+    .achievement-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffd700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .achievement-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      margin-top: 2px;
+    }
+
+    /* Stats Page */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      max-width: 380px;
+      width: 100%;
+      margin: 16px auto 20px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-card-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #4fc3f7;
+    }
+    .stat-card-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 4px;
+    }
+    .stat-card.gold .stat-card-value { color: #ffd700; }
+    .stat-card.purple .stat-card-value { color: #ce93d8; }
+    .stat-card.green .stat-card-value { color: #66bb6a; }
+    .stat-card.orange .stat-card-value { color: #ffb74d; }
+    .stat-card.cyan .stat-card-value { color: #80cbc4; }
   </style>
 </head>
 <body>
@@ -478,6 +614,7 @@
     <div>
       <button id="start-btn" class="overlay-btn">Play</button>
       <button id="start-lb-btn" class="overlay-btn secondary">Leaderboard</button>
+      <button id="start-stats-btn" class="overlay-btn secondary">Stats</button>
     </div>
     <div class="vip-card" id="vip-card">
       <div class="vip-icon">&#x2B50;</div>
@@ -517,6 +654,15 @@
     </div>
   </div>
 
+  <div id="stats-screen" class="overlay" style="display:none;">
+    <h1>All-Time Stats</h1>
+    <div class="stats-grid" id="stats-grid"></div>
+    <div id="stats-achievements" style="max-width:380px;width:100%;margin-bottom:20px;"></div>
+    <div>
+      <button id="stats-back-btn" class="overlay-btn secondary">Back</button>
+    </div>
+  </div>
+
   <button id="end-btn">End Session</button>
 
   <div id="hud">
@@ -539,6 +685,18 @@
   </div>
 
   <div id="message"></div>
+
+  <!-- Combo Timer -->
+  <div id="combo-label" class="">COMBO</div>
+  <div id="combo-bar-wrap" class="">
+    <div id="combo-bar"></div>
+  </div>
+
+  <!-- Achievement Toasts -->
+  <div id="achievement-container"></div>
+
+  <!-- Mute Button -->
+  <button id="mute-btn" style="position:fixed;bottom:20px;right:20px;z-index:15;padding:8px 14px;font-size:18px;border:1px solid rgba(255,255,255,0.15);border-radius:12px;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);color:rgba(255,255,255,0.6);cursor:pointer;display:none;" title="Toggle Sound">&#x1F50A;</button>
 
   <script type="importmap">
     {
@@ -617,6 +775,222 @@
     });
 
     updateVIPCard();
+
+    // ── Sound Effects (Web Audio API) ────────────────────────
+    let audioCtx = null;
+    let soundEnabled = true;
+    const SOUND_KEY = 'bouncingBall_sound';
+    if (localStorage.getItem(SOUND_KEY) === 'false') soundEnabled = false;
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    function playTone(freq, type, dur, vol, detune) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.value = freq;
+        if (detune) osc.detune.value = detune;
+        gain.gain.setValueAtTime(vol || 0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (dur || 0.2));
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + (dur || 0.2));
+      } catch(e) {}
+    }
+
+    function playNoise(dur, vol) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        const bufferSize = ctx.sampleRate * (dur || 0.1);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(vol || 0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (dur || 0.1));
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 2000;
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        source.start();
+      } catch(e) {}
+    }
+
+    function sndCatch(streak) {
+      const base = 440 + Math.min(streak, 20) * 30;
+      playTone(base, 'sine', 0.15, 0.12);
+      playTone(base * 1.5, 'sine', 0.1, 0.06);
+      if (streak >= 5) playTone(base * 2, 'triangle', 0.2, 0.05);
+    }
+    function sndMiss() { playTone(180, 'sawtooth', 0.25, 0.08); playNoise(0.08, 0.04); }
+    function sndBounce(vel) { playTone(120 + vel * 15, 'sine', 0.06, Math.min(vel * 0.01, 0.06)); }
+    function sndMilestone() {
+      [523, 659, 784, 1047].forEach((f, i) => {
+        setTimeout(() => playTone(f, 'sine', 0.3, 0.1), i * 80);
+      });
+    }
+    function sndComboExpire() { playTone(300, 'sawtooth', 0.3, 0.1); playTone(200, 'sawtooth', 0.4, 0.08); }
+
+    const muteBtn = document.getElementById('mute-btn');
+    muteBtn.textContent = soundEnabled ? '\u{1F50A}' : '\u{1F507}';
+    muteBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem(SOUND_KEY, soundEnabled);
+      muteBtn.textContent = soundEnabled ? '\u{1F50A}' : '\u{1F507}';
+    });
+
+    // ── Combo Timer ──────────────────────────────────────────
+    const COMBO_TIME = 5.0; // seconds to catch next ball before streak resets
+    let comboTimeLeft = 0;
+    let comboActive = false;
+    const comboBarWrap = document.getElementById('combo-bar-wrap');
+    const comboBar = document.getElementById('combo-bar');
+    const comboLabel = document.getElementById('combo-label');
+
+    function startCombo() {
+      comboTimeLeft = COMBO_TIME;
+      comboActive = true;
+      comboBarWrap.classList.add('visible');
+      comboLabel.classList.add('visible');
+    }
+    function stopCombo() {
+      comboActive = false;
+      comboBarWrap.classList.remove('visible');
+      comboLabel.classList.remove('visible');
+    }
+    function updateCombo(dt) {
+      if (!comboActive || !state.running) return;
+      if (state.streak <= 0) { stopCombo(); return; }
+      comboTimeLeft -= dt;
+      const pct = Math.max(comboTimeLeft / COMBO_TIME, 0);
+      comboBar.style.width = (pct * 100) + '%';
+      comboBar.classList.toggle('urgent', pct < 0.3);
+      if (comboTimeLeft <= 0) {
+        // Streak expired!
+        state.streak = 0;
+        state.missStreak++;
+        comboActive = false;
+        comboBarWrap.classList.remove('visible');
+        comboLabel.classList.remove('visible');
+        applyBallTier('default');
+        updateHUD();
+        showMessage('COMBO EXPIRED', '#ef5350');
+        sndComboExpire();
+      }
+    }
+
+    // ── Floating Score Popups ────────────────────────────────
+    function spawnFloatScore(screenX, screenY, text, color) {
+      const el = document.createElement('div');
+      el.className = 'float-score';
+      el.textContent = text;
+      el.style.color = color || '#fff';
+      el.style.left = screenX + 'px';
+      el.style.top = screenY + 'px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1000);
+    }
+
+    // ── Achievement / Milestone System ──────────────────────
+    const STATS_KEY = 'bouncingBall_stats';
+    const ACHIEVEMENTS_KEY = 'bouncingBall_achievements';
+
+    function loadStats() {
+      try { return JSON.parse(localStorage.getItem(STATS_KEY)) || defaultStats(); }
+      catch { return defaultStats(); }
+    }
+    function defaultStats() {
+      return { totalGames: 0, totalCatches: 0, totalMisses: 0, totalScore: 0, bestEverScore: 0,
+               bestEverStreak: 0, totalTime: 0, longestSession: 0 };
+    }
+    function saveStats(s) { localStorage.setItem(STATS_KEY, JSON.stringify(s)); }
+
+    function loadAchievements() {
+      try { return JSON.parse(localStorage.getItem(ACHIEVEMENTS_KEY)) || {}; }
+      catch { return {}; }
+    }
+    function saveAchievements(a) { localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(a)); }
+
+    const MILESTONES = [
+      { id: 'streak3', icon: '\u{1F525}', title: 'On Fire', desc: 'Reach a 3 streak', check: (s, st) => st.bestEverStreak >= 3 },
+      { id: 'streak10', icon: '\u26A1', title: 'Lightning', desc: 'Reach a 10 streak', check: (s, st) => st.bestEverStreak >= 10 },
+      { id: 'streak22', icon: '\u{1F32A}', title: 'Storm Chaser', desc: 'Reach a 22 streak', check: (s, st) => st.bestEverStreak >= 22 },
+      { id: 'score500', icon: '\u{1F4AF}', title: 'High Scorer', desc: 'Score 500+ in a session', check: (s, st) => st.bestEverScore >= 500 },
+      { id: 'score2000', icon: '\u{1F3C6}', title: 'Champion', desc: 'Score 2000+ in a session', check: (s, st) => st.bestEverScore >= 2000 },
+      { id: 'score10000', icon: '\u{1F48E}', title: 'Diamond', desc: 'Score 10000+ in a session', check: (s, st) => st.bestEverScore >= 10000 },
+      { id: 'games5', icon: '\u{1F3AE}', title: 'Regular', desc: 'Play 5 games', check: (s, st) => st.totalGames >= 5 },
+      { id: 'games25', icon: '\u{1F3AF}', title: 'Dedicated', desc: 'Play 25 games', check: (s, st) => st.totalGames >= 25 },
+      { id: 'catches100', icon: '\u{1F44F}', title: 'Catcher', desc: '100 total catches', check: (s, st) => st.totalCatches >= 100 },
+      { id: 'catches500', icon: '\u{1F31F}', title: 'Star Catcher', desc: '500 total catches', check: (s, st) => st.totalCatches >= 500 },
+      { id: 'time300', icon: '\u23F0', title: 'Marathon', desc: '5 minutes in one session', check: (s, st) => st.longestSession >= 300 },
+    ];
+
+    function showAchievementToast(milestone) {
+      const container = document.getElementById('achievement-container');
+      const toast = document.createElement('div');
+      toast.className = 'achievement-toast';
+      toast.innerHTML =
+        `<span class="achievement-icon">${milestone.icon}</span>` +
+        `<div class="achievement-info">` +
+        `<div class="achievement-title">${milestone.title}</div>` +
+        `<div class="achievement-desc">${milestone.desc}</div>` +
+        `</div>`;
+      container.appendChild(toast);
+      sndMilestone();
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    function checkAchievements(stats) {
+      const unlocked = loadAchievements();
+      MILESTONES.forEach(m => {
+        if (!unlocked[m.id] && m.check(null, stats)) {
+          unlocked[m.id] = Date.now();
+          showAchievementToast(m);
+        }
+      });
+      saveAchievements(unlocked);
+    }
+
+    function renderStatsPage() {
+      const stats = loadStats();
+      const unlocked = loadAchievements();
+      const grid = document.getElementById('stats-grid');
+      grid.innerHTML =
+        `<div class="stat-card"><div class="stat-card-value">${stats.totalGames}</div><div class="stat-card-label">Games Played</div></div>` +
+        `<div class="stat-card gold"><div class="stat-card-value">${stats.bestEverScore.toLocaleString()}</div><div class="stat-card-label">Best Score</div></div>` +
+        `<div class="stat-card orange"><div class="stat-card-value">${stats.bestEverStreak}</div><div class="stat-card-label">Best Streak</div></div>` +
+        `<div class="stat-card"><div class="stat-card-value">${stats.totalCatches.toLocaleString()}</div><div class="stat-card-label">Total Catches</div></div>` +
+        `<div class="stat-card purple"><div class="stat-card-value">${stats.totalScore.toLocaleString()}</div><div class="stat-card-label">Total Score</div></div>` +
+        `<div class="stat-card cyan"><div class="stat-card-value">${formatTime(stats.totalTime)}</div><div class="stat-card-label">Total Time</div></div>`;
+
+      const achEl = document.getElementById('stats-achievements');
+      const achHTML = MILESTONES.map(m => {
+        const done = !!unlocked[m.id];
+        return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);opacity:${done ? 1 : 0.3};">` +
+          `<span style="font-size:22px;">${m.icon}</span>` +
+          `<div><div style="font-size:14px;font-weight:700;color:${done ? '#ffd700' : 'rgba(255,255,255,0.4)'};">${m.title}</div>` +
+          `<div style="font-size:12px;color:rgba(255,255,255,0.4);">${m.desc}</div></div>` +
+          `${done ? '<span style="margin-left:auto;color:#66bb6a;font-size:16px;">&#x2714;</span>' : ''}` +
+          `</div>`;
+      }).join('');
+      achEl.innerHTML = `<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.5);margin-bottom:10px;">Achievements</h3>` + achHTML;
+    }
+
+    // Session-level catch/miss counters for stats (not stored in state to avoid altering it)
+    let sessionCatches = 0;
+    let sessionMisses = 0;
 
     // ── Leaderboard (localStorage) ────────────────────────────
     const LB_KEY = 'bouncingBall_leaderboard';
@@ -1092,6 +1466,43 @@
     shadowBlob.rotation.x = -Math.PI / 2;
     shadowBlob.position.y = 0.01;
     scene.add(shadowBlob);
+
+    // ── Ball Trail Particles ────────────────────────────────────
+    const TRAIL_COUNT = 20;
+    const trailParticles = [];
+    const trailGeo = new THREE.SphereGeometry(0.06, 6, 6);
+    for (let i = 0; i < TRAIL_COUNT; i++) {
+      const mat = new THREE.MeshBasicMaterial({ color: 0xff5252, transparent: true, opacity: 0, depthWrite: false });
+      const mesh = new THREE.Mesh(trailGeo, mat);
+      mesh.visible = false;
+      scene.add(mesh);
+      trailParticles.push({ mesh, mat, life: 0, maxLife: 0.4 });
+    }
+    let trailIdx = 0;
+    let trailTimer = 0;
+
+    function spawnTrailParticle(pos, color) {
+      const p = trailParticles[trailIdx];
+      trailIdx = (trailIdx + 1) % TRAIL_COUNT;
+      p.mesh.position.copy(pos);
+      p.mesh.visible = true;
+      p.mat.color.set(color || 0xff5252);
+      p.mat.opacity = 0.5;
+      p.life = 0;
+      const s = currentBallRadius * 0.5;
+      p.mesh.scale.setScalar(s);
+    }
+
+    function updateTrail(dt) {
+      for (const p of trailParticles) {
+        if (!p.mesh.visible) continue;
+        p.life += dt;
+        const t = p.life / p.maxLife;
+        if (t >= 1) { p.mesh.visible = false; continue; }
+        p.mat.opacity = 0.4 * (1 - t);
+        p.mesh.scale.multiplyScalar(0.96);
+      }
+    }
 
     // ── Ball Physics ────────────────────────────────────────────
     const ballPos = new THREE.Vector3(0, ROOM.h / 2, 0);
@@ -1598,7 +2009,10 @@
         // Miss
         state.streak = 0;
         state.missStreak++;
+        sessionMisses++;
         applyBallTier('default');
+        sndMiss();
+        stopCombo();
 
         // Mercy mechanic: grow ball every 3 consecutive misses
         if (state.missStreak % 3 === 0 && currentBallRadius < BALL_MAX_RADIUS) {
@@ -1789,6 +2203,29 @@
       else { msgColor = '#4fc3f7'; }
       showMessage(msg, msgColor);
 
+      // Sound
+      sndCatch(state.streak);
+
+      // Combo timer — reset on catch
+      startCombo();
+
+      // Floating score popup at ball screen position
+      const ballScreenPos = ballPos.clone().project(camera);
+      const sx = (ballScreenPos.x * 0.5 + 0.5) * innerWidth;
+      const sy = (-ballScreenPos.y * 0.5 + 0.5) * innerHeight;
+      spawnFloatScore(sx, sy, msg, msgColor);
+
+      // Session counters + live achievement check
+      sessionCatches++;
+      {
+        const liveStats = loadStats();
+        liveStats.totalCatches++;
+        if (state.bestStreak > liveStats.bestEverStreak) liveStats.bestEverStreak = state.bestStreak;
+        if (state.score > liveStats.bestEverScore) liveStats.bestEverScore = state.score;
+        saveStats(liveStats);
+        checkAchievements(liveStats);
+      }
+
       // Trigger catch animation using the CURRENT tier (before streak increment changes it)
       const currentTier = getBallTierForStreak(state.streak);
       playCatchAnim(currentTier);
@@ -1838,6 +2275,7 @@
       document.getElementById('start-screen').style.display = 'none';
       document.getElementById('name-screen').style.display = 'none';
       document.getElementById('leaderboard').style.display = 'none';
+      document.getElementById('stats-screen').style.display = 'none';
       document.getElementById('end-btn').style.display = 'none';
       if (id) {
         const el = document.getElementById(id);
@@ -1887,6 +2325,12 @@
       document.getElementById('time-value').textContent = '0:00';
       document.getElementById('bonus-value').textContent = '--';
 
+      // Reset new systems
+      sessionCatches = 0;
+      sessionMisses = 0;
+      stopCombo();
+      muteBtn.style.display = '';
+
       // Start live session persistence
       saveLiveSession();
     }
@@ -1896,6 +2340,22 @@
       state.running = false;
       state.sessionTime = clock.elapsedTime - state.sessionStart;
       clearLiveSession();
+      stopCombo();
+      muteBtn.style.display = 'none';
+
+      // Update all-time stats
+      const stats = loadStats();
+      stats.totalGames++;
+      stats.totalCatches += sessionCatches;
+      stats.totalMisses += sessionMisses;
+      stats.totalScore += state.score;
+      stats.totalTime += state.sessionTime;
+      if (state.score > stats.bestEverScore) stats.bestEverScore = state.score;
+      if (state.bestStreak > stats.bestEverStreak) stats.bestEverStreak = state.bestStreak;
+      if (state.sessionTime > stats.longestSession) stats.longestSession = state.sessionTime;
+      saveStats(stats);
+      checkAchievements(stats);
+
       const newFlags = recordSession(state.playerName, state.score, state.bestStreak, state.sessionTime);
       renderLeaderboard(newFlags, state.score, state.bestStreak, state.sessionTime);
       showScreen('leaderboard');
@@ -1933,6 +2393,8 @@
     document.getElementById('end-btn').addEventListener('click', endSession);
     document.getElementById('lb-play-btn').addEventListener('click', showNameScreen);
     document.getElementById('lb-back-btn').addEventListener('click', () => showScreen('start-screen'));
+    document.getElementById('start-stats-btn').addEventListener('click', () => { renderStatsPage(); showScreen('stats-screen'); });
+    document.getElementById('stats-back-btn').addEventListener('click', () => showScreen('start-screen'));
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.running) endSession(); });
 
     // ── Crash / Tab-close Recovery ───────────────────────────────
@@ -1972,6 +2434,7 @@
           if (ballPos.y < currentBallRadius) {
             ballPos.y = currentBallRadius;
             ballVel.y = Math.abs(ballVel.y) * restitution;
+            sndBounce(ballVel.length());
             // Ensure it keeps bouncing
             if (ballVel.y < minBounceVel) ballVel.y = minBounceVel + Math.random() * 2;
             // Add random horizontal kick to keep it interesting
@@ -2042,6 +2505,18 @@
           camera.position.x = cameraBasePos.x;
           camera.position.y = cameraBasePos.y;
         }
+
+        // ── Combo Timer ─────────────────────────────────
+        updateCombo(dt);
+
+        // ── Ball Trail ─────────────────────────────────
+        trailTimer += dt;
+        if (trailTimer > 0.03 && !catchAnimActive) {
+          trailTimer = 0;
+          const trailColor = ballMat.color.getHex();
+          spawnTrailParticle(ballPos, trailColor);
+        }
+        updateTrail(dt);
 
         // ── Live HUD updates ────────────────────────────
         updateTimerHUD();
