@@ -534,6 +534,8 @@
       metalness: 0.6,
       emissive: 0xff5252,
       emissiveIntensity: 0.15,
+      transparent: true,
+      opacity: 1,
     });
     const ball = new THREE.Mesh(ballGeo, ballMat);
     ball.castShadow = true;
@@ -1127,7 +1129,7 @@
       slot.sprite.renderOrder = opts.renderOrder || 0;
       activeExplosions.push({
         ...slot,
-        age: opts.delay || 0 > 0 ? -(opts.delay || 0) : 0,
+        age: opts.delay ? -opts.delay : 0,
         duration,
         maxScale,
         rotSpeed: opts.rotSpeed || 0.5,
@@ -1284,6 +1286,7 @@
         ballMat.emissive.setRGB(0.3 * iceBlue, 0.6 * iceBlue, 1 * iceBlue);
         ballMat.emissiveIntensity = 2.0 * (t < 0.5 ? 1 : 1 - (t - 0.5) * 2);
         ballMat.opacity = t > 0.7 ? 1 - (t - 0.7) / 0.3 : 1;
+        glowMat.opacity = ballMat.opacity * 0.22;
       } else if (tier === 'electric') {
         // Violent jittering with bright flashes, then zap away
         const jitter = Math.pow(1 - t, 1.5) * 0.6;
@@ -1351,6 +1354,8 @@
           applyBallTier(getBallTierForStreak(state.streak));
           ballMat.opacity = 1;
           ballMat.emissiveIntensity = 0.15;
+          glowMat.opacity = BALL_TIERS[currentBallTier].glowOpacity;
+          ball.rotation.set(0, 0, 0);
           randomizeBallSize();
           ballSpawnTime = clock.elapsedTime;
           ballPos.set(
@@ -1429,12 +1434,17 @@
 
     // Live bonus display updated every frame
     function updateBonusHUD() {
+      const bonusEl = document.getElementById('bonus-value');
+      if (catchAnimActive) {
+        bonusEl.textContent = '--';
+        bonusEl.classList.remove('low');
+        return;
+      }
       const normalizedSize = (currentBallRadius - BALL_MIN_RADIUS) / (BALL_MAX_RADIUS - BALL_MIN_RADIUS);
       const sizeMult = 1 + SIZE_COEFF * (1 - normalizedSize);
       const elapsed = clock.elapsedTime - ballSpawnTime;
       const timeMult = Math.max(TIME_MIN_MULT, 1 - TIME_COEFF * elapsed);
       const totalBonus = sizeMult * timeMult;
-      const bonusEl = document.getElementById('bonus-value');
       bonusEl.textContent = `x${totalBonus.toFixed(1)}`;
       bonusEl.classList.toggle('low', timeMult < 0.4);
     }
@@ -1474,8 +1484,18 @@
       state.sessionStart = clock.elapsedTime;
       state.sessionTime = 0;
       state.sessionStartWall = Date.now();
+
+      // Reset catch animation state from any previous session
+      catchAnimActive = false;
+      catchRespawnPending = false;
+      ballMat.opacity = 1;
+      glowMat.opacity = 0.12;
+      ball.rotation.set(0, 0, 0);
+
       randomizeBallSize();
       ballSpawnTime = clock.elapsedTime;
+      // Force re-apply even if already 'default' (catch anims dirty the material)
+      currentBallTier = '';
       applyBallTier('default');
       ballPos.set(0, ROOM.h / 2, 0);
       ballVel.set(
