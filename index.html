@@ -1289,7 +1289,13 @@
       catchAnimTime = 0;
       catchAnimTier = tier;
       catchAnimBaseScale = currentBallRadius;
-      catchAnimDuration = 0.25;
+      // Longer durations per tier for more visible animations
+      if (tier === 'storm') catchAnimDuration = 0.5;
+      else if (tier === 'wind' || tier === 'electric') catchAnimDuration = 0.4;
+      else if (tier === 'fire' || tier === 'ice') catchAnimDuration = 0.35;
+      else catchAnimDuration = 0.3;
+      // Hide shadow during animation
+      shadowBlob.visible = false;
     }
 
     function updateCatchAnim(dt) {
@@ -1297,62 +1303,93 @@
       catchAnimTime += dt;
       const t = Math.min(catchAnimTime / catchAnimDuration, 1);
       const tier = catchAnimTier;
+      const bs = catchAnimBaseScale;
 
       if (tier === 'fire') {
-        // Rapid expand then shrink (exploding outward)
-        const s = t < 0.3 ? 1 + t / 0.3 * 0.8 : 1.8 * (1 - (t - 0.3) / 0.7);
-        ball.scale.setScalar(catchAnimBaseScale * Math.max(s, 0.01));
-        ballMat.emissive.setRGB(1, 0.6 * (1 - t), 0);
-        ballMat.emissiveIntensity = 2.0 * (1 - t);
+        // Rapid expand then shrink — ball inflates like it's about to burst then pops
+        const s = t < 0.35 ? 1 + (t / 0.35) * 1.2 : 2.2 * Math.pow(1 - (t - 0.35) / 0.65, 2);
+        ball.scale.setScalar(bs * Math.max(s, 0.01));
+        // Squash/stretch — wider then taller
+        const squash = t < 0.35 ? 1 + t * 0.8 : 1;
+        ball.scale.x *= squash;
+        ball.scale.y *= (2 - squash);
+        ballMat.emissive.setRGB(1, 0.5 * (1 - t), 0);
+        ballMat.emissiveIntensity = 3.0 * (1 - t * 0.7);
+        // Slight upward drift as it "explodes"
+        ball.position.y += dt * 2 * (1 - t);
       } else if (tier === 'ice') {
-        // Freeze then shatter — scale wobble
-        const wobble = Math.sin(t * 30) * (1 - t) * 0.3;
-        ball.scale.setScalar(catchAnimBaseScale * (1 + wobble) * (1 - t * 0.5));
-        ballMat.emissive.setRGB(0.3, 0.7, 1);
-        ballMat.emissiveIntensity = 1.5 * (1 - t);
+        // Freeze solid, crack, then shatter into nothing
+        const wobble = Math.sin(t * 40) * Math.pow(1 - t, 2) * 0.4;
+        const freeze = t < 0.3 ? 1 + t * 0.3 : (1.09) * (1 - Math.pow((t - 0.3) / 0.7, 0.5));
+        ball.scale.setScalar(bs * Math.max(freeze + wobble, 0.01));
+        // Color shift: normal -> icy blue -> white shatter
+        const iceBlue = Math.min(t * 3, 1);
+        ballMat.emissive.setRGB(0.3 * iceBlue, 0.6 * iceBlue, 1 * iceBlue);
+        ballMat.emissiveIntensity = 2.0 * (t < 0.5 ? 1 : 1 - (t - 0.5) * 2);
+        ballMat.opacity = t > 0.7 ? 1 - (t - 0.7) / 0.3 : 1;
       } else if (tier === 'electric') {
-        // Jitter rapidly then vanish
-        const jitter = (1 - t) * 0.4;
+        // Violent jittering with bright flashes, then zap away
+        const jitter = Math.pow(1 - t, 1.5) * 0.6;
         ball.position.x = ballPos.x + (Math.random() - 0.5) * jitter;
         ball.position.y = ballPos.y + (Math.random() - 0.5) * jitter;
         ball.position.z = ballPos.z + (Math.random() - 0.5) * jitter;
-        ball.scale.setScalar(catchAnimBaseScale * (1 - t * 0.7));
-        ballMat.emissive.setRGB(0.5, 0.5, 1);
-        ballMat.emissiveIntensity = 2.5 * (Math.random() > 0.5 ? 1 : 0.3) * (1 - t);
+        // Pulsing scale like electric surges
+        const pulse = 1 + Math.sin(t * 50) * 0.15 * (1 - t);
+        ball.scale.setScalar(bs * pulse * (1 - t * 0.8));
+        // Flickering bright white/blue
+        const flicker = Math.random();
+        ballMat.emissive.setRGB(0.4 + flicker * 0.6, 0.5 + flicker * 0.5, 1);
+        ballMat.emissiveIntensity = (flicker > 0.3 ? 3.0 : 0.5) * (1 - t * 0.5);
       } else if (tier === 'wind') {
-        // Spin rapidly and shrink (sucked into vortex)
-        ball.rotation.y += dt * 40 * (1 - t);
-        ball.rotation.x += dt * 25 * (1 - t);
-        ball.scale.setScalar(catchAnimBaseScale * (1 - t));
-        ballMat.emissive.setRGB(0.3, 1, 0.6);
-        ballMat.emissiveIntensity = 1.5 * (1 - t);
+        // Spin wildly, stretch into vortex shape, then vanish
+        ball.rotation.y += dt * 60 * (1 - t * 0.5);
+        ball.rotation.x += dt * 35 * (1 - t * 0.5);
+        // Stretch vertically as it spins (tornado shape)
+        const stretch = 1 + t * 1.5;
+        const shrink = 1 - t;
+        ball.scale.set(bs * shrink, bs * shrink * stretch, bs * shrink);
+        ballMat.emissive.setRGB(0.2, 1 * (1 - t * 0.3), 0.5);
+        ballMat.emissiveIntensity = 2.0 * (1 - t * 0.5);
+        // Spiral upward
+        ball.position.y += dt * 3 * (1 - t);
       } else if (tier === 'storm') {
-        // All combined — jitter + spin + expand then collapse
-        const jitter = (1 - t) * 0.5;
+        // The ultimate: jitter + spin + scale pulse + rainbow + dramatic pop
+        const jitter = Math.pow(1 - t, 1.5) * 0.7;
         ball.position.x = ballPos.x + (Math.random() - 0.5) * jitter;
-        ball.position.y = ballPos.y + (Math.random() - 0.5) * jitter;
+        ball.position.y = ballPos.y + (Math.random() - 0.5) * jitter + dt * 4 * (1 - t);
         ball.position.z = ballPos.z + (Math.random() - 0.5) * jitter;
-        ball.rotation.y += dt * 50 * (1 - t);
-        const s = t < 0.2 ? 1 + t / 0.2 * 1.0 : 2.0 * (1 - (t - 0.2) / 0.8);
-        ball.scale.setScalar(catchAnimBaseScale * Math.max(s, 0.01));
+        ball.rotation.y += dt * 70 * (1 - t);
+        ball.rotation.x += dt * 40 * (1 - t);
+        // Dramatic expand then implode
+        const s = t < 0.25 ? 1 + (t / 0.25) * 1.5 : 2.5 * Math.pow(1 - (t - 0.25) / 0.75, 1.5);
+        ball.scale.setScalar(bs * Math.max(s, 0.01));
+        // Rainbow cycling emissive
+        const hue = (t * 6) % 1;
+        ballMat.emissive.setHSL(hue, 1, 0.7);
+        ballMat.emissiveIntensity = 4.0 * (1 - t * 0.5);
+      } else if (tier === 'sparkle') {
+        // Rainbow color cycle + bouncy squish
+        const bounce = 1 + Math.sin(t * Math.PI * 4) * 0.25 * (1 - t);
+        ball.scale.setScalar(bs * bounce * (1 - t * 0.4));
         const hue = (t * 4) % 1;
         ballMat.emissive.setHSL(hue, 1, 0.6);
-        ballMat.emissiveIntensity = 3.0 * (1 - t);
-      } else if (tier === 'sparkle') {
-        // Rainbow flash + gentle shrink
-        const hue = (t * 3) % 1;
-        ballMat.emissive.setHSL(hue, 1, 0.5);
-        ballMat.emissiveIntensity = 2.0 * (1 - t);
-        ball.scale.setScalar(catchAnimBaseScale * (1 - t * 0.5));
+        ballMat.emissiveIntensity = 2.5 * (1 - t * 0.5);
       } else {
-        // Default — simple squish pop
-        const s = t < 0.3 ? 1 + t / 0.3 * 0.4 : 1.4 * (1 - (t - 0.3) / 0.7);
-        ball.scale.setScalar(catchAnimBaseScale * Math.max(s, 0.01));
+        // Default — squish down then pop up and fade
+        const s = t < 0.3 ? 1 + (t / 0.3) * 0.5 : 1.5 * (1 - (t - 0.3) / 0.7);
+        ball.scale.setScalar(bs * Math.max(s, 0.01));
+        // Squash on press, stretch on release
+        if (t < 0.3) {
+          ball.scale.x *= (1 + t);
+          ball.scale.y *= (1 - t * 0.5);
+        }
         ballMat.emissiveIntensity = 1.5 * (1 - t);
       }
 
       if (t >= 1) {
         catchAnimActive = false;
+        ballMat.opacity = 1;
+        shadowBlob.visible = true;
       }
     }
 
@@ -1393,22 +1430,18 @@
       else { msgColor = '#4fc3f7'; }
       showMessage(msg, msgColor);
 
-      // Trigger catch animation for current tier
-      const prevTier = getBallTierForStreak(state.streak - 1);
-      playCatchAnim(prevTier);
+      // Trigger catch animation using the CURRENT tier (before streak increment changes it)
+      const currentTier = getBallTierForStreak(state.streak);
+      playCatchAnim(currentTier);
 
       // Particles — streak-based explosions
       streakExplosion(ballPos.clone(), state.streak);
 
-      // Update ball design to match new streak tier
-      applyBallTier(getBallTierForStreak(state.streak));
-
-      // Flash ball
-      ballMat.emissiveIntensity = 1.0;
-
-      // Schedule relaunch after catch animation
-      const catchPos = ballPos.clone();
+      // Schedule relaunch after catch animation finishes
       setTimeout(() => {
+        // Apply new tier design AFTER animation completes
+        applyBallTier(getBallTierForStreak(state.streak));
+        ballMat.opacity = 1;
         // Relaunch ball — new random size, position, velocity
         randomizeBallSize();
         ballSpawnTime = clock.elapsedTime;
@@ -1424,6 +1457,7 @@
         );
         ball.position.copy(ballPos);
         ball.scale.setScalar(currentBallRadius);
+        shadowBlob.visible = true;
       }, catchAnimDuration * 1000);
     }
 
@@ -1562,58 +1596,61 @@
       const dt = Math.min(clock.getDelta(), 0.05);
 
       if (state.running) {
-        // ── Ball Physics ──────────────────────────────
-        ballVel.y += gravity * dt;
-        ballVel.multiplyScalar(airDrag);
+        // During catch animation, freeze physics and let the animation drive the ball
+        if (!catchAnimActive) {
+          // ── Ball Physics ──────────────────────────────
+          ballVel.y += gravity * dt;
+          ballVel.multiplyScalar(airDrag);
 
-        ballPos.addScaledVector(ballVel, dt);
+          ballPos.addScaledVector(ballVel, dt);
 
-        // Bounce off walls
-        const halfW = ROOM.w / 2 - currentBallRadius;
-        const halfD = ROOM.d / 2 - currentBallRadius;
+          // Bounce off walls
+          const halfW = ROOM.w / 2 - currentBallRadius;
+          const halfD = ROOM.d / 2 - currentBallRadius;
 
-        if (ballPos.x < -halfW) { ballPos.x = -halfW; ballVel.x = Math.abs(ballVel.x) * restitution; }
-        if (ballPos.x > halfW)  { ballPos.x = halfW;  ballVel.x = -Math.abs(ballVel.x) * restitution; }
-        if (ballPos.z < -halfD) { ballPos.z = -halfD; ballVel.z = Math.abs(ballVel.z) * restitution; }
-        if (ballPos.z > halfD)  { ballPos.z = halfD;  ballVel.z = -Math.abs(ballVel.z) * restitution; }
+          if (ballPos.x < -halfW) { ballPos.x = -halfW; ballVel.x = Math.abs(ballVel.x) * restitution; }
+          if (ballPos.x > halfW)  { ballPos.x = halfW;  ballVel.x = -Math.abs(ballVel.x) * restitution; }
+          if (ballPos.z < -halfD) { ballPos.z = -halfD; ballVel.z = Math.abs(ballVel.z) * restitution; }
+          if (ballPos.z > halfD)  { ballPos.z = halfD;  ballVel.z = -Math.abs(ballVel.z) * restitution; }
 
-        // Floor bounce
-        if (ballPos.y < currentBallRadius) {
-          ballPos.y = currentBallRadius;
-          ballVel.y = Math.abs(ballVel.y) * restitution;
-          // Ensure it keeps bouncing
-          if (ballVel.y < minBounceVel) ballVel.y = minBounceVel + Math.random() * 2;
-          // Add random horizontal kick to keep it interesting
-          ballVel.x += (Math.random() - 0.5) * 1.2;
-          ballVel.z += (Math.random() - 0.5) * 1.2;
+          // Floor bounce
+          if (ballPos.y < currentBallRadius) {
+            ballPos.y = currentBallRadius;
+            ballVel.y = Math.abs(ballVel.y) * restitution;
+            // Ensure it keeps bouncing
+            if (ballVel.y < minBounceVel) ballVel.y = minBounceVel + Math.random() * 2;
+            // Add random horizontal kick to keep it interesting
+            ballVel.x += (Math.random() - 0.5) * 1.2;
+            ballVel.z += (Math.random() - 0.5) * 1.2;
+          }
+
+          // Ceiling bounce
+          if (ballPos.y > ROOM.h - currentBallRadius) {
+            ballPos.y = ROOM.h - currentBallRadius;
+            ballVel.y = -Math.abs(ballVel.y) * restitution;
+          }
+
+          ball.position.copy(ballPos);
+
+          // Shadow blob follows ball on floor
+          shadowBlob.position.x = ballPos.x;
+          shadowBlob.position.z = ballPos.z;
+          const shadowScale = 1.0 - (ballPos.y / ROOM.h) * 0.5;
+          shadowBlob.scale.set(shadowScale, shadowScale, 1);
+          shadowBlobMat.opacity = 0.3 * (1.0 - ballPos.y / ROOM.h);
+
+          // Ease emissive back
+          ballMat.emissiveIntensity += (0.15 - ballMat.emissiveIntensity) * 3 * dt;
+
+          // Ball rotation
+          ball.rotation.x += ballVel.z * dt;
+          ball.rotation.z -= ballVel.x * dt;
+
+          // Animate ball tier visuals (color shifts, flashes, etc.)
+          animateBallTier(clock.elapsedTime, dt);
         }
 
-        // Ceiling bounce
-        if (ballPos.y > ROOM.h - currentBallRadius) {
-          ballPos.y = ROOM.h - currentBallRadius;
-          ballVel.y = -Math.abs(ballVel.y) * restitution;
-        }
-
-        ball.position.copy(ballPos);
-
-        // Shadow blob follows ball on floor
-        shadowBlob.position.x = ballPos.x;
-        shadowBlob.position.z = ballPos.z;
-        const shadowScale = 1.0 - (ballPos.y / ROOM.h) * 0.5;
-        shadowBlob.scale.set(shadowScale, shadowScale, 1);
-        shadowBlobMat.opacity = 0.3 * (1.0 - ballPos.y / ROOM.h);
-
-        // Ease emissive back
-        ballMat.emissiveIntensity += (0.15 - ballMat.emissiveIntensity) * 3 * dt;
-
-        // Ball rotation
-        ball.rotation.x += ballVel.z * dt;
-        ball.rotation.z -= ballVel.x * dt;
-
-        // Animate ball tier visuals (color shifts, flashes, etc.)
-        animateBallTier(clock.elapsedTime, dt);
-
-        // Ball catch animation (squish/pop per element)
+        // Ball catch animation (squish/pop per element) — runs independently of physics
         updateCatchAnim(dt);
 
         // ── Explosion Sprites ─────────────────────────
