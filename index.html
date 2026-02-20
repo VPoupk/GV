@@ -368,6 +368,107 @@
       letter-spacing: 1px;
       margin-top: 6px;
     }
+
+    /* VIP Purchase Overlay */
+    .vip-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    .vip-overlay.show { display: flex; }
+    .vip-modal {
+      background: linear-gradient(160deg, #1a1a2e, #16213e);
+      border: 1px solid rgba(206,147,216,0.3);
+      border-radius: 24px;
+      padding: 36px 32px;
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      animation: vip-pop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes vip-pop {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .vip-modal-icon { font-size: 48px; margin-bottom: 8px; }
+    .vip-modal-title {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #ffd700, #f48fb1, #ce93d8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    .vip-modal-price {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      margin: 10px 0;
+    }
+    .vip-modal-price small {
+      font-size: 14px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 400;
+    }
+    .vip-modal-perks {
+      list-style: none;
+      padding: 0;
+      margin: 18px 0 24px;
+      text-align: left;
+    }
+    .vip-modal-perks li {
+      padding: 8px 0;
+      font-size: 15px;
+      color: rgba(255,255,255,0.85);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .vip-modal-perks li:last-child { border-bottom: none; }
+    .vip-modal-perks .perk-icon { font-size: 20px; flex-shrink: 0; }
+    .vip-confirm-btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 800;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ffd700, #e91e63);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .vip-confirm-btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 40px rgba(233,30,99,0.5);
+    }
+    .vip-cancel-btn {
+      margin-top: 14px;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.35);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 8px 20px;
+    }
+    .vip-cancel-btn:hover { color: rgba(255,255,255,0.6); }
+    .vip-success {
+      animation: vip-success-pop 0.5s ease;
+    }
+    @keyframes vip-success-pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
   </style>
 </head>
 <body>
@@ -480,23 +581,39 @@
       }
     }
 
+    const vipOverlay = document.getElementById('vip-overlay');
+    const vipModal = document.getElementById('vip-modal');
+
     document.getElementById('vip-buy-btn').addEventListener('click', () => {
-      // ── PAYMENT LINK: Replace the URL below with your Stripe/PayPal payment link ──
-      // For now this opens a placeholder. Once you set up Stripe, replace with:
-      //   window.open('https://buy.stripe.com/YOUR_LINK_HERE', '_blank');
-      const confirmed = confirm(
-        'VIP Pass — £0.99\n\n' +
-        'Perks:\n' +
-        '⭐ VIP Badge on leaderboard\n' +
-        '👑 Gold name highlight\n' +
-        '🔥 2x Score multiplier\n\n' +
-        'Payment is not yet connected.\n' +
-        'Activate VIP for free during beta?'
-      );
-      if (confirmed) {
-        localStorage.setItem(VIP_KEY, 'true');
-        updateVIPCard();
-      }
+      vipOverlay.classList.add('show');
+    });
+
+    document.getElementById('vip-cancel-btn').addEventListener('click', () => {
+      vipOverlay.classList.remove('show');
+    });
+
+    vipOverlay.addEventListener('click', (e) => {
+      if (e.target === vipOverlay) vipOverlay.classList.remove('show');
+    });
+
+    document.getElementById('vip-confirm-btn').addEventListener('click', () => {
+      // ── PAYMENT: Replace this block with your Stripe/PayPal checkout ──
+      // Example: window.open('https://buy.stripe.com/YOUR_LINK', '_blank');
+      // Then activate VIP only after payment confirmation.
+      // For now, activates VIP directly (beta/free mode):
+      localStorage.setItem(VIP_KEY, 'true');
+      updateVIPCard();
+
+      // Success animation
+      vipModal.innerHTML =
+        '<div style="padding:30px 0;">' +
+        '<div style="font-size:64px;animation:vip-success-pop 0.5s ease;">&#x2705;</div>' +
+        '<div style="font-size:22px;font-weight:800;color:#4caf50;margin:12px 0;">VIP Activated!</div>' +
+        '<div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:20px;">All perks are now active</div>' +
+        '<button onclick="document.getElementById(\'vip-overlay\').classList.remove(\'show\')" ' +
+        'style="padding:12px 36px;font-size:16px;font-weight:700;border:none;border-radius:30px;' +
+        'background:linear-gradient(135deg,#4caf50,#2e7d32);color:#fff;cursor:pointer;">Let\'s Go!</button>' +
+        '</div>';
     });
 
     updateVIPCard();
@@ -1941,5 +2058,21 @@
 
     animate();
   </script>
+
+  <!-- VIP Purchase Modal -->
+  <div class="vip-overlay" id="vip-overlay">
+    <div class="vip-modal" id="vip-modal">
+      <div class="vip-modal-icon">&#x1F451;</div>
+      <div class="vip-modal-title">VIP Pass</div>
+      <div class="vip-modal-price">£0.99 <small>one-time</small></div>
+      <ul class="vip-modal-perks">
+        <li><span class="perk-icon">&#x2B50;</span> VIP star badge next to your name</li>
+        <li><span class="perk-icon">&#x1F451;</span> Gold highlighted name on leaderboard</li>
+        <li><span class="perk-icon">&#x1F525;</span> 2x score multiplier on all points</li>
+      </ul>
+      <button class="vip-confirm-btn" id="vip-confirm-btn">Purchase VIP — £0.99</button>
+      <button class="vip-cancel-btn" id="vip-cancel-btn">No thanks</button>
+    </div>
+  </div>
 </body>
 </html>
