@@ -279,6 +279,95 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
+
+    /* VIP Pass Card */
+    .vip-card {
+      background: linear-gradient(135deg, rgba(156,39,176,0.15), rgba(233,30,99,0.08));
+      border: 1px solid rgba(206,147,216,0.4);
+      border-radius: 18px;
+      padding: 20px 28px;
+      margin-top: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      max-width: 360px;
+      width: 100%;
+    }
+    .vip-card::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: conic-gradient(from 0deg, transparent, rgba(206,147,216,0.05), transparent, rgba(233,30,99,0.05), transparent);
+      animation: vip-shimmer 8s linear infinite;
+    }
+    @keyframes vip-shimmer { to { transform: rotate(360deg); } }
+    .vip-card > * { position: relative; z-index: 1; }
+    .vip-icon { font-size: 26px; margin-bottom: 4px; }
+    .vip-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, #ce93d8, #f48fb1, #ce93d8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .vip-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .vip-perks {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .vip-perk {
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      font-weight: 600;
+    }
+    .vip-btn {
+      padding: 12px 36px;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #ce93d8, #e91e63);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .vip-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(233,30,99,0.4);
+    }
+    .vip-price {
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 8px;
+    }
+    .vip-active-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ce93d8, #e91e63);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 6px;
+    }
   </style>
 </head>
 <body>
@@ -288,6 +377,20 @@
     <div>
       <button id="start-btn" class="overlay-btn">Play</button>
       <button id="start-lb-btn" class="overlay-btn secondary">Leaderboard</button>
+    </div>
+    <div class="vip-card" id="vip-card">
+      <div class="vip-icon">&#x2B50;</div>
+      <div class="vip-label">VIP Pass</div>
+      <div class="vip-desc">Unlock exclusive perks and stand out on the leaderboard</div>
+      <div class="vip-perks">
+        <span class="vip-perk">&#x2B50; VIP Badge</span>
+        <span class="vip-perk">&#x1F451; Gold Name</span>
+        <span class="vip-perk">&#x1F525; 2x Score</span>
+      </div>
+      <div id="vip-btn-area">
+        <button class="vip-btn" id="vip-buy-btn">Get VIP — £0.99</button>
+        <div class="vip-price">One-time purchase</div>
+      </div>
     </div>
   </div>
 
@@ -366,6 +469,38 @@
     const nameInput = document.getElementById('name-input');
     nameInput.value = localStorage.getItem(NAME_KEY) || '';
 
+    // ── VIP Pass ─────────────────────────────────────────────
+    const VIP_KEY = 'bouncingBall_vip';
+    function isVIP() { return localStorage.getItem(VIP_KEY) === 'true'; }
+
+    function updateVIPCard() {
+      const btnArea = document.getElementById('vip-btn-area');
+      if (isVIP()) {
+        btnArea.innerHTML = '<div class="vip-active-badge">VIP Active</div>';
+      }
+    }
+
+    document.getElementById('vip-buy-btn').addEventListener('click', () => {
+      // ── PAYMENT LINK: Replace the URL below with your Stripe/PayPal payment link ──
+      // For now this opens a placeholder. Once you set up Stripe, replace with:
+      //   window.open('https://buy.stripe.com/YOUR_LINK_HERE', '_blank');
+      const confirmed = confirm(
+        'VIP Pass — £0.99\n\n' +
+        'Perks:\n' +
+        '⭐ VIP Badge on leaderboard\n' +
+        '👑 Gold name highlight\n' +
+        '🔥 2x Score multiplier\n\n' +
+        'Payment is not yet connected.\n' +
+        'Activate VIP for free during beta?'
+      );
+      if (confirmed) {
+        localStorage.setItem(VIP_KEY, 'true');
+        updateVIPCard();
+      }
+    });
+
+    updateVIPCard();
+
     // ── Leaderboard (localStorage) ────────────────────────────
     const LB_KEY = 'bouncingBall_leaderboard';
     const LIVE_KEY = 'bouncingBall_liveSession';
@@ -392,7 +527,7 @@
       const newFlags = { score: null, streak: null, session: null, newChampion: false };
 
       function insert(list, value) {
-        const entry = { value, name: name || 'Anonymous', date: Date.now() };
+        const entry = { value, name: name || 'Anonymous', date: Date.now(), vip: isVIP() };
         let idx = list.findIndex(e => value > e.value);
         if (idx === -1) idx = list.length;
         if (idx >= LB_MAX) return null;
@@ -416,6 +551,7 @@
             time: Math.round(sessionSecs),
             rating,
             date: Date.now(),
+            vip: isVIP(),
           };
           newFlags.newChampion = true;
         }
@@ -495,7 +631,7 @@
           `<div class="grand-champion">` +
             `<div class="gc-crown">&#x1F451;</div>` +
             `<div class="gc-title">Grand Champion</div>` +
-            `<div class="gc-name">${escapeHtml(c.name)}${isNew ? '<span class="gc-new-badge">NEW</span>' : ''}</div>` +
+            `<div class="gc-name"${c.vip ? ' style="color:#ffd700;"' : ''}>${c.vip ? '&#x2B50; ' : ''}${escapeHtml(c.name)}${isNew ? '<span class="gc-new-badge">NEW</span>' : ''}</div>` +
             `<div class="gc-stats">` +
               `<div class="gc-stat"><span class="gc-label">Score</span><span class="gc-val">${c.score.toLocaleString()}</span></div>` +
               `<div class="gc-stat"><span class="gc-label">Streak</span><span class="gc-val">${c.streak}</span></div>` +
@@ -521,8 +657,10 @@
         const rows = lb[cat.key].length > 0
           ? lb[cat.key].map((e, i) => {
               const isNew = newFlags && newFlags[cat.key] === i;
-              const name = escapeHtml(e.name || 'Anonymous');
-              return `<li><span class="lb-rank">#${i + 1}</span><span class="lb-name">${name}</span> <span class="lb-val">${cat.fmt(e.value)}${isNew ? '<span class="lb-new">NEW</span>' : ''}</span></li>`;
+              const rawName = escapeHtml(e.name || 'Anonymous');
+              const vipBadge = e.vip ? '<span style="color:#ffd700;font-size:11px;margin-right:4px;">&#x2B50;</span>' : '';
+              const nameStyle = e.vip ? 'style="color:#ffd700;"' : '';
+              return `<li><span class="lb-rank">#${i + 1}</span><span class="lb-name" ${nameStyle}>${vipBadge}${rawName}</span> <span class="lb-val">${cat.fmt(e.value)}${isNew ? '<span class="lb-new">NEW</span>' : ''}</span></li>`;
             }).join('')
           : '<li style="color:rgba(255,255,255,0.3)">No records yet</li>';
         return `<div class="lb-col ${cat.cls}"><h3>${cat.title}</h3><ol>${rows}</ol></div>`;
@@ -1509,7 +1647,8 @@
       const elapsed = clock.elapsedTime - ballSpawnTime;
       const timeMult = Math.max(TIME_MIN_MULT, 1 - TIME_COEFF * elapsed);
 
-      const points = Math.round(10 * streakMult * sizeMult * timeMult);
+      const vipMult = isVIP() ? 2 : 1;
+      const points = Math.round(10 * streakMult * sizeMult * timeMult * vipMult);
       state.score += points;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
 
