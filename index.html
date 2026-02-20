@@ -203,6 +203,80 @@
     .lb-col.session .lb-val { color: #80cbc4; }
     .lb-name { color: rgba(255,255,255,0.7); font-size: 14px; flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .lb-new { color: #66bb6a; font-size: 11px; margin-left: 6px; }
+
+    /* Grand Champion */
+    .grand-champion {
+      background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,180,0,0.06));
+      border: 1px solid rgba(255,215,0,0.35);
+      border-radius: 16px;
+      padding: 18px 30px;
+      margin-bottom: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      min-width: 320px;
+    }
+    .grand-champion::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: conic-gradient(from 0deg, transparent, rgba(255,215,0,0.06), transparent, rgba(255,215,0,0.06), transparent);
+      animation: gc-shimmer 6s linear infinite;
+    }
+    @keyframes gc-shimmer { to { transform: rotate(360deg); } }
+    .grand-champion > * { position: relative; z-index: 1; }
+    .gc-crown { font-size: 28px; margin-bottom: 4px; }
+    .gc-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, #ffd700, #ffaa00, #ffd700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .gc-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .gc-stats {
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .gc-stat {
+      display: inline-block;
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 4px 14px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .gc-stat .gc-label { color: rgba(255,255,255,0.4); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; display: block; }
+    .gc-stat .gc-val { color: #ffd700; }
+    .gc-empty {
+      color: rgba(255,215,0,0.4);
+      font-size: 14px;
+      font-style: italic;
+    }
+    .gc-new-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: 8px;
+      vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
   </style>
 </head>
 <body>
@@ -229,6 +303,7 @@
   <div id="leaderboard" class="overlay">
     <h1>Leaderboard</h1>
     <div class="lb-session-summary" id="lb-session-summary"></div>
+    <div id="gc-container"></div>
     <div class="lb-columns" id="lb-columns"></div>
     <div>
       <button id="lb-play-btn" class="overlay-btn">Play Again</button>
@@ -295,18 +370,24 @@
     const LB_MAX = 5;
 
     function loadLeaderboard() {
-      try { return JSON.parse(localStorage.getItem(LB_KEY)) || { score: [], streak: [], session: [] }; }
-      catch { return { score: [], streak: [], session: [] }; }
+      try { return JSON.parse(localStorage.getItem(LB_KEY)) || { score: [], streak: [], session: [], champion: null }; }
+      catch { return { score: [], streak: [], session: [], champion: null }; }
     }
 
     function saveLeaderboard(lb) {
       localStorage.setItem(LB_KEY, JSON.stringify(lb));
     }
 
-    // Returns { score: idx|null, streak: idx|null, session: idx|null } for new entries
+    // Grand Champion rating: highest score & streak in the least time
+    function championRating(score, streak, secs) {
+      if (secs <= 0) return 0;
+      return (score * streak) / secs;
+    }
+
+    // Returns { score: idx|null, streak: idx|null, session: idx|null, newChampion: bool } for new entries
     function recordSession(name, score, bestStreak, sessionSecs) {
       const lb = loadLeaderboard();
-      const newFlags = { score: null, streak: null, session: null };
+      const newFlags = { score: null, streak: null, session: null, newChampion: false };
 
       function insert(list, value) {
         const entry = { value, name: name || 'Anonymous', date: Date.now() };
@@ -321,6 +402,22 @@
       if (score > 0) newFlags.score = insert(lb.score, score);
       if (bestStreak > 0) newFlags.streak = insert(lb.streak, bestStreak);
       if (sessionSecs > 0) newFlags.session = insert(lb.session, Math.round(sessionSecs));
+
+      // Grand Champion check
+      if (score > 0 && bestStreak > 0 && sessionSecs > 0) {
+        const rating = championRating(score, bestStreak, sessionSecs);
+        if (!lb.champion || rating > lb.champion.rating) {
+          lb.champion = {
+            name: name || 'Anonymous',
+            score,
+            streak: bestStreak,
+            time: Math.round(sessionSecs),
+            rating,
+            date: Date.now(),
+          };
+          newFlags.newChampion = true;
+        }
+      }
 
       saveLeaderboard(lb);
       return newFlags;
@@ -374,6 +471,7 @@
     function renderLeaderboard(newFlags, sessionScore, sessionStreak, sessionSecs) {
       const lb = loadLeaderboard();
       const summaryEl = document.getElementById('lb-session-summary');
+      const gcEl = document.getElementById('gc-container');
       const colsEl = document.getElementById('lb-columns');
 
       // Session summary (only shown if we just ended a session)
@@ -385,6 +483,30 @@
         summaryEl.style.display = '';
       } else {
         summaryEl.style.display = 'none';
+      }
+
+      // Grand Champion display
+      if (lb.champion) {
+        const c = lb.champion;
+        const isNew = newFlags && newFlags.newChampion;
+        gcEl.innerHTML =
+          `<div class="grand-champion">` +
+            `<div class="gc-crown">&#x1F451;</div>` +
+            `<div class="gc-title">Grand Champion</div>` +
+            `<div class="gc-name">${escapeHtml(c.name)}${isNew ? '<span class="gc-new-badge">NEW</span>' : ''}</div>` +
+            `<div class="gc-stats">` +
+              `<div class="gc-stat"><span class="gc-label">Score</span><span class="gc-val">${c.score.toLocaleString()}</span></div>` +
+              `<div class="gc-stat"><span class="gc-label">Streak</span><span class="gc-val">${c.streak}</span></div>` +
+              `<div class="gc-stat"><span class="gc-label">Time</span><span class="gc-val">${formatTime(c.time)}</span></div>` +
+            `</div>` +
+          `</div>`;
+      } else {
+        gcEl.innerHTML =
+          `<div class="grand-champion">` +
+            `<div class="gc-crown">&#x1F451;</div>` +
+            `<div class="gc-title">Grand Champion</div>` +
+            `<div class="gc-empty">No champion yet — be the first!</div>` +
+          `</div>`;
       }
 
       const categories = [
