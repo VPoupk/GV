@@ -722,8 +722,8 @@
     const airDrag = 0.995;
     const minBounceVel = 1.5;
 
-    // ── Element Explosion Textures (512x512 canvas-drawn shapes) ──
-    const TEX_SIZE = 512;
+    // ── Element Explosion Textures (1024x1024 HD canvas-drawn shapes) ──
+    const TEX_SIZE = 1024;
     const TEX_HALF = TEX_SIZE / 2;
 
     function makeExplosionTexture(drawFn) {
@@ -734,244 +734,382 @@
       return new THREE.CanvasTexture(c);
     }
 
-    // Default / Tier 1: cyan radial burst
+    // Default / Tier 1: bright cyan radial burst with soft glow
     const texDefault = makeExplosionTexture((ctx, S, H) => {
-      const g = ctx.createRadialGradient(H, H, 0, H, H, H);
-      g.addColorStop(0, 'rgba(79,195,247,1)');
-      g.addColorStop(0.3, 'rgba(79,195,247,0.7)');
-      g.addColorStop(0.6, 'rgba(79,195,247,0.2)');
-      g.addColorStop(1, 'rgba(79,195,247,0)');
-      ctx.fillStyle = g;
+      // Outer soft glow
+      const og = ctx.createRadialGradient(H, H, 0, H, H, H);
+      og.addColorStop(0, 'rgba(180,240,255,1)');
+      og.addColorStop(0.15, 'rgba(79,210,255,1)');
+      og.addColorStop(0.4, 'rgba(79,195,247,0.8)');
+      og.addColorStop(0.7, 'rgba(50,160,220,0.3)');
+      og.addColorStop(1, 'rgba(30,120,200,0)');
+      ctx.fillStyle = og;
+      ctx.fillRect(0, 0, S, S);
+      // Bright center
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
+      cg.addColorStop(0, 'rgba(255,255,255,1)');
+      cg.addColorStop(0.5, 'rgba(180,240,255,0.8)');
+      cg.addColorStop(1, 'rgba(79,195,247,0)');
+      ctx.fillStyle = cg;
       ctx.fillRect(0, 0, S, S);
     });
 
-    // Tier 2: rainbow starburst
+    // Tier 2: massive rainbow starburst with thick rays
     const texSparkle = makeExplosionTexture((ctx, S, H) => {
-      const rays = 12;
+      const rays = 20;
       for (let i = 0; i < rays; i++) {
         const angle = (i / rays) * Math.PI * 2;
         const hue = (i / rays) * 360;
         ctx.save();
         ctx.translate(H, H);
         ctx.rotate(angle);
-        const g = ctx.createLinearGradient(0, 0, H, 0);
-        g.addColorStop(0, `hsla(${hue},90%,70%,1)`);
-        g.addColorStop(0.5, `hsla(${hue},80%,60%,0.5)`);
-        g.addColorStop(1, `hsla(${hue},80%,60%,0)`);
+        const g = ctx.createLinearGradient(0, 0, H * 0.95, 0);
+        g.addColorStop(0, `hsla(${hue},100%,85%,1)`);
+        g.addColorStop(0.3, `hsla(${hue},95%,70%,0.9)`);
+        g.addColorStop(0.6, `hsla(${hue},90%,60%,0.5)`);
+        g.addColorStop(1, `hsla(${hue},85%,55%,0)`);
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.moveTo(0, -12);
+        ctx.moveTo(0, -28);
         ctx.lineTo(H * 0.95, 0);
-        ctx.lineTo(0, 12);
+        ctx.lineTo(0, 28);
         ctx.closePath();
+        ctx.fill();
+        // Glow outline for each ray
+        ctx.shadowColor = `hsla(${hue},100%,70%,0.8)`;
+        ctx.shadowBlur = 20;
         ctx.fill();
         ctx.restore();
       }
-      // Center glow
-      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.3);
+      // Huge bright white center
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.35);
       cg.addColorStop(0, 'rgba(255,255,255,1)');
+      cg.addColorStop(0.4, 'rgba(255,255,255,0.9)');
       cg.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = cg;
       ctx.fillRect(0, 0, S, S);
     });
 
-    // Tier 3: fire burst — flame tendrils
+    // Tier 3: fire inferno — huge flame tendrils with bright core
     const texFire = makeExplosionTexture((ctx, S, H) => {
-      const rays = 16;
+      // Outer fire glow
+      const outerG = ctx.createRadialGradient(H, H, 0, H, H, H);
+      outerG.addColorStop(0, 'rgba(255,200,50,0.6)');
+      outerG.addColorStop(0.5, 'rgba(255,80,0,0.3)');
+      outerG.addColorStop(1, 'rgba(150,0,0,0)');
+      ctx.fillStyle = outerG;
+      ctx.fillRect(0, 0, S, S);
+      const rays = 24;
       for (let i = 0; i < rays; i++) {
-        const angle = (i / rays) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
-        const len = H * (0.5 + Math.random() * 0.5);
+        const angle = (i / rays) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+        const len = H * (0.55 + Math.random() * 0.45);
         ctx.save();
         ctx.translate(H, H);
         ctx.rotate(angle);
         const g = ctx.createLinearGradient(0, 0, len, 0);
-        g.addColorStop(0, 'rgba(255,255,180,1)');
-        g.addColorStop(0.25, 'rgba(255,160,30,0.9)');
-        g.addColorStop(0.6, 'rgba(255,60,0,0.5)');
-        g.addColorStop(1, 'rgba(200,0,0,0)');
+        g.addColorStop(0, 'rgba(255,255,220,1)');
+        g.addColorStop(0.15, 'rgba(255,220,80,1)');
+        g.addColorStop(0.35, 'rgba(255,140,20,0.9)');
+        g.addColorStop(0.6, 'rgba(255,50,0,0.6)');
+        g.addColorStop(1, 'rgba(180,0,0,0)');
         ctx.fillStyle = g;
-        const w = 15 + Math.random() * 20;
+        const w = 30 + Math.random() * 40;
         ctx.beginPath();
         ctx.moveTo(0, -w);
-        ctx.quadraticCurveTo(len * 0.6, -w * 0.3, len, 0);
-        ctx.quadraticCurveTo(len * 0.6, w * 0.3, 0, w);
+        ctx.quadraticCurveTo(len * 0.4, -w * 0.6, len, 0);
+        ctx.quadraticCurveTo(len * 0.4, w * 0.6, 0, w);
         ctx.closePath();
+        ctx.shadowColor = 'rgba(255,150,0,0.6)';
+        ctx.shadowBlur = 25;
         ctx.fill();
         ctx.restore();
       }
-      // Hot white core
-      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
-      cg.addColorStop(0, 'rgba(255,255,220,1)');
-      cg.addColorStop(0.5, 'rgba(255,180,50,0.6)');
+      // Intense white-hot core
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.3);
+      cg.addColorStop(0, 'rgba(255,255,255,1)');
+      cg.addColorStop(0.3, 'rgba(255,255,200,1)');
+      cg.addColorStop(0.6, 'rgba(255,180,50,0.7)');
       cg.addColorStop(1, 'rgba(255,100,0,0)');
       ctx.fillStyle = cg;
       ctx.fillRect(0, 0, S, S);
     });
 
-    // Tier 4: ice crystal — 6-armed snowflake
+    // Tier 4: ice crystal — thick 6-armed snowflake with glow
     const texIce = makeExplosionTexture((ctx, S, H) => {
+      // Background ice glow
+      const bg = ctx.createRadialGradient(H, H, 0, H, H, H);
+      bg.addColorStop(0, 'rgba(200,240,255,0.5)');
+      bg.addColorStop(0.5, 'rgba(100,200,255,0.2)');
+      bg.addColorStop(1, 'rgba(60,150,255,0)');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, S, S);
       const arms = 6;
-      ctx.strokeStyle = 'rgba(180,220,255,0)';
       for (let i = 0; i < arms; i++) {
         const angle = (i / arms) * Math.PI * 2;
         ctx.save();
         ctx.translate(H, H);
         ctx.rotate(angle);
-        // Main arm
-        const g = ctx.createLinearGradient(0, 0, H * 0.9, 0);
-        g.addColorStop(0, 'rgba(200,235,255,1)');
-        g.addColorStop(0.5, 'rgba(130,200,255,0.7)');
-        g.addColorStop(1, 'rgba(100,180,255,0)');
+        // Thick main arm
+        const g = ctx.createLinearGradient(0, 0, H * 0.92, 0);
+        g.addColorStop(0, 'rgba(220,245,255,1)');
+        g.addColorStop(0.4, 'rgba(150,220,255,0.9)');
+        g.addColorStop(0.7, 'rgba(100,190,255,0.6)');
+        g.addColorStop(1, 'rgba(80,160,255,0)');
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.moveTo(0, -4);
-        ctx.lineTo(H * 0.9, -1);
-        ctx.lineTo(H * 0.9, 1);
-        ctx.lineTo(0, 4);
+        ctx.moveTo(0, -14);
+        ctx.lineTo(H * 0.92, -3);
+        ctx.lineTo(H * 0.92, 3);
+        ctx.lineTo(0, 14);
         ctx.closePath();
+        ctx.shadowColor = 'rgba(100,200,255,0.8)';
+        ctx.shadowBlur = 20;
         ctx.fill();
-        // Side branches
-        for (const bPos of [0.35, 0.6]) {
+        // Side branches — thick and bright
+        for (const bPos of [0.25, 0.45, 0.65]) {
           for (const side of [-1, 1]) {
             ctx.save();
             ctx.translate(H * bPos, 0);
-            ctx.rotate(side * 0.6);
-            const bg = ctx.createLinearGradient(0, 0, H * 0.3, 0);
-            bg.addColorStop(0, 'rgba(180,225,255,0.8)');
-            bg.addColorStop(1, 'rgba(150,210,255,0)');
-            ctx.fillStyle = bg;
-            ctx.fillRect(0, -2, H * 0.3, 4);
+            ctx.rotate(side * 0.55);
+            const brg = ctx.createLinearGradient(0, 0, H * 0.3, 0);
+            brg.addColorStop(0, 'rgba(200,235,255,1)');
+            brg.addColorStop(0.5, 'rgba(150,210,255,0.7)');
+            brg.addColorStop(1, 'rgba(120,190,255,0)');
+            ctx.fillStyle = brg;
+            ctx.fillRect(0, -6, H * 0.3, 12);
             ctx.restore();
           }
         }
         ctx.restore();
       }
-      // Center glow
-      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.2);
-      cg.addColorStop(0, 'rgba(220,240,255,1)');
-      cg.addColorStop(1, 'rgba(180,220,255,0)');
+      // Bright center
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
+      cg.addColorStop(0, 'rgba(255,255,255,1)');
+      cg.addColorStop(0.5, 'rgba(220,245,255,0.9)');
+      cg.addColorStop(1, 'rgba(180,230,255,0)');
       ctx.fillStyle = cg;
       ctx.fillRect(0, 0, S, S);
     });
 
-    // Tier 5: electric — jagged lightning bolts from center
+    // Tier 5: electric — massive lightning bolts with thick glowing lines
     const texElectric = makeExplosionTexture((ctx, S, H) => {
-      const bolts = 10;
+      // Electric aura
+      const aura = ctx.createRadialGradient(H, H, 0, H, H, H);
+      aura.addColorStop(0, 'rgba(180,200,255,0.5)');
+      aura.addColorStop(0.4, 'rgba(80,120,255,0.3)');
+      aura.addColorStop(1, 'rgba(40,60,200,0)');
+      ctx.fillStyle = aura;
+      ctx.fillRect(0, 0, S, S);
+      const bolts = 16;
       for (let i = 0; i < bolts; i++) {
-        const angle = (i / bolts) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const angle = (i / bolts) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
         ctx.save();
         ctx.translate(H, H);
         ctx.rotate(angle);
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        let x = 0;
-        const segments = 6 + Math.floor(Math.random() * 4);
-        const totalLen = H * (0.6 + Math.random() * 0.35);
-        const step = totalLen / segments;
-        for (let s = 0; s < segments; s++) {
-          x += step;
-          const jitter = (Math.random() - 0.5) * 30;
-          ctx.lineTo(x, jitter);
+        // Draw bolt with thick glow + thin bright core
+        for (let pass = 0; pass < 2; pass++) {
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          let x = 0;
+          const segments = 8 + Math.floor(Math.random() * 4);
+          const totalLen = H * (0.65 + Math.random() * 0.35);
+          const step = totalLen / segments;
+          for (let s = 0; s < segments; s++) {
+            x += step;
+            const jitter = (Math.random() - 0.5) * 50;
+            ctx.lineTo(x, jitter);
+          }
+          if (pass === 0) {
+            ctx.strokeStyle = 'rgba(80,130,255,0.7)';
+            ctx.lineWidth = 12;
+            ctx.shadowColor = 'rgba(100,160,255,1)';
+            ctx.shadowBlur = 30;
+          } else {
+            ctx.strokeStyle = 'rgba(220,235,255,1)';
+            ctx.lineWidth = 4;
+            ctx.shadowColor = 'rgba(200,220,255,0.9)';
+            ctx.shadowBlur = 15;
+          }
+          ctx.stroke();
         }
-        const bright = Math.random() > 0.5;
-        ctx.strokeStyle = bright ? 'rgba(220,230,255,0.95)' : 'rgba(100,140,255,0.8)';
-        ctx.lineWidth = bright ? 4 : 2.5;
-        ctx.shadowColor = 'rgba(100,150,255,0.8)';
-        ctx.shadowBlur = 12;
-        ctx.stroke();
         ctx.restore();
       }
-      // Core flash
-      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.2);
-      cg.addColorStop(0, 'rgba(220,230,255,1)');
-      cg.addColorStop(0.5, 'rgba(100,140,255,0.5)');
-      cg.addColorStop(1, 'rgba(80,100,255,0)');
+      // Bright core flash
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
+      cg.addColorStop(0, 'rgba(255,255,255,1)');
+      cg.addColorStop(0.3, 'rgba(200,220,255,0.9)');
+      cg.addColorStop(0.6, 'rgba(100,140,255,0.5)');
+      cg.addColorStop(1, 'rgba(60,80,255,0)');
       ctx.fillStyle = cg;
       ctx.fillRect(0, 0, S, S);
     });
 
-    // Tier 6: wind — spiral vortex
+    // Tier 6: wind — thick spiral vortex with particle trails
     const texWind = makeExplosionTexture((ctx, S, H) => {
-      const spirals = 3;
+      // Background wind glow
+      const bg = ctx.createRadialGradient(H, H, 0, H, H, H);
+      bg.addColorStop(0, 'rgba(100,255,180,0.4)');
+      bg.addColorStop(0.5, 'rgba(60,200,130,0.2)');
+      bg.addColorStop(1, 'rgba(30,150,80,0)');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, S, S);
+      const spirals = 5;
       for (let s = 0; s < spirals; s++) {
         const offset = (s / spirals) * Math.PI * 2;
         ctx.beginPath();
-        for (let t = 0; t < 200; t++) {
-          const frac = t / 200;
-          const angle = offset + frac * Math.PI * 4;
-          const r = frac * H * 0.9;
+        for (let t = 0; t < 300; t++) {
+          const frac = t / 300;
+          const angle = offset + frac * Math.PI * 5;
+          const r = frac * H * 0.92;
           const x = H + Math.cos(angle) * r;
           const y = H + Math.sin(angle) * r;
           if (t === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
-        const alpha = 0.6 + s * 0.15;
-        ctx.strokeStyle = `rgba(120,255,180,${alpha})`;
-        ctx.lineWidth = 6 - s;
-        ctx.shadowColor = 'rgba(100,255,170,0.5)';
-        ctx.shadowBlur = 8;
+        const alpha = 0.7 + s * 0.06;
+        ctx.strokeStyle = `rgba(100,255,170,${alpha})`;
+        ctx.lineWidth = 10 - s * 1.5;
+        ctx.shadowColor = 'rgba(80,255,150,0.8)';
+        ctx.shadowBlur = 20;
         ctx.stroke();
       }
-      // Center glow
-      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
-      cg.addColorStop(0, 'rgba(150,255,200,1)');
-      cg.addColorStop(1, 'rgba(100,255,170,0)');
+      // Scattered wind particles
+      for (let i = 0; i < 40; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * H * 0.8;
+        const px = H + Math.cos(angle) * dist;
+        const py = H + Math.sin(angle) * dist;
+        const sz = 3 + Math.random() * 8;
+        const pg = ctx.createRadialGradient(px, py, 0, px, py, sz);
+        pg.addColorStop(0, 'rgba(180,255,220,0.9)');
+        pg.addColorStop(1, 'rgba(100,255,160,0)');
+        ctx.fillStyle = pg;
+        ctx.fillRect(px - sz, py - sz, sz * 2, sz * 2);
+      }
+      // Bright center
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.2);
+      cg.addColorStop(0, 'rgba(200,255,230,1)');
+      cg.addColorStop(0.5, 'rgba(120,255,180,0.8)');
+      cg.addColorStop(1, 'rgba(80,220,140,0)');
       ctx.fillStyle = cg;
       ctx.fillRect(0, 0, S, S);
     });
 
-    // Tier 7: storm — all elements combined
+    // Tier 7: storm — all elements combined with maximum intensity
     const texStorm = makeExplosionTexture((ctx, S, H) => {
+      // Full background glow
+      const fbg = ctx.createRadialGradient(H, H, 0, H, H, H);
+      fbg.addColorStop(0, 'rgba(255,255,255,0.6)');
+      fbg.addColorStop(0.3, 'rgba(200,180,255,0.4)');
+      fbg.addColorStop(0.6, 'rgba(100,100,255,0.2)');
+      fbg.addColorStop(1, 'rgba(50,50,150,0)');
+      ctx.fillStyle = fbg;
+      ctx.fillRect(0, 0, S, S);
       // Fire quadrant (top-right)
       ctx.save();
       ctx.beginPath(); ctx.moveTo(H, H); ctx.arc(H, H, H, -Math.PI/2, 0); ctx.closePath(); ctx.clip();
       const fg = ctx.createRadialGradient(H, H, 0, H, H, H);
-      fg.addColorStop(0, 'rgba(255,255,180,1)');
-      fg.addColorStop(0.4, 'rgba(255,120,20,0.7)');
-      fg.addColorStop(1, 'rgba(200,0,0,0)');
+      fg.addColorStop(0, 'rgba(255,255,200,1)');
+      fg.addColorStop(0.3, 'rgba(255,180,50,0.9)');
+      fg.addColorStop(0.6, 'rgba(255,80,0,0.6)');
+      fg.addColorStop(1, 'rgba(180,0,0,0)');
       ctx.fillStyle = fg; ctx.fillRect(0, 0, S, S);
       ctx.restore();
       // Ice quadrant (top-left)
       ctx.save();
       ctx.beginPath(); ctx.moveTo(H, H); ctx.arc(H, H, H, -Math.PI, -Math.PI/2); ctx.closePath(); ctx.clip();
       const ig = ctx.createRadialGradient(H, H, 0, H, H, H);
-      ig.addColorStop(0, 'rgba(200,235,255,1)');
-      ig.addColorStop(0.4, 'rgba(100,180,255,0.7)');
-      ig.addColorStop(1, 'rgba(80,150,255,0)');
+      ig.addColorStop(0, 'rgba(220,245,255,1)');
+      ig.addColorStop(0.3, 'rgba(150,220,255,0.9)');
+      ig.addColorStop(0.6, 'rgba(80,160,255,0.5)');
+      ig.addColorStop(1, 'rgba(50,120,255,0)');
       ctx.fillStyle = ig; ctx.fillRect(0, 0, S, S);
       ctx.restore();
       // Electric quadrant (bottom-right)
       ctx.save();
       ctx.beginPath(); ctx.moveTo(H, H); ctx.arc(H, H, H, 0, Math.PI/2); ctx.closePath(); ctx.clip();
       const eg = ctx.createRadialGradient(H, H, 0, H, H, H);
-      eg.addColorStop(0, 'rgba(200,210,255,1)');
-      eg.addColorStop(0.4, 'rgba(80,100,255,0.7)');
-      eg.addColorStop(1, 'rgba(60,60,200,0)');
+      eg.addColorStop(0, 'rgba(220,230,255,1)');
+      eg.addColorStop(0.3, 'rgba(140,160,255,0.9)');
+      eg.addColorStop(0.6, 'rgba(80,100,255,0.5)');
+      eg.addColorStop(1, 'rgba(40,50,200,0)');
       ctx.fillStyle = eg; ctx.fillRect(0, 0, S, S);
       ctx.restore();
       // Wind quadrant (bottom-left)
       ctx.save();
       ctx.beginPath(); ctx.moveTo(H, H); ctx.arc(H, H, H, Math.PI/2, Math.PI); ctx.closePath(); ctx.clip();
       const wg = ctx.createRadialGradient(H, H, 0, H, H, H);
-      wg.addColorStop(0, 'rgba(150,255,200,1)');
-      wg.addColorStop(0.4, 'rgba(80,220,140,0.7)');
-      wg.addColorStop(1, 'rgba(50,180,100,0)');
+      wg.addColorStop(0, 'rgba(180,255,220,1)');
+      wg.addColorStop(0.3, 'rgba(100,240,160,0.9)');
+      wg.addColorStop(0.6, 'rgba(60,200,120,0.5)');
+      wg.addColorStop(1, 'rgba(30,150,70,0)');
       ctx.fillStyle = wg; ctx.fillRect(0, 0, S, S);
       ctx.restore();
-      // White center
-      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.2);
+      // Bright white center
+      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.3);
       cg.addColorStop(0, 'rgba(255,255,255,1)');
-      cg.addColorStop(1, 'rgba(255,255,255,0)');
+      cg.addColorStop(0.5, 'rgba(255,255,255,0.8)');
+      cg.addColorStop(1, 'rgba(200,200,255,0)');
       ctx.fillStyle = cg; ctx.fillRect(0, 0, S, S);
+    });
+
+    // Shockwave ring texture — expanding ring for layered explosions
+    const texRing = makeExplosionTexture((ctx, S, H) => {
+      ctx.lineWidth = 30;
+      const rg = ctx.createRadialGradient(H, H, H * 0.45, H, H, H * 0.85);
+      rg.addColorStop(0, 'rgba(255,255,255,0)');
+      rg.addColorStop(0.3, 'rgba(255,255,255,0.9)');
+      rg.addColorStop(0.5, 'rgba(200,220,255,1)');
+      rg.addColorStop(0.7, 'rgba(255,255,255,0.9)');
+      rg.addColorStop(1, 'rgba(200,200,255,0)');
+      ctx.fillStyle = rg;
+      ctx.fillRect(0, 0, S, S);
+    });
+
+    // Bright flash texture — pure white center burst
+    const texFlash = makeExplosionTexture((ctx, S, H) => {
+      const fg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.6);
+      fg.addColorStop(0, 'rgba(255,255,255,1)');
+      fg.addColorStop(0.2, 'rgba(255,255,255,0.95)');
+      fg.addColorStop(0.5, 'rgba(255,255,255,0.5)');
+      fg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = fg;
+      ctx.fillRect(0, 0, S, S);
     });
 
     const explosionTextures = {
       default: texDefault, sparkle: texSparkle, fire: texFire,
       ice: texIce, electric: texElectric, wind: texWind, storm: texStorm,
+      ring: texRing, flash: texFlash,
     };
 
-    // ── Explosion Sprite Pool ──────────────────────────────────
-    const POOL_SIZE = 8;
+    // ── Screen Flash Overlay ───────────────────────────────────
+    const screenFlashEl = document.createElement('div');
+    screenFlashEl.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;opacity:0;transition:opacity 0.05s;';
+    document.body.appendChild(screenFlashEl);
+    let screenFlashTimer = null;
+    function screenFlash(color, intensity, duration) {
+      screenFlashEl.style.background = color || 'white';
+      screenFlashEl.style.opacity = intensity || 0.3;
+      clearTimeout(screenFlashTimer);
+      screenFlashTimer = setTimeout(() => {
+        screenFlashEl.style.transition = `opacity ${duration || 0.3}s`;
+        screenFlashEl.style.opacity = 0;
+        setTimeout(() => { screenFlashEl.style.transition = 'opacity 0.05s'; }, (duration || 0.3) * 1000);
+      }, 30);
+    }
+
+    // ── Camera Shake ──────────────────────────────────────────
+    const cameraBasePos = camera.position.clone();
+    let shakeIntensity = 0;
+    let shakeDecay = 0;
+    function triggerShake(intensity, decay) {
+      shakeIntensity = intensity;
+      shakeDecay = decay || 0.92;
+    }
+
+    // ── Explosion Sprite Pool (24 sprites for multi-layer) ─────
+    const POOL_SIZE = 24;
     const explosionPool = [];
     const activeExplosions = [];
 
@@ -989,14 +1127,14 @@
       explosionPool.push({ sprite, mat, active: false });
     }
 
-    function spawnExplosion(pos, tier, sizeMult) {
+    function spawnExplosion(pos, tier, sizeMult, opts) {
+      opts = opts || {};
       const tex = explosionTextures[tier] || texDefault;
-      const maxScale = (sizeMult || 1) * 5;
-      const duration = tier === 'storm' ? 2.0 : tier === 'default' ? 0.8 : 1.4;
+      const maxScale = (sizeMult || 1) * 12;
+      const duration = opts.duration || (tier === 'storm' ? 2.5 : tier === 'default' ? 1.2 : 1.8);
       // Find a free sprite
       let slot = explosionPool.find(s => !s.active);
       if (!slot) {
-        // Steal oldest active
         const oldest = activeExplosions.shift();
         if (oldest) { oldest.active = false; oldest.sprite.visible = false; }
         slot = oldest || explosionPool[0];
@@ -1006,25 +1144,82 @@
       slot.mat.opacity = 1;
       slot.mat.needsUpdate = true;
       slot.sprite.position.copy(pos);
+      if (opts.offset) {
+        slot.sprite.position.x += opts.offset.x || 0;
+        slot.sprite.position.y += opts.offset.y || 0;
+        slot.sprite.position.z += opts.offset.z || 0;
+      }
       slot.sprite.scale.set(0.1, 0.1, 0.1);
       slot.sprite.visible = true;
       slot.sprite.material.rotation = Math.random() * Math.PI * 2;
+      slot.sprite.renderOrder = opts.renderOrder || 0;
       activeExplosions.push({
         ...slot,
-        age: 0,
+        age: opts.delay || 0 > 0 ? -(opts.delay || 0) : 0,
         duration,
         maxScale,
+        rotSpeed: opts.rotSpeed || 0.5,
       });
     }
 
     function streakExplosion(pos, streak) {
       const tier = getBallTierForStreak(streak);
-      // Scale up explosion with streak
-      const sizeMult = streak >= 22 ? 1.8 : streak >= 12 ? 1.4 : streak >= 5 ? 1.2 : 1.0;
-      spawnExplosion(pos, tier, sizeMult);
-      // Storm gets a second delayed ring
+      const p = pos.clone();
+
       if (streak >= 22) {
-        setTimeout(() => spawnExplosion(pos, 'default', 2.2), 80);
+        // STORM: massive multi-layer explosion
+        // 1. Bright white flash
+        spawnExplosion(p, 'flash', 3.5, { duration: 0.4, renderOrder: 3 });
+        // 2. Main element explosion — huge
+        spawnExplosion(p, tier, 3.5, { renderOrder: 2 });
+        // 3. Shockwave ring expanding outward
+        spawnExplosion(p, 'ring', 4.0, { duration: 1.5, renderOrder: 1, rotSpeed: 0 });
+        // 4. Secondary element burst (delayed)
+        setTimeout(() => {
+          spawnExplosion(p, tier, 2.5, { duration: 2.0, renderOrder: 2 });
+          spawnExplosion(p, 'ring', 5.0, { duration: 2.0, renderOrder: 1, rotSpeed: 0 });
+        }, 120);
+        // Screen flash + camera shake
+        screenFlash('rgba(255,255,255,0.7)', 0.5, 0.4);
+        triggerShake(0.35, 0.90);
+
+      } else if (streak >= 17) {
+        // WIND: swirling layered burst
+        spawnExplosion(p, 'flash', 2.0, { duration: 0.3, renderOrder: 3 });
+        spawnExplosion(p, tier, 2.8, { renderOrder: 2 });
+        spawnExplosion(p, 'ring', 3.0, { duration: 1.3, renderOrder: 1, rotSpeed: 0 });
+        screenFlash('rgba(100,255,170,0.4)', 0.3, 0.3);
+        triggerShake(0.2, 0.92);
+
+      } else if (streak >= 12) {
+        // ELECTRIC: crackling double burst
+        spawnExplosion(p, 'flash', 1.8, { duration: 0.25, renderOrder: 3 });
+        spawnExplosion(p, tier, 2.5, { renderOrder: 2 });
+        spawnExplosion(p, 'ring', 2.5, { duration: 1.2, renderOrder: 1, rotSpeed: 0 });
+        screenFlash('rgba(120,150,255,0.4)', 0.25, 0.25);
+        triggerShake(0.15, 0.93);
+
+      } else if (streak >= 8) {
+        // ICE: crystal burst with ring
+        spawnExplosion(p, tier, 2.2, { renderOrder: 2 });
+        spawnExplosion(p, 'ring', 2.0, { duration: 1.0, renderOrder: 1, rotSpeed: 0 });
+        screenFlash('rgba(150,220,255,0.3)', 0.2, 0.2);
+        triggerShake(0.1, 0.94);
+
+      } else if (streak >= 5) {
+        // FIRE: big fiery burst
+        spawnExplosion(p, tier, 2.0, { renderOrder: 2 });
+        spawnExplosion(p, 'flash', 1.2, { duration: 0.2, renderOrder: 3 });
+        screenFlash('rgba(255,150,50,0.3)', 0.15, 0.2);
+        triggerShake(0.08, 0.95);
+
+      } else if (streak >= 3) {
+        // SPARKLE: colorful burst
+        spawnExplosion(p, tier, 1.6, { renderOrder: 2 });
+
+      } else {
+        // DEFAULT: simple but still big
+        spawnExplosion(p, tier, 1.2, { renderOrder: 2 });
       }
     }
 
@@ -1082,10 +1277,89 @@
       }
     });
 
+    // ── Ball Catch Animation System ─────────────────────────
+    let catchAnimActive = false;
+    let catchAnimTime = 0;
+    let catchAnimDuration = 0.3;
+    let catchAnimTier = 'default';
+    let catchAnimBaseScale = 1;
+
+    function playCatchAnim(tier) {
+      catchAnimActive = true;
+      catchAnimTime = 0;
+      catchAnimTier = tier;
+      catchAnimBaseScale = currentBallRadius;
+      catchAnimDuration = 0.25;
+    }
+
+    function updateCatchAnim(dt) {
+      if (!catchAnimActive) return;
+      catchAnimTime += dt;
+      const t = Math.min(catchAnimTime / catchAnimDuration, 1);
+      const tier = catchAnimTier;
+
+      if (tier === 'fire') {
+        // Rapid expand then shrink (exploding outward)
+        const s = t < 0.3 ? 1 + t / 0.3 * 0.8 : 1.8 * (1 - (t - 0.3) / 0.7);
+        ball.scale.setScalar(catchAnimBaseScale * Math.max(s, 0.01));
+        ballMat.emissive.setRGB(1, 0.6 * (1 - t), 0);
+        ballMat.emissiveIntensity = 2.0 * (1 - t);
+      } else if (tier === 'ice') {
+        // Freeze then shatter — scale wobble
+        const wobble = Math.sin(t * 30) * (1 - t) * 0.3;
+        ball.scale.setScalar(catchAnimBaseScale * (1 + wobble) * (1 - t * 0.5));
+        ballMat.emissive.setRGB(0.3, 0.7, 1);
+        ballMat.emissiveIntensity = 1.5 * (1 - t);
+      } else if (tier === 'electric') {
+        // Jitter rapidly then vanish
+        const jitter = (1 - t) * 0.4;
+        ball.position.x = ballPos.x + (Math.random() - 0.5) * jitter;
+        ball.position.y = ballPos.y + (Math.random() - 0.5) * jitter;
+        ball.position.z = ballPos.z + (Math.random() - 0.5) * jitter;
+        ball.scale.setScalar(catchAnimBaseScale * (1 - t * 0.7));
+        ballMat.emissive.setRGB(0.5, 0.5, 1);
+        ballMat.emissiveIntensity = 2.5 * (Math.random() > 0.5 ? 1 : 0.3) * (1 - t);
+      } else if (tier === 'wind') {
+        // Spin rapidly and shrink (sucked into vortex)
+        ball.rotation.y += dt * 40 * (1 - t);
+        ball.rotation.x += dt * 25 * (1 - t);
+        ball.scale.setScalar(catchAnimBaseScale * (1 - t));
+        ballMat.emissive.setRGB(0.3, 1, 0.6);
+        ballMat.emissiveIntensity = 1.5 * (1 - t);
+      } else if (tier === 'storm') {
+        // All combined — jitter + spin + expand then collapse
+        const jitter = (1 - t) * 0.5;
+        ball.position.x = ballPos.x + (Math.random() - 0.5) * jitter;
+        ball.position.y = ballPos.y + (Math.random() - 0.5) * jitter;
+        ball.position.z = ballPos.z + (Math.random() - 0.5) * jitter;
+        ball.rotation.y += dt * 50 * (1 - t);
+        const s = t < 0.2 ? 1 + t / 0.2 * 1.0 : 2.0 * (1 - (t - 0.2) / 0.8);
+        ball.scale.setScalar(catchAnimBaseScale * Math.max(s, 0.01));
+        const hue = (t * 4) % 1;
+        ballMat.emissive.setHSL(hue, 1, 0.6);
+        ballMat.emissiveIntensity = 3.0 * (1 - t);
+      } else if (tier === 'sparkle') {
+        // Rainbow flash + gentle shrink
+        const hue = (t * 3) % 1;
+        ballMat.emissive.setHSL(hue, 1, 0.5);
+        ballMat.emissiveIntensity = 2.0 * (1 - t);
+        ball.scale.setScalar(catchAnimBaseScale * (1 - t * 0.5));
+      } else {
+        // Default — simple squish pop
+        const s = t < 0.3 ? 1 + t / 0.3 * 0.4 : 1.4 * (1 - (t - 0.3) / 0.7);
+        ball.scale.setScalar(catchAnimBaseScale * Math.max(s, 0.01));
+        ballMat.emissiveIntensity = 1.5 * (1 - t);
+      }
+
+      if (t >= 1) {
+        catchAnimActive = false;
+      }
+    }
+
     function catchBall() {
       state.streak++;
       state.missStreak = 0;
-      const streakMult = Math.min(state.streak, 10);
+      const streakMult = state.streak;
 
       // Size multiplier: smaller ball = higher score (linear)
       const normalizedSize = (currentBallRadius - BALL_MIN_RADIUS) / (BALL_MAX_RADIUS - BALL_MIN_RADIUS);
@@ -1119,6 +1393,10 @@
       else { msgColor = '#4fc3f7'; }
       showMessage(msg, msgColor);
 
+      // Trigger catch animation for current tier
+      const prevTier = getBallTierForStreak(state.streak - 1);
+      playCatchAnim(prevTier);
+
       // Particles — streak-based explosions
       streakExplosion(ballPos.clone(), state.streak);
 
@@ -1128,20 +1406,25 @@
       // Flash ball
       ballMat.emissiveIntensity = 1.0;
 
-      // Relaunch ball — new random size, position, velocity
-      randomizeBallSize();
-      ballSpawnTime = clock.elapsedTime;
-
-      ballPos.set(
-        (Math.random() - 0.5) * (ROOM.w - 2),
-        ROOM.h * 0.4 + Math.random() * 2,
-        (Math.random() - 0.3) * (ROOM.d - 2)
-      );
-      ballVel.set(
-        (Math.random() - 0.5) * 5,
-        (Math.random() - 0.5) * 4 + 2,
-        (Math.random() - 0.5) * 5
-      );
+      // Schedule relaunch after catch animation
+      const catchPos = ballPos.clone();
+      setTimeout(() => {
+        // Relaunch ball — new random size, position, velocity
+        randomizeBallSize();
+        ballSpawnTime = clock.elapsedTime;
+        ballPos.set(
+          (Math.random() - 0.5) * (ROOM.w - 2),
+          ROOM.h * 0.4 + Math.random() * 2,
+          (Math.random() - 0.3) * (ROOM.d - 2)
+        );
+        ballVel.set(
+          (Math.random() - 0.5) * 5,
+          (Math.random() - 0.5) * 4 + 2,
+          (Math.random() - 0.5) * 5
+        );
+        ball.position.copy(ballPos);
+        ball.scale.setScalar(currentBallRadius);
+      }, catchAnimDuration * 1000);
     }
 
     // ── HUD Update ──────────────────────────────────────────────
@@ -1330,25 +1613,42 @@
         // Animate ball tier visuals (color shifts, flashes, etc.)
         animateBallTier(clock.elapsedTime, dt);
 
+        // Ball catch animation (squish/pop per element)
+        updateCatchAnim(dt);
+
         // ── Explosion Sprites ─────────────────────────
         for (let i = activeExplosions.length - 1; i >= 0; i--) {
           const e = activeExplosions[i];
           e.age += dt;
+          // Support delayed spawns (negative age)
+          if (e.age < 0) { e.sprite.visible = false; continue; }
+          e.sprite.visible = true;
           const t = Math.min(e.age / e.duration, 1);
-          // Fast expand, slow settle (ease-out)
-          const easeOut = 1 - Math.pow(1 - t, 3);
-          const scale = e.maxScale * easeOut;
+          // Fast expand with elastic overshoot for punch
+          const easeOut = 1 - Math.pow(1 - t, 4);
+          const overshoot = t < 0.15 ? 1 + Math.sin(t / 0.15 * Math.PI) * 0.15 : 1;
+          const scale = e.maxScale * easeOut * overshoot;
           e.sprite.scale.set(scale, scale, scale);
-          // Stay bright longer, then fade in last 30%
-          const fadeStart = 0.7;
-          e.mat.opacity = t < fadeStart ? 1.0 : 1.0 - ((t - fadeStart) / (1 - fadeStart));
-          // Slow rotation
-          e.sprite.material.rotation += dt * 0.5;
+          // Stay bright for 75%, then fade out smoothly
+          const fadeStart = 0.75;
+          e.mat.opacity = t < fadeStart ? 1.0 : 1.0 - Math.pow((t - fadeStart) / (1 - fadeStart), 0.7);
+          // Rotation per sprite
+          e.sprite.material.rotation += dt * (e.rotSpeed || 0.5);
           if (t >= 1) {
             e.active = false;
             e.sprite.visible = false;
             activeExplosions.splice(i, 1);
           }
+        }
+
+        // ── Camera Shake ──────────────────────────────
+        if (shakeIntensity > 0.001) {
+          camera.position.x = cameraBasePos.x + (Math.random() - 0.5) * shakeIntensity;
+          camera.position.y = cameraBasePos.y + (Math.random() - 0.5) * shakeIntensity;
+          shakeIntensity *= shakeDecay;
+        } else {
+          camera.position.x = cameraBasePos.x;
+          camera.position.y = cameraBasePos.y;
         }
 
         // ── Live HUD updates ────────────────────────────
