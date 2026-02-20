@@ -2371,6 +2371,24 @@
       nameInput.focus();
     }
 
+    // ── Name Registry (no duplicates) ───────────────────────
+    const NAMES_KEY = 'bouncingBall_registeredNames';
+    function loadRegisteredNames() {
+      try { return JSON.parse(localStorage.getItem(NAMES_KEY)) || {}; } catch { return {}; }
+    }
+    function registerName(name) {
+      const reg = loadRegisteredNames();
+      reg[name.toLowerCase()] = name;
+      localStorage.setItem(NAMES_KEY, JSON.stringify(reg));
+    }
+    function isNameTaken(name, currentSaved) {
+      const reg = loadRegisteredNames();
+      const lower = name.toLowerCase();
+      // Allow if it's the player's own saved name
+      if (currentSaved && currentSaved.toLowerCase() === lower) return false;
+      return !!reg[lower];
+    }
+
     function tryStartFromName() {
       const name = nameInput.value.trim();
       if (!name) {
@@ -2378,7 +2396,14 @@
         nameInput.focus();
         return;
       }
+      const savedName = localStorage.getItem(NAME_KEY);
+      if (isNameTaken(name, savedName)) {
+        nameError.textContent = 'That name is already taken. Try another!';
+        nameInput.focus();
+        return;
+      }
       nameError.textContent = '';
+      registerName(name);
       startGame();
     }
 
