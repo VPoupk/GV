@@ -1,0 +1,62 @@
+name: AlpineShredder
+options:
+  bundleIdPrefix: com.alpineshredder
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  AlpineShredder:
+    type: application
+    platform: iOS
+    sources:
+      - AlpineShredder
+    settings:
+      base:
+        INFOPLIST_FILE: AlpineShredder/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.alpineshredder.app
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    info:
+      path: AlpineShredder/Info.plist
+      properties:
+        UILaunchStoryboardName: LaunchScreen
+
+  AlpineShredderTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - AlpineShredderTests
+    dependencies:
+      - target: AlpineShredder
+    settings:
+      base:
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/AlpineShredder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AlpineShredder"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  AlpineShredder:
+    build:
+      targets:
+        AlpineShredder: all
+        AlpineShredderTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - AlpineShredderTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
