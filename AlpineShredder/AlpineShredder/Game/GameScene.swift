@@ -20,6 +20,7 @@ class GameScene: SCNScene {
     private(set) var playerController: PlayerController!
     private(set) var obstacleManager: ObstacleManager!
     private(set) var collectibleManager: CollectibleManager!
+    private(set) var weatherSystem: WeatherSystem!
 
     // MARK: - State
 
@@ -38,14 +39,17 @@ class GameScene: SCNScene {
         setupTerrain()
         setupManagers()
         setupParticles()
+        setupWeather()
     }
 
     private func setupEnvironment() {
-        background.contents = UIColor(red: 0.53, green: 0.81, blue: 0.98, alpha: 1.0)
+        let resort = ResortManager.shared.currentResort
 
-        fogStartDistance = 80
-        fogEndDistance = 150
-        fogColor = UIColor(white: 0.95, alpha: 1.0)
+        background.contents = resort.skyColor
+
+        fogStartDistance = CGFloat(resort.fogStart)
+        fogEndDistance = CGFloat(resort.fogEnd)
+        fogColor = resort.fogColor
         fogDensityExponent = 1.5
 
         rootNode.addChildNode(terrainRoot)
@@ -117,11 +121,13 @@ class GameScene: SCNScene {
     }
 
     private func setupParticles() {
-        // Snow particle system falling from sky
+        let resort = ResortManager.shared.currentResort
+
+        // Snow particle system falling from sky — intensity varies by resort
         let snowParticle = SCNParticleSystem()
         snowParticle.particleSize = 0.05
         snowParticle.particleColor = .white
-        snowParticle.birthRate = 200
+        snowParticle.birthRate = CGFloat(200 * resort.snowIntensity)
         snowParticle.particleLifeSpan = 8.0
         snowParticle.spreadingAngle = 30
         snowParticle.emissionDuration = CGFloat.greatestFiniteMagnitude
@@ -135,6 +141,12 @@ class GameScene: SCNScene {
         snowEmitter.position = SCNVector3(0, 25, 0)
         snowEmitter.addParticleSystem(snowParticle)
         particleRoot.addChildNode(snowEmitter)
+    }
+
+    private func setupWeather() {
+        let resort = ResortManager.shared.currentResort
+        weatherSystem = WeatherSystem(scene: self)
+        weatherSystem.applyResortWeather(snowIntensity: resort.snowIntensity)
     }
 
     // MARK: - Game Loop
@@ -172,6 +184,7 @@ class GameScene: SCNScene {
         terrainGenerator.update(playerZ: playerNode.position.z)
         obstacleManager.update(playerZ: playerNode.position.z, speed: currentSpeed, deltaTime: dt)
         collectibleManager.update(playerZ: playerNode.position.z, speed: currentSpeed, deltaTime: dt)
+        weatherSystem.update(deltaTime: dt)
 
         // Camera follows player smoothly
         updateCamera(deltaTime: dt)

@@ -7,14 +7,22 @@ class TerrainGenerator {
     private var chunks: [TerrainChunk] = []
     private var nextChunkZ: Float = GameConstants.terrainStartZ
     private let chunkLength: Float = GameConstants.terrainChunkLength
-    private let chunkWidth: Float = GameConstants.terrainWidth
+    private var chunkWidth: Float
 
     // Terrain variation
     private var currentSlope: Float = GameConstants.baseSlopeAngle
     private var noiseOffset: Float = 0
 
+    // Resort-themed colors
+    private let snowColor: UIColor
+    private let mountainColor: UIColor
+
     init(terrainRoot: SCNNode) {
         self.terrainRoot = terrainRoot
+        let resort = ResortManager.shared.currentResort
+        self.snowColor = resort.snowColor
+        self.mountainColor = resort.mountainColor
+        self.chunkWidth = GameConstants.terrainWidth * resort.widthMultiplier
     }
 
     // MARK: - Initial Generation
@@ -65,6 +73,9 @@ class TerrainGenerator {
         // Moguls and bumps for variation
         addTerrainDetails(to: node, z: z)
 
+        // Trail markers for immersion
+        addTrailMarkers(to: node)
+
         node.position = SCNVector3(0, 0, z - chunkLength / 2)
 
         // Slight slope variation
@@ -85,7 +96,7 @@ class TerrainGenerator {
         geometry.heightSegmentCount = 16
 
         let material = SCNMaterial()
-        material.diffuse.contents = UIColor(red: 0.95, green: 0.96, blue: 1.0, alpha: 1.0)
+        material.diffuse.contents = snowColor
         material.specular.contents = UIColor(white: 0.6, alpha: 1.0)
         material.roughness.contents = NSNumber(value: 0.3)
         material.metalness.contents = NSNumber(value: 0.0)
@@ -112,7 +123,7 @@ class TerrainGenerator {
             )
 
             let material = SCNMaterial()
-            material.diffuse.contents = UIColor(red: 0.88, green: 0.90, blue: 0.95, alpha: 1.0)
+            material.diffuse.contents = mountainColor
             material.roughness.contents = NSNumber(value: 0.8)
             mountainGeometry.materials = [material]
 
@@ -148,7 +159,7 @@ class TerrainGenerator {
             let mogulGeometry = SCNSphere(radius: mogulRadius)
 
             let material = SCNMaterial()
-            material.diffuse.contents = UIColor(red: 0.92, green: 0.94, blue: 0.98, alpha: 1.0)
+            material.diffuse.contents = snowColor
             material.roughness.contents = NSNumber(value: 0.4)
             mogulGeometry.materials = [material]
 
@@ -166,6 +177,29 @@ class TerrainGenerator {
         if Float.random(in: 0...1) > 0.5 {
             let trackNode = createSkiTracks()
             parent.addChildNode(trackNode)
+        }
+    }
+
+    /// Add colored trail marker poles along the edges
+    private func addTrailMarkers(to parent: SCNNode) {
+        guard Float.random(in: 0...1) > 0.6 else { return }
+
+        let resort = ResortManager.shared.currentResort
+        let markerColor = resort.difficulty.displayColor
+
+        for side in [-1.0, 1.0] as [Float] {
+            let poleGeometry = SCNCylinder(radius: 0.04, height: 1.2)
+            let poleMaterial = SCNMaterial()
+            poleMaterial.diffuse.contents = markerColor
+            poleGeometry.materials = [poleMaterial]
+
+            let poleNode = SCNNode(geometry: poleGeometry)
+            poleNode.position = SCNVector3(
+                side * (chunkWidth / 2 - 2),
+                0.6,
+                Float.random(in: -chunkLength * 0.3...chunkLength * 0.3)
+            )
+            parent.addChildNode(poleNode)
         }
     }
 

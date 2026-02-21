@@ -40,58 +40,137 @@ class PlayerController {
     // MARK: - Setup
 
     private func setupPlayerModel() {
-        // Snowboard
-        let boardGeometry = SCNBox(width: 0.3, height: 0.05, length: 1.4, chamferRadius: 0.02)
-        let boardMaterial = SCNMaterial()
-        boardMaterial.diffuse.contents = UIColor(red: 0.15, green: 0.15, blue: 0.8, alpha: 1.0)
-        boardMaterial.specular.contents = UIColor.white
-        boardMaterial.roughness.contents = NSNumber(value: 0.2)
-        boardGeometry.materials = [boardMaterial]
-        boardNode.geometry = boardGeometry
+        let appearance = CharacterAppearance.shared
+        let equipment = EquipmentManager.shared.currentEquipment(for: GameManager.shared.selectedCharacter)
+        let isSkier = GameManager.shared.selectedCharacter == .skier
+
+        if isSkier {
+            // Two skis side by side
+            for side in [-0.08, 0.08] as [Float] {
+                let skiGeometry = SCNBox(width: 0.1, height: 0.04, length: 1.5, chamferRadius: 0.02)
+                let skiMaterial = SCNMaterial()
+                skiMaterial.diffuse.contents = equipment.color
+                skiMaterial.specular.contents = UIColor.white
+                skiMaterial.roughness.contents = NSNumber(value: 0.2)
+                skiGeometry.materials = [skiMaterial]
+                let skiNode = SCNNode(geometry: skiGeometry)
+                skiNode.position = SCNVector3(side, 0.04, 0)
+                boardNode.addChildNode(skiNode)
+
+                // Accent tip
+                let tipGeometry = SCNBox(width: 0.09, height: 0.045, length: 0.15, chamferRadius: 0.01)
+                let tipMaterial = SCNMaterial()
+                tipMaterial.diffuse.contents = equipment.accentColor
+                tipGeometry.materials = [tipMaterial]
+                let tipNode = SCNNode(geometry: tipGeometry)
+                tipNode.position = SCNVector3(side, 0.04, -0.6)
+                boardNode.addChildNode(tipNode)
+            }
+        } else {
+            // Snowboard — colored with equipment selection
+            let boardGeometry = SCNBox(width: 0.3, height: 0.05, length: 1.4, chamferRadius: 0.02)
+            let boardMaterial = SCNMaterial()
+            boardMaterial.diffuse.contents = equipment.color
+            boardMaterial.specular.contents = UIColor.white
+            boardMaterial.roughness.contents = NSNumber(value: 0.2)
+            boardGeometry.materials = [boardMaterial]
+            let mainBoard = SCNNode(geometry: boardGeometry)
+            boardNode.addChildNode(mainBoard)
+
+            // Accent stripe on board
+            let stripeGeometry = SCNBox(width: 0.27, height: 0.055, length: 0.12, chamferRadius: 0.01)
+            let stripeMaterial = SCNMaterial()
+            stripeMaterial.diffuse.contents = equipment.accentColor
+            stripeGeometry.materials = [stripeMaterial]
+            let stripeNode = SCNNode(geometry: stripeGeometry)
+            stripeNode.position = SCNVector3(0, 0, 0.3)
+            boardNode.addChildNode(stripeNode)
+        }
+
         boardNode.position = SCNVector3(0, 0.05, 0)
         playerNode.addChildNode(boardNode)
 
-        // Rider body (simplified humanoid)
-        let torsoGeometry = SCNCapsule(capRadius: 0.15, height: 0.6)
-        let torsoMaterial = SCNMaterial()
-        torsoMaterial.diffuse.contents = UIColor(red: 0.9, green: 0.2, blue: 0.1, alpha: 1.0)
-        torsoGeometry.materials = [torsoMaterial]
+        // Rider body — uses CharacterAppearance colors
+        let bodyScale = appearance.gender.bodyScale
 
-        let torsoNode = SCNNode(geometry: torsoGeometry)
-        torsoNode.position = SCNVector3(0, 0.55, 0)
-        bodyNode.addChildNode(torsoNode)
+        // Helmet
+        let helmetGeometry = SCNSphere(radius: 0.15)
+        let helmetMaterial = SCNMaterial()
+        helmetMaterial.diffuse.contents = appearance.helmetColor
+        helmetMaterial.specular.contents = UIColor.white
+        helmetGeometry.materials = [helmetMaterial]
+        let helmetNode = SCNNode(geometry: helmetGeometry)
+        helmetNode.position = SCNVector3(0, 1.06, 0)
+        helmetNode.scale = SCNVector3(1, 0.85, 1)
+        bodyNode.addChildNode(helmetNode)
 
         // Head
-        let headGeometry = SCNSphere(radius: 0.12)
+        let headGeometry = SCNSphere(radius: CGFloat(0.12 * appearance.gender.headScale))
         let headMaterial = SCNMaterial()
         headMaterial.diffuse.contents = UIColor(red: 0.96, green: 0.8, blue: 0.7, alpha: 1.0)
         headGeometry.materials = [headMaterial]
-
         let headNode = SCNNode(geometry: headGeometry)
-        headNode.position = SCNVector3(0, 1.0, 0)
+        headNode.position = SCNVector3(0, 1.0, 0.04)
         bodyNode.addChildNode(headNode)
 
-        // Goggles
+        // Goggles — custom color
         let goggleGeometry = SCNBox(width: 0.22, height: 0.08, length: 0.1, chamferRadius: 0.03)
         let goggleMaterial = SCNMaterial()
-        goggleMaterial.diffuse.contents = UIColor(red: 1.0, green: 0.6, blue: 0.0, alpha: 1.0)
+        goggleMaterial.diffuse.contents = appearance.goggleColor
         goggleMaterial.specular.contents = UIColor.white
         goggleGeometry.materials = [goggleMaterial]
-
         let goggleNode = SCNNode(geometry: goggleGeometry)
         goggleNode.position = SCNVector3(0, 1.02, 0.08)
         bodyNode.addChildNode(goggleNode)
 
-        // Legs
+        // Torso (jacket color)
+        let torsoGeometry = SCNCapsule(capRadius: CGFloat(0.15 * bodyScale.width), height: CGFloat(0.6 * bodyScale.height))
+        let torsoMaterial = SCNMaterial()
+        torsoMaterial.diffuse.contents = appearance.jacketColor
+        torsoGeometry.materials = [torsoMaterial]
+        let torsoNode = SCNNode(geometry: torsoGeometry)
+        torsoNode.position = SCNVector3(0, 0.55, 0)
+        bodyNode.addChildNode(torsoNode)
+
+        // Arms and gloves
+        for side in [-1.0, 1.0] as [Float] {
+            let armGeometry = SCNCapsule(capRadius: 0.055, height: 0.35)
+            let armMaterial = SCNMaterial()
+            armMaterial.diffuse.contents = appearance.jacketColor
+            armGeometry.materials = [armMaterial]
+            let armNode = SCNNode(geometry: armGeometry)
+            armNode.position = SCNVector3(side * 0.22, 0.5, 0)
+            armNode.eulerAngles.z = side * 0.25
+            bodyNode.addChildNode(armNode)
+
+            // Glove
+            let gloveGeometry = SCNSphere(radius: 0.055)
+            let gloveMaterial = SCNMaterial()
+            gloveMaterial.diffuse.contents = appearance.gloveColor
+            gloveGeometry.materials = [gloveMaterial]
+            let gloveNode = SCNNode(geometry: gloveGeometry)
+            gloveNode.position = SCNVector3(side * 0.26, 0.3, 0)
+            bodyNode.addChildNode(gloveNode)
+        }
+
+        // Legs (pants color)
         for side in [-1.0, 1.0] as [Float] {
             let legGeometry = SCNCapsule(capRadius: 0.07, height: 0.4)
             let legMaterial = SCNMaterial()
-            legMaterial.diffuse.contents = UIColor(red: 0.2, green: 0.2, blue: 0.3, alpha: 1.0)
+            legMaterial.diffuse.contents = appearance.pantsColor
             legGeometry.materials = [legMaterial]
-
             let legNode = SCNNode(geometry: legGeometry)
             legNode.position = SCNVector3(side * 0.1, 0.25, 0)
             bodyNode.addChildNode(legNode)
+
+            // Boots
+            let bootGeometry = SCNBox(width: 0.1, height: 0.08, length: 0.16, chamferRadius: 0.02)
+            let bootMaterial = SCNMaterial()
+            bootMaterial.diffuse.contents = appearance.bootColor
+            bootGeometry.materials = [bootMaterial]
+            let bootNode = SCNNode(geometry: bootGeometry)
+            bootNode.position = SCNVector3(side * 0.1, 0.04, 0.02)
+            bodyNode.addChildNode(bootNode)
         }
 
         bodyNode.position = SCNVector3(0, 0.05, 0)
@@ -123,21 +202,24 @@ class PlayerController {
     func handleSwipe(_ direction: SwipeDirection) {
         swipeDirection = direction
 
+        // Apply equipment turn bonus to lateral movement
+        let turnBonus = EquipmentManager.shared.currentEquipment(for: GameManager.shared.selectedCharacter).turnBonus
+
         switch direction {
         case .left:
-            targetLaneX = max(targetLaneX - GameConstants.laneWidth, -GameConstants.maxLaneOffset)
+            let moveAmount = GameConstants.laneWidth * turnBonus
+            targetLaneX = max(targetLaneX - moveAmount, -GameConstants.maxLaneOffset)
         case .right:
-            targetLaneX = min(targetLaneX + GameConstants.laneWidth, GameConstants.maxLaneOffset)
+            let moveAmount = GameConstants.laneWidth * turnBonus
+            targetLaneX = min(targetLaneX + moveAmount, GameConstants.maxLaneOffset)
         case .up:
             if !isJumping {
                 jump()
             }
         case .down:
             if isJumping {
-                // Slam down for style points
                 jumpVelocity = -GameConstants.slamDownSpeed
             } else {
-                // Tuck for speed
                 tuck()
             }
         case .none:
@@ -146,7 +228,6 @@ class PlayerController {
     }
 
     func handleTilt(_ tiltX: Float) {
-        // Accelerometer-based steering
         let deadzone: Float = 0.05
         if abs(tiltX) > deadzone {
             let steerAmount = tiltX * GameConstants.tiltSensitivity
@@ -162,14 +243,12 @@ class PlayerController {
         jumpVelocity = GameConstants.jumpForce
         currentY = playerNode.position.y
 
-        // Check if we should do a trick
         if abs(horizontalVelocity) > 2.0 {
             startTrick(.grab)
         }
     }
 
     private func tuck() {
-        // Lower body position for speed boost
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.2
         bodyNode.position.y = -0.1
@@ -208,7 +287,6 @@ class PlayerController {
 
         playerNode.position.x = currentLaneX
 
-        // Lean into turns
         let targetTilt = -horizontalVelocity * 0.05
         tiltAngle += (targetTilt - tiltAngle) * min(1.0, 8.0 * dt)
         boardNode.eulerAngles.z = tiltAngle
@@ -246,7 +324,6 @@ class PlayerController {
             trickRotation += GameConstants.trickSpinSpeed * dt
             bodyNode.eulerAngles.x = trickRotation
         case .grab:
-            // Board grab animation — tilt forward
             bodyNode.eulerAngles.x = sin(trickRotation) * 0.4
             trickRotation += 4.0 * dt
         case .none:
@@ -255,11 +332,8 @@ class PlayerController {
     }
 
     private func updateVisuals(speed: Float) {
-        // Board wobble at high speed
         let wobbleAmount = min(speed / GameConstants.maxSpeed, 1.0) * 0.02
         boardNode.eulerAngles.y = sin(Float(CACurrentMediaTime()) * 8) * wobbleAmount
-
-        // Forward movement animation (player moves downhill in -Z)
         playerNode.position.z -= speed * (1.0 / 60.0)
     }
 

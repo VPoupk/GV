@@ -7,9 +7,15 @@ class ObstacleManager {
     private(set) var activeObstacles: [Obstacle] = []
     private var nextSpawnZ: Float = GameConstants.obstacleStartZ
     private var difficultyFactor: Float = 1.0
+    private let resortObstacleMultiplier: Float
 
     init(obstacleRoot: SCNNode) {
         self.obstacleRoot = obstacleRoot
+        self.resortObstacleMultiplier = ResortManager.shared.currentResort.obstacleMultiplier
+    }
+
+    convenience init(obstacleRoot: SCNNode, resort: Resort) {
+        self.init(obstacleRoot: obstacleRoot)
     }
 
     // MARK: - Update
@@ -21,7 +27,7 @@ class ObstacleManager {
         // Spawn new obstacles ahead of player
         while nextSpawnZ > playerZ - GameConstants.obstacleLookAhead {
             spawnObstacleRow(atZ: nextSpawnZ)
-            nextSpawnZ -= GameConstants.obstacleSpacing / difficultyFactor
+            nextSpawnZ -= GameConstants.obstacleSpacing / (difficultyFactor * resortObstacleMultiplier)
         }
 
         // Remove obstacles behind player

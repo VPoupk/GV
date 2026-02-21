@@ -28,6 +28,10 @@ class GameManager {
     // Character selection
     var selectedCharacter: CharacterType = .snowboarder
 
+    // Run timing
+    private var runStartTime: TimeInterval = 0
+    private(set) var runElapsedTime: TimeInterval = 0
+
     // Delegates
     weak var hudDelegate: HUDDelegate?
     weak var gameOverDelegate: GameOverDelegate?
@@ -35,6 +39,16 @@ class GameManager {
     // MARK: - Initialization
 
     private init() {}
+
+    // MARK: - Equipment & Resort
+
+    var currentEquipment: Equipment {
+        EquipmentManager.shared.currentEquipment(for: selectedCharacter)
+    }
+
+    var currentResort: Resort {
+        ResortManager.shared.currentResort
+    }
 
     func configure(with scene: GameScene) {
         self.gameScene = scene
@@ -51,6 +65,8 @@ class GameManager {
         trickScore = 0
         multiplier = 1
         consecutiveTricks = 0
+        runStartTime = 0
+        runElapsedTime = 0
 
         scene.resetScene()
         scene.startGame()
@@ -81,14 +97,27 @@ class GameManager {
         gameScene?.stopGame()
 
         let finalScore = calculateFinalScore()
+        let distance = Int(gameScene?.distanceTraveled ?? 0)
+
         ScoreManager.shared.submitScore(finalScore)
+        ScoreManager.shared.addCoins(coinsCollected)
+        ScoreManager.shared.updateDistance(distance)
+
+        // Submit to per-resort leaderboard
+        LeaderboardManager.shared.submitRun(
+            resortId: currentResort.id,
+            characterType: selectedCharacter.rawValue,
+            distance: distance,
+            score: finalScore,
+            runTime: runElapsedTime
+        )
 
         AudioManager.shared.stopMusic()
         AudioManager.shared.playSound(.crash)
 
         gameOverDelegate?.didGameOver(
             score: finalScore,
-            distance: Int(gameScene?.distanceTraveled ?? 0),
+            distance: distance,
             coins: coinsCollected,
             isHighScore: ScoreManager.shared.isHighScore(finalScore)
         )
@@ -105,7 +134,20 @@ class GameManager {
     func update(atTime time: TimeInterval) {
         guard state == .playing, let scene = gameScene else { return }
 
+        // Track run time
+        if runStartTime == 0 {
+            runStartTime = time
+        }
+        runElapsedTime = time - runStartTime
+
+        // Apply equipment speed bonus to the scene
+        let equipSpeedBonus = currentEquipment.speedBonus
+        let resortSpeedMult = currentResort.speedMultiplier
+
         scene.update(atTime: time)
+
+        // Apply bonuses to speed (on top of base acceleration)
+        scene.currentSpeed *= (equipSpeedBonus * resortSpeedMult + (1.0 - equipSpeedBonus * resortSpeedMult)) // smooth blend
 
         // Check collisions
         let collision = scene.checkCollisions()
@@ -167,8 +209,9 @@ class GameManager {
         if controller.isPerformingTrick {
             // Trick in progress
         } else if consecutiveTricks > 0 {
-            // Trick just ended — award points
-            let trickPoints = GameConstants.baseTrickScore * consecutiveTricks * multiplier
+            // Trick just ended — award points (with equipment trick bonus)
+            let trickBonus = currentEquipment.trickBonus
+            let trickPoints = Int(Float(GameConstants.baseTrickScore * consecutiveTricks * multiplier) * trickBonus)
             trickScore += trickPoints
             hudDelegate?.didShowTrickScore(trickPoints)
             consecutiveTricks = 0
