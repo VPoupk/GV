@@ -16,12 +16,14 @@ class AudioManager {
     // MARK: - Configuration
 
     private func configureAudioSession() {
+        #if !targetEnvironment(macCatalyst)
         do {
             try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("Audio session configuration failed: \(error)")
         }
+        #endif
     }
 
     // MARK: - Music

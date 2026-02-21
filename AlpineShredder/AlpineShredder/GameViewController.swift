@@ -176,6 +176,55 @@ class GameViewController: UIViewController {
         GameManager.shared.returnToMenu()
         dismiss(animated: true)
     }
+
+    // MARK: - Keyboard Input (macOS)
+
+    override var canBecomeFirstResponder: Bool { true }
+
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        var handled = false
+
+        for press in presses {
+            guard let key = press.key else { continue }
+
+            switch key.keyCode {
+            case .keyboardLeftArrow:
+                if GameManager.shared.state == .playing {
+                    gameScene.playerController?.handleSwipe(.left)
+                    handled = true
+                }
+            case .keyboardRightArrow:
+                if GameManager.shared.state == .playing {
+                    gameScene.playerController?.handleSwipe(.right)
+                    handled = true
+                }
+            case .keyboardUpArrow:
+                if GameManager.shared.state == .playing {
+                    gameScene.playerController?.handleSwipe(.up)
+                    handled = true
+                }
+            case .keyboardDownArrow:
+                if GameManager.shared.state == .playing {
+                    gameScene.playerController?.handleSwipe(.down)
+                    handled = true
+                }
+            case .keyboardEscape:
+                togglePause()
+                handled = true
+            case .keyboardSpacebar:
+                if GameManager.shared.state == .playing {
+                    gameScene.playerController?.handleSwipe(.up)
+                    handled = true
+                }
+            default:
+                break
+            }
+        }
+
+        if !handled {
+            super.pressesBegan(presses, with: event)
+        }
+    }
 }
 
 // MARK: - SCNSceneRendererDelegate

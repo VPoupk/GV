@@ -7,6 +7,27 @@ class TutorialViewController: UIViewController {
     private let pageControl = UIPageControl()
     private var pages: [TutorialPage] = []
 
+    private static var controlItems: [String] {
+        #if targetEnvironment(macCatalyst)
+        return [
+            "LEFT ARROW  — Steer left across the slope",
+            "RIGHT ARROW — Steer right across the slope",
+            "UP ARROW / SPACE — Jump over obstacles",
+            "DOWN ARROW  — Tuck for speed / slam down",
+            "ESCAPE      — Pause the game",
+            "Swipe gestures also work on trackpad",
+        ]
+        #else
+        return [
+            "SWIPE LEFT  — Steer left across the slope",
+            "SWIPE RIGHT — Steer right across the slope",
+            "SWIPE UP    — Jump over obstacles",
+            "SWIPE DOWN  — Tuck for speed (on ground)",
+            "SWIPE DOWN  — Slam down fast (in air)",
+        ]
+        #endif
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         buildPages()
@@ -32,13 +53,7 @@ class TutorialViewController: UIViewController {
             TutorialPage(
                 title: "BASIC CONTROLS",
                 icon: "hand.draw.fill",
-                items: [
-                    "SWIPE LEFT  — Steer left across the slope",
-                    "SWIPE RIGHT — Steer right across the slope",
-                    "SWIPE UP    — Jump over obstacles",
-                    "SWIPE DOWN  — Tuck for speed (on ground)",
-                    "SWIPE DOWN  — Slam down fast (in air)",
-                ]
+                items: Self.controlItems
             ),
             TutorialPage(
                 title: "SCORING",
