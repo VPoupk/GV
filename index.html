@@ -127,10 +127,9 @@
     #name-input::placeholder { color: rgba(255,255,255,0.3); }
     #name-input:focus { border-color: rgba(79,195,247,0.6); }
 
-    #end-btn {
+    #back-btn, #end-btn {
       position: fixed;
       top: 20px;
-      right: 20px;
       z-index: 15;
       padding: 8px 20px;
       font-size: 14px;
@@ -144,6 +143,9 @@
       transition: background 0.2s, color 0.2s;
       display: none;
     }
+    #back-btn { left: 20px; }
+    #end-btn { right: 20px; }
+    #back-btn:hover { background: rgba(255,255,255,0.25); color: #fff; }
     #end-btn:hover { background: rgba(239,83,80,0.4); color: #fff; }
 
     /* Screens - hidden by default (shown via JS) */
@@ -663,6 +665,7 @@
     </div>
   </div>
 
+  <button id="back-btn">Back</button>
   <button id="end-btn">End Session</button>
 
   <div id="hud">
@@ -2276,6 +2279,7 @@
       document.getElementById('name-screen').style.display = 'none';
       document.getElementById('leaderboard').style.display = 'none';
       document.getElementById('stats-screen').style.display = 'none';
+      document.getElementById('back-btn').style.display = 'none';
       document.getElementById('end-btn').style.display = 'none';
       if (id) {
         const el = document.getElementById(id);
@@ -2290,6 +2294,7 @@
       localStorage.setItem(NAME_KEY, name);
 
       showScreen(null);
+      document.getElementById('back-btn').style.display = '';
       document.getElementById('end-btn').style.display = '';
       state.running = true;
       state.score = 0;
@@ -2415,6 +2420,14 @@
     document.getElementById('name-go-btn').addEventListener('click', tryStartFromName);
     document.getElementById('name-cancel-btn').addEventListener('click', () => showScreen('start-screen'));
     nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryStartFromName(); });
+    document.getElementById('back-btn').addEventListener('click', () => {
+      if (!state.running) return;
+      state.running = false;
+      clearLiveSession();
+      stopCombo();
+      muteBtn.style.display = 'none';
+      showScreen('start-screen');
+    });
     document.getElementById('end-btn').addEventListener('click', endSession);
     document.getElementById('lb-play-btn').addEventListener('click', showNameScreen);
     document.getElementById('lb-back-btn').addEventListener('click', () => showScreen('start-screen'));
