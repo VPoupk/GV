@@ -1,0 +1,612 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B10000000000000000000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000001 /* AppDelegate.swift */; };
+		B10000000000000000000002 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* GameViewController.swift */; };
+		B10000000000000000000003 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000003 /* AudioManager.swift */; };
+		B10000000000000000000004 /* CollectibleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* CollectibleManager.swift */; };
+		B10000000000000000000005 /* GameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000005 /* GameManager.swift */; };
+		B10000000000000000000006 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006 /* GameScene.swift */; };
+		B10000000000000000000007 /* LeaderboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000007 /* LeaderboardManager.swift */; };
+		B10000000000000000000008 /* ObstacleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* ObstacleManager.swift */; };
+		B10000000000000000000009 /* PlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000009 /* PlayerController.swift */; };
+		B1000000000000000000000A /* ScoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000A /* ScoreManager.swift */; };
+		B1000000000000000000000B /* TerrainGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000B /* TerrainGenerator.swift */; };
+		B1000000000000000000000C /* WeatherSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000C /* WeatherSystem.swift */; };
+		B1000000000000000000000D /* CharacterAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000D /* CharacterAppearance.swift */; };
+		B1000000000000000000000E /* Collectible.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000E /* Collectible.swift */; };
+		B1000000000000000000000F /* Equipment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000F /* Equipment.swift */; };
+		B10000000000000000000010 /* Obstacle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000010 /* Obstacle.swift */; };
+		B10000000000000000000011 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* Player.swift */; };
+		B10000000000000000000012 /* Resort.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* Resort.swift */; };
+		B10000000000000000000013 /* CharacterCustomizationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000013 /* CharacterCustomizationViewController.swift */; };
+		B10000000000000000000014 /* EquipmentSelectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000014 /* EquipmentSelectionViewController.swift */; };
+		B10000000000000000000015 /* GameOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000015 /* GameOverView.swift */; };
+		B10000000000000000000016 /* HUDOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000016 /* HUDOverlay.swift */; };
+		B10000000000000000000017 /* LeaderboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000017 /* LeaderboardViewController.swift */; };
+		B10000000000000000000018 /* MainHubViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000018 /* MainHubViewController.swift */; };
+		B10000000000000000000019 /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000019 /* MenuViewController.swift */; };
+		B1000000000000000000001A /* ResortSelectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001A /* ResortSelectionViewController.swift */; };
+		B1000000000000000000001B /* SportSelectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001B /* SportSelectionViewController.swift */; };
+		B1000000000000000000001C /* StartViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001C /* StartViewController.swift */; };
+		B1000000000000000000001D /* TechniquesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001D /* TechniquesViewController.swift */; };
+		B1000000000000000000001E /* TutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001E /* TutorialViewController.swift */; };
+		B1000000000000000000001F /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001F /* Constants.swift */; };
+		B10000000000000000000020 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000020 /* Extensions.swift */; };
+		B10000000000000000000021 /* GameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000021 /* GameTests.swift */; };
+		B10000000000000000000022 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DD0000000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DD0000000000000000000003 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DD0000000000000000000001;
+			remoteInfo = AlpineShredder;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A10000000000000000000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A10000000000000000000002 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
+		A10000000000000000000003 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		A10000000000000000000004 /* CollectibleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectibleManager.swift; sourceTree = "<group>"; };
+		A10000000000000000000005 /* GameManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameManager.swift; sourceTree = "<group>"; };
+		A10000000000000000000006 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		A10000000000000000000007 /* LeaderboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardManager.swift; sourceTree = "<group>"; };
+		A10000000000000000000008 /* ObstacleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObstacleManager.swift; sourceTree = "<group>"; };
+		A10000000000000000000009 /* PlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerController.swift; sourceTree = "<group>"; };
+		A1000000000000000000000A /* ScoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreManager.swift; sourceTree = "<group>"; };
+		A1000000000000000000000B /* TerrainGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainGenerator.swift; sourceTree = "<group>"; };
+		A1000000000000000000000C /* WeatherSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSystem.swift; sourceTree = "<group>"; };
+		A1000000000000000000000D /* CharacterAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterAppearance.swift; sourceTree = "<group>"; };
+		A1000000000000000000000E /* Collectible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collectible.swift; sourceTree = "<group>"; };
+		A1000000000000000000000F /* Equipment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Equipment.swift; sourceTree = "<group>"; };
+		A10000000000000000000010 /* Obstacle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Obstacle.swift; sourceTree = "<group>"; };
+		A10000000000000000000011 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		A10000000000000000000012 /* Resort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resort.swift; sourceTree = "<group>"; };
+		A10000000000000000000013 /* CharacterCustomizationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterCustomizationViewController.swift; sourceTree = "<group>"; };
+		A10000000000000000000014 /* EquipmentSelectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EquipmentSelectionViewController.swift; sourceTree = "<group>"; };
+		A10000000000000000000015 /* GameOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverView.swift; sourceTree = "<group>"; };
+		A10000000000000000000016 /* HUDOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDOverlay.swift; sourceTree = "<group>"; };
+		A10000000000000000000017 /* LeaderboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardViewController.swift; sourceTree = "<group>"; };
+		A10000000000000000000018 /* MainHubViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHubViewController.swift; sourceTree = "<group>"; };
+		A10000000000000000000019 /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
+		A1000000000000000000001A /* ResortSelectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResortSelectionViewController.swift; sourceTree = "<group>"; };
+		A1000000000000000000001B /* SportSelectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportSelectionViewController.swift; sourceTree = "<group>"; };
+		A1000000000000000000001C /* StartViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartViewController.swift; sourceTree = "<group>"; };
+		A1000000000000000000001D /* TechniquesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechniquesViewController.swift; sourceTree = "<group>"; };
+		A1000000000000000000001E /* TutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialViewController.swift; sourceTree = "<group>"; };
+		A1000000000000000000001F /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		A10000000000000000000020 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		A10000000000000000000021 /* GameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameTests.swift; sourceTree = "<group>"; };
+		A10000000000000000000022 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000000000000000000023 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000000000000000000024 /* AlpineShredder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlpineShredder.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000025 /* AlpineShredderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlpineShredderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EE0000000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EE0000000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		CC0000000000000000000001 /* root */ = {
+			isa = PBXGroup;
+			children = (
+				CC0000000000000000000002 /* AlpineShredder */,
+				CC0000000000000000000007 /* AlpineShredderTests */,
+				CC0000000000000000000008 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000002 /* AlpineShredder */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000001 /* AppDelegate.swift */,
+				A10000000000000000000002 /* GameViewController.swift */,
+				A10000000000000000000022 /* Info.plist */,
+				A10000000000000000000023 /* Assets.xcassets */,
+				CC0000000000000000000003 /* Game */,
+				CC0000000000000000000004 /* Models */,
+				CC0000000000000000000005 /* UI */,
+				CC0000000000000000000006 /* Utils */,
+			);
+			path = AlpineShredder;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000003 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000003 /* AudioManager.swift */,
+				A10000000000000000000004 /* CollectibleManager.swift */,
+				A10000000000000000000005 /* GameManager.swift */,
+				A10000000000000000000006 /* GameScene.swift */,
+				A10000000000000000000007 /* LeaderboardManager.swift */,
+				A10000000000000000000008 /* ObstacleManager.swift */,
+				A10000000000000000000009 /* PlayerController.swift */,
+				A1000000000000000000000A /* ScoreManager.swift */,
+				A1000000000000000000000B /* TerrainGenerator.swift */,
+				A1000000000000000000000C /* WeatherSystem.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000000D /* CharacterAppearance.swift */,
+				A1000000000000000000000E /* Collectible.swift */,
+				A1000000000000000000000F /* Equipment.swift */,
+				A10000000000000000000010 /* Obstacle.swift */,
+				A10000000000000000000011 /* Player.swift */,
+				A10000000000000000000012 /* Resort.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000005 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000013 /* CharacterCustomizationViewController.swift */,
+				A10000000000000000000014 /* EquipmentSelectionViewController.swift */,
+				A10000000000000000000015 /* GameOverView.swift */,
+				A10000000000000000000016 /* HUDOverlay.swift */,
+				A10000000000000000000017 /* LeaderboardViewController.swift */,
+				A10000000000000000000018 /* MainHubViewController.swift */,
+				A10000000000000000000019 /* MenuViewController.swift */,
+				A1000000000000000000001A /* ResortSelectionViewController.swift */,
+				A1000000000000000000001B /* SportSelectionViewController.swift */,
+				A1000000000000000000001C /* StartViewController.swift */,
+				A1000000000000000000001D /* TechniquesViewController.swift */,
+				A1000000000000000000001E /* TutorialViewController.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000006 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000001F /* Constants.swift */,
+				A10000000000000000000020 /* Extensions.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000007 /* AlpineShredderTests */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000021 /* GameTests.swift */,
+			);
+			path = AlpineShredderTests;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000008 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000024 /* AlpineShredder.app */,
+				A10000000000000000000025 /* AlpineShredderTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DD0000000000000000000001 /* AlpineShredder */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FF0000000000000000000008 /* Build configuration list for PBXNativeTarget "AlpineShredder" */;
+			buildPhases = (
+				EE0000000000000000000001 /* Sources */,
+				EE0000000000000000000003 /* Frameworks */,
+				EE0000000000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AlpineShredder;
+			productName = AlpineShredder;
+			productReference = A10000000000000000000024 /* AlpineShredder.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DD0000000000000000000002 /* AlpineShredderTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FF0000000000000000000009 /* Build configuration list for PBXNativeTarget "AlpineShredderTests" */;
+			buildPhases = (
+				EE0000000000000000000004 /* Sources */,
+				EE0000000000000000000005 /* Frameworks */,
+				EE0000000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DD0000000000000000000005 /* PBXTargetDependency */,
+			);
+			name = AlpineShredderTests;
+			productName = AlpineShredderTests;
+			productReference = A10000000000000000000025 /* AlpineShredderTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DD0000000000000000000003 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					DD0000000000000000000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					DD0000000000000000000002 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = DD0000000000000000000001;
+					};
+				};
+			};
+			buildConfigurationList = FF0000000000000000000007 /* Build configuration list for PBXProject "AlpineShredder" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = CC0000000000000000000001 /* root */;
+			productRefGroup = CC0000000000000000000008 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DD0000000000000000000001 /* AlpineShredder */,
+				DD0000000000000000000002 /* AlpineShredderTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		EE0000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000022 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EE0000000000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EE0000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000001 /* AppDelegate.swift in Sources */,
+				B10000000000000000000002 /* GameViewController.swift in Sources */,
+				B10000000000000000000003 /* AudioManager.swift in Sources */,
+				B10000000000000000000004 /* CollectibleManager.swift in Sources */,
+				B10000000000000000000005 /* GameManager.swift in Sources */,
+				B10000000000000000000006 /* GameScene.swift in Sources */,
+				B10000000000000000000007 /* LeaderboardManager.swift in Sources */,
+				B10000000000000000000008 /* ObstacleManager.swift in Sources */,
+				B10000000000000000000009 /* PlayerController.swift in Sources */,
+				B1000000000000000000000A /* ScoreManager.swift in Sources */,
+				B1000000000000000000000B /* TerrainGenerator.swift in Sources */,
+				B1000000000000000000000C /* WeatherSystem.swift in Sources */,
+				B1000000000000000000000D /* CharacterAppearance.swift in Sources */,
+				B1000000000000000000000E /* Collectible.swift in Sources */,
+				B1000000000000000000000F /* Equipment.swift in Sources */,
+				B10000000000000000000010 /* Obstacle.swift in Sources */,
+				B10000000000000000000011 /* Player.swift in Sources */,
+				B10000000000000000000012 /* Resort.swift in Sources */,
+				B10000000000000000000013 /* CharacterCustomizationViewController.swift in Sources */,
+				B10000000000000000000014 /* EquipmentSelectionViewController.swift in Sources */,
+				B10000000000000000000015 /* GameOverView.swift in Sources */,
+				B10000000000000000000016 /* HUDOverlay.swift in Sources */,
+				B10000000000000000000017 /* LeaderboardViewController.swift in Sources */,
+				B10000000000000000000018 /* MainHubViewController.swift in Sources */,
+				B10000000000000000000019 /* MenuViewController.swift in Sources */,
+				B1000000000000000000001A /* ResortSelectionViewController.swift in Sources */,
+				B1000000000000000000001B /* SportSelectionViewController.swift in Sources */,
+				B1000000000000000000001C /* StartViewController.swift in Sources */,
+				B1000000000000000000001D /* TechniquesViewController.swift in Sources */,
+				B1000000000000000000001E /* TutorialViewController.swift in Sources */,
+				B1000000000000000000001F /* Constants.swift in Sources */,
+				B10000000000000000000020 /* Extensions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EE0000000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000021 /* GameTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DD0000000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DD0000000000000000000001 /* AlpineShredder */;
+			targetProxy = DD0000000000000000000004 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		FF0000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FF0000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		FF0000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AlpineShredder/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alpineshredder.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FF0000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AlpineShredder/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alpineshredder.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		FF0000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alpineshredder.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AlpineShredder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AlpineShredder";
+			};
+			name = Debug;
+		};
+		FF0000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alpineshredder.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AlpineShredder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AlpineShredder";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FF0000000000000000000007 /* Build configuration list for PBXProject "AlpineShredder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FF0000000000000000000001 /* Debug */,
+				FF0000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FF0000000000000000000008 /* Build configuration list for PBXNativeTarget "AlpineShredder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FF0000000000000000000003 /* Debug */,
+				FF0000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FF0000000000000000000009 /* Build configuration list for PBXNativeTarget "AlpineShredderTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FF0000000000000000000005 /* Debug */,
+				FF0000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DD0000000000000000000003 /* Project object */;
+}
