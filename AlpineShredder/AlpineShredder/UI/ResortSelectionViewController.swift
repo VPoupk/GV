@@ -100,6 +100,8 @@ class ResortCell: UITableViewCell {
     private let bestLabel = UILabel()
     private let elevationLabel = UILabel()
     private let checkmark = UIImageView()
+    private let featureBadge = UIView()
+    private let featureLabel = UILabel()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -158,6 +160,20 @@ class ResortCell: UITableViewCell {
         checkmark.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(checkmark)
 
+        // Feature badge for snow park
+        featureBadge.backgroundColor = UIColor(red: 0.3, green: 0.6, blue: 1.0, alpha: 0.25)
+        featureBadge.layer.cornerRadius = 8
+        featureBadge.layer.borderWidth = 1
+        featureBadge.layer.borderColor = UIColor(red: 0.3, green: 0.6, blue: 1.0, alpha: 0.5).cgColor
+        featureBadge.translatesAutoresizingMaskIntoConstraints = false
+        featureBadge.isHidden = true
+        cardView.addSubview(featureBadge)
+
+        featureLabel.font = UIFont.systemFont(ofSize: 10, weight: .heavy)
+        featureLabel.textColor = UIColor(red: 0.5, green: 0.8, blue: 1.0, alpha: 1.0)
+        featureLabel.translatesAutoresizingMaskIntoConstraints = false
+        featureBadge.addSubview(featureLabel)
+
         NSLayoutConstraint.activate([
             cardView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -188,6 +204,14 @@ class ResortCell: UITableViewCell {
 
             checkmark.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -14),
             checkmark.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 14),
+
+            featureBadge.leadingAnchor.constraint(equalTo: nameLabel.trailingAnchor, constant: 8),
+            featureBadge.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor),
+
+            featureLabel.topAnchor.constraint(equalTo: featureBadge.topAnchor, constant: 3),
+            featureLabel.bottomAnchor.constraint(equalTo: featureBadge.bottomAnchor, constant: -3),
+            featureLabel.leadingAnchor.constraint(equalTo: featureBadge.leadingAnchor, constant: 6),
+            featureLabel.trailingAnchor.constraint(equalTo: featureBadge.trailingAnchor, constant: -6),
         ])
     }
 
@@ -201,8 +225,17 @@ class ResortCell: UITableViewCell {
         elevationLabel.text = resort.elevation
         descLabel.text = resort.description
 
+        // Show feature badge for snow park
+        if resort.isSnowPark {
+            featureBadge.isHidden = false
+            featureLabel.text = "HALFPIPE"
+        } else {
+            featureBadge.isHidden = true
+        }
+
         if let best = bestRun {
             bestLabel.text = "Best: \(best.distance)m"
+            bestLabel.textColor = UIColor(red: 1.0, green: 0.84, blue: 0.0, alpha: 1.0)
         } else {
             bestLabel.text = "No runs yet"
             bestLabel.textColor = UIColor(white: 1.0, alpha: 0.3)
