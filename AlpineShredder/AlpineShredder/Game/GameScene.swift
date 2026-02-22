@@ -61,12 +61,25 @@ class GameScene: SCNScene {
 
     private func setupCamera() {
         let camera = SCNCamera()
-        camera.fieldOfView = 65
+        camera.fieldOfView = 60
         camera.zNear = 0.1
-        camera.zFar = 200
+        camera.zFar = 250
         camera.wantsHDR = true
-        camera.bloomIntensity = 0.3
-        camera.bloomThreshold = 0.8
+        camera.bloomIntensity = 0.4
+        camera.bloomThreshold = 0.6
+        camera.wantsExposureAdaptation = true
+        camera.exposureOffset = -0.3
+        camera.minimumExposure = -2
+        camera.maximumExposure = 3
+        camera.motionBlurIntensity = 0.15
+        camera.screenSpaceAmbientOcclusionIntensity = 0.4
+        camera.screenSpaceAmbientOcclusionRadius = 3.0
+        camera.screenSpaceAmbientOcclusionDepthThreshold = 0.3
+        camera.vignettingIntensity = 0.3
+        camera.vignettingPower = 1.5
+        camera.colorFringeIntensity = 0.5
+        camera.saturation = 1.1
+        camera.contrast = 0.05
 
         cameraNode.camera = camera
         cameraNode.position = GameConstants.cameraOffset
@@ -79,27 +92,42 @@ class GameScene: SCNScene {
     }
 
     private func setupLighting() {
-        // Directional sun light
+        // Primary directional sun light
         let sunNode = SCNNode()
         let sunLight = SCNLight()
         sunLight.type = .directional
-        sunLight.color = UIColor(white: 1.0, alpha: 1.0)
-        sunLight.intensity = 1200
+        sunLight.color = UIColor(red: 1.0, green: 0.97, blue: 0.92, alpha: 1.0)
+        sunLight.intensity = 1400
         sunLight.castsShadow = true
         sunLight.shadowMode = .deferred
-        sunLight.shadowSampleCount = 8
-        sunLight.shadowRadius = 3.0
-        sunLight.shadowMapSize = CGSize(width: 2048, height: 2048)
+        sunLight.shadowSampleCount = 16
+        sunLight.shadowRadius = 4.0
+        sunLight.shadowMapSize = CGSize(width: 4096, height: 4096)
+        sunLight.shadowCascadeCount = 3
+        sunLight.shadowCascadeSplittingFactor = 0.15
+        sunLight.shadowBias = 0.5
+        sunLight.orthographicScale = 40
         sunNode.light = sunLight
         sunNode.eulerAngles = SCNVector3(-Float.pi / 3, Float.pi / 6, 0)
         lightRoot.addChildNode(sunNode)
+
+        // Secondary fill light (simulates sky bounce)
+        let fillNode = SCNNode()
+        let fillLight = SCNLight()
+        fillLight.type = .directional
+        fillLight.color = UIColor(red: 0.7, green: 0.8, blue: 1.0, alpha: 1.0)
+        fillLight.intensity = 300
+        fillLight.castsShadow = false
+        fillNode.light = fillLight
+        fillNode.eulerAngles = SCNVector3(-Float.pi / 6, -Float.pi / 4, 0)
+        lightRoot.addChildNode(fillNode)
 
         // Ambient fill light
         let ambientNode = SCNNode()
         let ambientLight = SCNLight()
         ambientLight.type = .ambient
-        ambientLight.color = UIColor(red: 0.7, green: 0.75, blue: 0.9, alpha: 1.0)
-        ambientLight.intensity = 400
+        ambientLight.color = UIColor(red: 0.65, green: 0.72, blue: 0.88, alpha: 1.0)
+        ambientLight.intensity = 500
         ambientNode.light = ambientLight
         lightRoot.addChildNode(ambientNode)
     }
@@ -125,20 +153,24 @@ class GameScene: SCNScene {
 
         // Snow particle system falling from sky — intensity varies by resort
         let snowParticle = SCNParticleSystem()
-        snowParticle.particleSize = 0.05
-        snowParticle.particleColor = .white
-        snowParticle.birthRate = CGFloat(200 * resort.snowIntensity)
-        snowParticle.particleLifeSpan = 8.0
-        snowParticle.spreadingAngle = 30
+        snowParticle.particleSize = 0.04
+        snowParticle.particleSizeVariation = 0.03
+        snowParticle.particleColor = UIColor(white: 1.0, alpha: 0.9)
+        snowParticle.birthRate = CGFloat(250 * resort.snowIntensity)
+        snowParticle.particleLifeSpan = 10.0
+        snowParticle.particleLifeSpanVariation = 3.0
+        snowParticle.spreadingAngle = 40
         snowParticle.emissionDuration = CGFloat.greatestFiniteMagnitude
-        snowParticle.emitterShape = SCNBox(width: 60, height: 0.1, length: 60, chamferRadius: 0)
-        snowParticle.particleVelocity = 2
-        snowParticle.particleVelocityVariation = 1
-        snowParticle.acceleration = SCNVector3(0, -0.5, 0)
-        snowParticle.blendMode = .additive
+        snowParticle.emitterShape = SCNBox(width: 80, height: 0.1, length: 80, chamferRadius: 0)
+        snowParticle.particleVelocity = 1.5
+        snowParticle.particleVelocityVariation = 1.0
+        snowParticle.acceleration = SCNVector3(0, -0.3, 0)
+        snowParticle.blendMode = .alpha
+        snowParticle.particleAngularVelocity = 1.0
+        snowParticle.particleAngularVelocityVariation = 2.0
 
         let snowEmitter = SCNNode()
-        snowEmitter.position = SCNVector3(0, 25, 0)
+        snowEmitter.position = SCNVector3(0, 30, 0)
         snowEmitter.addParticleSystem(snowParticle)
         particleRoot.addChildNode(snowEmitter)
     }

@@ -27,6 +27,33 @@ struct Resort {
     let obstacleMultiplier: Float
     let widthMultiplier: Float    // track width scale
 
+    // Snow park mode
+    let isSnowPark: Bool
+
+    init(id: String, name: String, location: String, difficulty: Difficulty, slopeLength: Int, elevation: String, description: String, skyColor: UIColor, snowColor: UIColor, mountainColor: UIColor, fogColor: UIColor, fogStart: Float, fogEnd: Float, treeFrequency: Float, rockFrequency: Float, cabinFrequency: Float, snowIntensity: Float, speedMultiplier: Float, obstacleMultiplier: Float, widthMultiplier: Float, isSnowPark: Bool = false) {
+        self.id = id
+        self.name = name
+        self.location = location
+        self.difficulty = difficulty
+        self.slopeLength = slopeLength
+        self.elevation = elevation
+        self.description = description
+        self.skyColor = skyColor
+        self.snowColor = snowColor
+        self.mountainColor = mountainColor
+        self.fogColor = fogColor
+        self.fogStart = fogStart
+        self.fogEnd = fogEnd
+        self.treeFrequency = treeFrequency
+        self.rockFrequency = rockFrequency
+        self.cabinFrequency = cabinFrequency
+        self.snowIntensity = snowIntensity
+        self.speedMultiplier = speedMultiplier
+        self.obstacleMultiplier = obstacleMultiplier
+        self.widthMultiplier = widthMultiplier
+        self.isSnowPark = isSnowPark
+    }
+
     enum Difficulty: String {
         case green = "Green Circle"
         case blue = "Blue Square"
@@ -187,6 +214,29 @@ enum ResortCatalog {
             speedMultiplier: 0.95,
             obstacleMultiplier: 0.9,
             widthMultiplier: 1.05
+        ),
+        Resort(
+            id: "snow_park",
+            name: "Freestyle Park",
+            location: "Park City, USA",
+            difficulty: .blue,
+            slopeLength: 0,
+            elevation: "2,100m",
+            description: "Epic terrain park with a massive halfpipe, rails, boxes, and kickers. Show off your best tricks!",
+            skyColor: UIColor(red: 0.5, green: 0.72, blue: 0.95, alpha: 1.0),
+            snowColor: UIColor(red: 0.93, green: 0.95, blue: 1.0, alpha: 1.0),
+            mountainColor: UIColor(red: 0.85, green: 0.87, blue: 0.93, alpha: 1.0),
+            fogColor: UIColor(red: 0.88, green: 0.9, blue: 0.95, alpha: 1.0),
+            fogStart: 90,
+            fogEnd: 170,
+            treeFrequency: 0.2,
+            rockFrequency: 0.05,
+            cabinFrequency: 0.02,
+            snowIntensity: 0.9,
+            speedMultiplier: 0.9,
+            obstacleMultiplier: 0.6,
+            widthMultiplier: 1.2,
+            isSnowPark: true
         ),
     ]
 }

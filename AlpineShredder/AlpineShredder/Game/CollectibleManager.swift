@@ -92,10 +92,13 @@ class CollectibleManager {
         switch type {
         case .coin:
             let coinGeometry = SCNCylinder(radius: 0.3, height: 0.06)
+            coinGeometry.radialSegmentCount = 24
             let coinMaterial = SCNMaterial()
             coinMaterial.diffuse.contents = UIColor(red: 1.0, green: 0.84, blue: 0.0, alpha: 1.0)
             coinMaterial.specular.contents = UIColor.white
-            coinMaterial.metalness.contents = NSNumber(value: 0.8)
+            coinMaterial.metalness.contents = NSNumber(value: 0.85)
+            coinMaterial.roughness.contents = NSNumber(value: 0.1)
+            coinMaterial.lightingModel = .physicallyBased
             coinGeometry.materials = [coinMaterial]
 
             let coinNode = SCNNode(geometry: coinGeometry)
@@ -104,10 +107,12 @@ class CollectibleManager {
 
             // Glow effect
             let glowGeometry = SCNSphere(radius: 0.35)
+            glowGeometry.segmentCount = 16
             let glowMaterial = SCNMaterial()
-            glowMaterial.diffuse.contents = UIColor(red: 1.0, green: 0.9, blue: 0.3, alpha: 0.2)
+            glowMaterial.diffuse.contents = UIColor(red: 1.0, green: 0.9, blue: 0.3, alpha: 0.15)
             glowMaterial.emission.contents = UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 0.3)
             glowMaterial.isDoubleSided = true
+            glowMaterial.lightingModel = .physicallyBased
             glowGeometry.materials = [glowMaterial]
             let glowNode = SCNNode(geometry: glowGeometry)
             node.addChildNode(glowNode)

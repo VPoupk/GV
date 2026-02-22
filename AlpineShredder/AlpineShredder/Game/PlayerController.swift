@@ -51,7 +51,9 @@ class PlayerController {
                 let skiMaterial = SCNMaterial()
                 skiMaterial.diffuse.contents = equipment.color
                 skiMaterial.specular.contents = UIColor.white
-                skiMaterial.roughness.contents = NSNumber(value: 0.2)
+                skiMaterial.roughness.contents = NSNumber(value: 0.15)
+                skiMaterial.metalness.contents = NSNumber(value: 0.1)
+                skiMaterial.lightingModel = .physicallyBased
                 skiGeometry.materials = [skiMaterial]
                 let skiNode = SCNNode(geometry: skiGeometry)
                 skiNode.position = SCNVector3(side, 0.04, 0)
@@ -72,7 +74,9 @@ class PlayerController {
             let boardMaterial = SCNMaterial()
             boardMaterial.diffuse.contents = equipment.color
             boardMaterial.specular.contents = UIColor.white
-            boardMaterial.roughness.contents = NSNumber(value: 0.2)
+            boardMaterial.roughness.contents = NSNumber(value: 0.15)
+            boardMaterial.metalness.contents = NSNumber(value: 0.1)
+            boardMaterial.lightingModel = .physicallyBased
             boardGeometry.materials = [boardMaterial]
             let mainBoard = SCNNode(geometry: boardGeometry)
             boardNode.addChildNode(mainBoard)
@@ -95,9 +99,12 @@ class PlayerController {
 
         // Helmet
         let helmetGeometry = SCNSphere(radius: 0.15)
+        helmetGeometry.segmentCount = 32
         let helmetMaterial = SCNMaterial()
         helmetMaterial.diffuse.contents = appearance.helmetColor
         helmetMaterial.specular.contents = UIColor.white
+        helmetMaterial.roughness.contents = NSNumber(value: 0.4)
+        helmetMaterial.lightingModel = .physicallyBased
         helmetGeometry.materials = [helmetMaterial]
         let helmetNode = SCNNode(geometry: helmetGeometry)
         helmetNode.position = SCNVector3(0, 1.06, 0)
@@ -106,18 +113,24 @@ class PlayerController {
 
         // Head
         let headGeometry = SCNSphere(radius: CGFloat(0.12 * appearance.gender.headScale))
+        headGeometry.segmentCount = 32
         let headMaterial = SCNMaterial()
         headMaterial.diffuse.contents = UIColor(red: 0.96, green: 0.8, blue: 0.7, alpha: 1.0)
+        headMaterial.roughness.contents = NSNumber(value: 0.6)
+        headMaterial.lightingModel = .physicallyBased
         headGeometry.materials = [headMaterial]
         let headNode = SCNNode(geometry: headGeometry)
         headNode.position = SCNVector3(0, 1.0, 0.04)
         bodyNode.addChildNode(headNode)
 
-        // Goggles — custom color
+        // Goggles — custom color with reflective lens
         let goggleGeometry = SCNBox(width: 0.22, height: 0.08, length: 0.1, chamferRadius: 0.03)
         let goggleMaterial = SCNMaterial()
         goggleMaterial.diffuse.contents = appearance.goggleColor
         goggleMaterial.specular.contents = UIColor.white
+        goggleMaterial.metalness.contents = NSNumber(value: 0.6)
+        goggleMaterial.roughness.contents = NSNumber(value: 0.1)
+        goggleMaterial.lightingModel = .physicallyBased
         goggleGeometry.materials = [goggleMaterial]
         let goggleNode = SCNNode(geometry: goggleGeometry)
         goggleNode.position = SCNVector3(0, 1.02, 0.08)
@@ -125,8 +138,11 @@ class PlayerController {
 
         // Torso (jacket color)
         let torsoGeometry = SCNCapsule(capRadius: CGFloat(0.15 * bodyScale.width), height: CGFloat(0.6 * bodyScale.height))
+        torsoGeometry.radialSegmentCount = 24
         let torsoMaterial = SCNMaterial()
         torsoMaterial.diffuse.contents = appearance.jacketColor
+        torsoMaterial.roughness.contents = NSNumber(value: 0.6)
+        torsoMaterial.lightingModel = .physicallyBased
         torsoGeometry.materials = [torsoMaterial]
         let torsoNode = SCNNode(geometry: torsoGeometry)
         torsoNode.position = SCNVector3(0, 0.55, 0)
@@ -135,8 +151,11 @@ class PlayerController {
         // Arms and gloves
         for side in [-1.0, 1.0] as [Float] {
             let armGeometry = SCNCapsule(capRadius: 0.055, height: 0.35)
+            armGeometry.radialSegmentCount = 16
             let armMaterial = SCNMaterial()
             armMaterial.diffuse.contents = appearance.jacketColor
+            armMaterial.roughness.contents = NSNumber(value: 0.6)
+            armMaterial.lightingModel = .physicallyBased
             armGeometry.materials = [armMaterial]
             let armNode = SCNNode(geometry: armGeometry)
             armNode.position = SCNVector3(side * 0.22, 0.5, 0)
@@ -145,8 +164,11 @@ class PlayerController {
 
             // Glove
             let gloveGeometry = SCNSphere(radius: 0.055)
+            gloveGeometry.segmentCount = 20
             let gloveMaterial = SCNMaterial()
             gloveMaterial.diffuse.contents = appearance.gloveColor
+            gloveMaterial.roughness.contents = NSNumber(value: 0.7)
+            gloveMaterial.lightingModel = .physicallyBased
             gloveGeometry.materials = [gloveMaterial]
             let gloveNode = SCNNode(geometry: gloveGeometry)
             gloveNode.position = SCNVector3(side * 0.26, 0.3, 0)
@@ -156,8 +178,11 @@ class PlayerController {
         // Legs (pants color)
         for side in [-1.0, 1.0] as [Float] {
             let legGeometry = SCNCapsule(capRadius: 0.07, height: 0.4)
+            legGeometry.radialSegmentCount = 16
             let legMaterial = SCNMaterial()
             legMaterial.diffuse.contents = appearance.pantsColor
+            legMaterial.roughness.contents = NSNumber(value: 0.65)
+            legMaterial.lightingModel = .physicallyBased
             legGeometry.materials = [legMaterial]
             let legNode = SCNNode(geometry: legGeometry)
             legNode.position = SCNVector3(side * 0.1, 0.25, 0)
@@ -167,6 +192,8 @@ class PlayerController {
             let bootGeometry = SCNBox(width: 0.1, height: 0.08, length: 0.16, chamferRadius: 0.02)
             let bootMaterial = SCNMaterial()
             bootMaterial.diffuse.contents = appearance.bootColor
+            bootMaterial.roughness.contents = NSNumber(value: 0.5)
+            bootMaterial.lightingModel = .physicallyBased
             bootGeometry.materials = [bootMaterial]
             let bootNode = SCNNode(geometry: bootGeometry)
             bootNode.position = SCNVector3(side * 0.1, 0.04, 0.02)
@@ -180,17 +207,20 @@ class PlayerController {
     private func setupTrail() {
         // Snow spray trail behind the player
         let trailParticle = SCNParticleSystem()
-        trailParticle.particleSize = 0.08
+        trailParticle.particleSize = 0.06
         trailParticle.particleSizeVariation = 0.04
-        trailParticle.particleColor = UIColor(white: 1.0, alpha: 0.8)
-        trailParticle.birthRate = 60
-        trailParticle.particleLifeSpan = 0.6
-        trailParticle.particleVelocity = 1.5
-        trailParticle.particleVelocityVariation = 0.5
-        trailParticle.spreadingAngle = 25
+        trailParticle.particleColor = UIColor(white: 1.0, alpha: 0.7)
+        trailParticle.birthRate = 80
+        trailParticle.particleLifeSpan = 0.8
+        trailParticle.particleLifeSpanVariation = 0.3
+        trailParticle.particleVelocity = 2.0
+        trailParticle.particleVelocityVariation = 0.8
+        trailParticle.spreadingAngle = 30
         trailParticle.emissionDuration = CGFloat.greatestFiniteMagnitude
-        trailParticle.blendMode = .additive
-        trailParticle.acceleration = SCNVector3(0, -2, 0)
+        trailParticle.blendMode = .alpha
+        trailParticle.acceleration = SCNVector3(0, -3, 0)
+        trailParticle.particleAngularVelocity = 1.0
+        trailParticle.particleAngularVelocityVariation = 2.0
 
         trailNode.position = SCNVector3(0, 0, 0.7)
         trailNode.addParticleSystem(trailParticle)
