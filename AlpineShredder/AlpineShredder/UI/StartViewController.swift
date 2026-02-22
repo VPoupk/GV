@@ -192,7 +192,7 @@ class StartViewController: UIViewController {
         view.addSubview(playButton)
 
         // Version
-        versionLabel.text = "v1.0"
+        versionLabel.text = "v2.0 — Freestyle Park"
         versionLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         versionLabel.textColor = UIColor(white: 1.0, alpha: 0.4)
         versionLabel.textAlignment = .center
