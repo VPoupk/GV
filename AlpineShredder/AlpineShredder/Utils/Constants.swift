@@ -7,8 +7,8 @@ enum GameConstants {
 
     static let playerStartPosition = SCNVector3(0, 0.3, 0)
     static let playerHalfExtent = SCNVector3(0.3, 0.6, 0.5)
-    static let lateralSpeed: Float = 8.0
-    static let laneWidth: Float = 3.0
+    static let lateralSpeed: Float = 5.0
+    static let laneWidth: Float = 1.8
     static let maxLaneOffset: Float = 8.0
     static let tiltSensitivity: Float = 15.0
 
