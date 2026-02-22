@@ -1,4 +1,5 @@
 import SceneKit
+import UIKit
 
 /// Generates procedural snowy mountain terrain chunks as the player moves downhill
 class TerrainGenerator {

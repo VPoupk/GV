@@ -416,7 +416,7 @@ class ObstacleManager {
             flagMaterial.lightingModel = .physicallyBased
             flagGeometry.materials = [flagMaterial]
             let flagNode = SCNNode(geometry: flagGeometry)
-            flagNode.position = SCNVector3(side + copysign(0.15, side), 1.4, 0)
+            flagNode.position = SCNVector3(side + (side > 0 ? 0.15 : -0.15), 1.4, 0)
             ramp.addChildNode(flagNode)
         }
 

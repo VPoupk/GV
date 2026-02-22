@@ -71,15 +71,6 @@ class GameScene: SCNScene {
         camera.exposureOffset = -0.3
         camera.minimumExposure = -2
         camera.maximumExposure = 3
-        camera.motionBlurIntensity = 0.15
-        camera.screenSpaceAmbientOcclusionIntensity = 0.4
-        camera.screenSpaceAmbientOcclusionRadius = 3.0
-        camera.screenSpaceAmbientOcclusionDepthThreshold = 0.3
-        camera.vignettingIntensity = 0.3
-        camera.vignettingPower = 1.5
-        camera.colorFringeIntensity = 0.5
-        camera.saturation = 1.1
-        camera.contrast = 0.05
 
         cameraNode.camera = camera
         cameraNode.position = GameConstants.cameraOffset
@@ -103,10 +94,6 @@ class GameScene: SCNScene {
         sunLight.shadowSampleCount = 16
         sunLight.shadowRadius = 4.0
         sunLight.shadowMapSize = CGSize(width: 4096, height: 4096)
-        sunLight.shadowCascadeCount = 3
-        sunLight.shadowCascadeSplittingFactor = 0.15
-        sunLight.shadowBias = 0.5
-        sunLight.orthographicScale = 40
         sunNode.light = sunLight
         sunNode.eulerAngles = SCNVector3(-Float.pi / 3, Float.pi / 6, 0)
         lightRoot.addChildNode(sunNode)
