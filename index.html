@@ -473,6 +473,83 @@
     }
 
     /* Combo Timer Bar */
+
+    /* Game Pass Card */
+    .gamepass-card {
+      background: linear-gradient(135deg, rgba(255,107,149,0.15), rgba(147,112,219,0.12));
+      border: 1px solid rgba(255,150,200,0.35);
+      border-radius: 18px;
+      padding: 18px 24px;
+      margin-top: 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      max-width: 360px;
+      width: 100%;
+    }
+    .gamepass-card::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: conic-gradient(from 0deg, transparent, rgba(255,150,200,0.06), transparent, rgba(147,112,219,0.06), transparent);
+      animation: vip-shimmer 6s linear infinite;
+    }
+    .gamepass-card > * { position: relative; z-index: 1; }
+    .gamepass-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, #ff9a9e, #a18cd1, #ff9a9e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .gamepass-icon { font-size: 24px; margin-bottom: 4px; }
+    .gamepass-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .gamepass-preview {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .gamepass-preview span {
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.7);
+      font-weight: 600;
+    }
+    .gamepass-toggle {
+      padding: 10px 30px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #ff9a9e, #a18cd1);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .gamepass-toggle:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(161,140,209,0.4);
+    }
+    .gamepass-toggle.active {
+      background: linear-gradient(135deg, #66bb6a, #43a047);
+    }
+    .gamepass-toggle.active:hover {
+      box-shadow: 0 0 25px rgba(102,187,106,0.4);
+    }
+
     #combo-bar-wrap {
       position: fixed;
       bottom: 30px;
@@ -631,6 +708,18 @@
         <button class="vip-btn" id="vip-buy-btn">Get VIP — £0.99</button>
         <div class="vip-price">One-time purchase</div>
       </div>
+    </div>
+    <div class="gamepass-card" id="anime-pass-card">
+      <div class="gamepass-icon">&#x1F338;</div>
+      <div class="gamepass-label">Game Pass</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">Anime Pack</div>
+      <div class="gamepass-desc">Sakura-themed room with pastel colors, glowing cherry blossom ball, and sparkle trail</div>
+      <div class="gamepass-preview">
+        <span>&#x1F338; Sakura Ball</span>
+        <span>&#x1F3E0; Pastel Room</span>
+        <span>&#x2728; Sparkle Trail</span>
+      </div>
+      <button class="gamepass-toggle" id="anime-pass-btn">Equip</button>
     </div>
   </div>
 
@@ -2366,6 +2455,67 @@
       showScreen('leaderboard');
     }
 
+    // ── Anime Game Pass ──────────────────────────────────────────
+    const ANIME_PASS_KEY = 'bouncingBall_animePack';
+    let animePackActive = localStorage.getItem(ANIME_PASS_KEY) === '1';
+
+    const ANIME_THEME = {
+      wall: 0x3d2b4a, floor: 0x4a3358, edge: 0x9a6fb0,
+      fog: 0x2a1a38, ambient: 0x806090,
+      accent1: 0xff8fa3, accent2: 0xc49bff,
+      ballDefault: { color: 0xffb7c5, emissive: 0xff8fa3, roughness: 0.1, metalness: 0.7, glowColor: 0xffb7c5, glowOpacity: 0.22 },
+      trailColor: 0xffb7c5,
+    };
+    // Store originals for reverting
+    const ORIG_THEME = {
+      wall: 0x2c2c3e, floor: 0x3a3a4e, edge: 0x5a5a7a,
+      fog: 0x1a1a2e, ambient: 0x404060,
+      accent1: 0x4fc3f7, accent2: 0xce93d8,
+    };
+
+    function applyAnimeRoom(on) {
+      const t = on ? ANIME_THEME : ORIG_THEME;
+      wallMat.color.setHex(t.wall);
+      floorMat.color.setHex(t.floor);
+      edgeMat.color.setHex(t.edge);
+      scene.fog.color.setHex(t.fog);
+      ambientLight.color.setHex(t.ambient);
+      accentLight1.color.setHex(t.accent1);
+      accentLight2.color.setHex(t.accent2);
+    }
+
+    // Override default ball tier when anime pack active
+    const ORIG_DEFAULT_TIER = { ...BALL_TIERS.default };
+    function syncAnimePackVisuals() {
+      if (animePackActive) {
+        Object.assign(BALL_TIERS.default, ANIME_THEME.ballDefault);
+      } else {
+        Object.assign(BALL_TIERS.default, ORIG_DEFAULT_TIER);
+      }
+      applyAnimeRoom(animePackActive);
+      // Force re-apply current tier if in default
+      if (currentBallTier === 'default') {
+        currentBallTier = '';
+        applyBallTier('default');
+      }
+    }
+
+    const animeBtn = document.getElementById('anime-pass-btn');
+    function updateAnimeBtn() {
+      animeBtn.textContent = animePackActive ? 'Unequip' : 'Equip';
+      animeBtn.classList.toggle('active', animePackActive);
+    }
+    animeBtn.addEventListener('click', () => {
+      animePackActive = !animePackActive;
+      localStorage.setItem(ANIME_PASS_KEY, animePackActive ? '1' : '0');
+      updateAnimeBtn();
+      syncAnimePackVisuals();
+    });
+    updateAnimeBtn();
+    syncAnimePackVisuals();
+
+    // animeTrailOverride is checked at trail spawn call site
+
     // ── Button Wiring ────────────────────────────────────────────
     const nameError = document.getElementById('name-error');
 
@@ -2551,7 +2701,8 @@
         trailTimer += dt;
         if (trailTimer > 0.03 && !catchAnimActive) {
           trailTimer = 0;
-          const trailColor = ballMat.color.getHex();
+          let trailColor = ballMat.color.getHex();
+          if (animePackActive && currentBallTier === 'default') trailColor = ANIME_THEME.trailColor;
           spawnTrailParticle(ballPos, trailColor);
         }
         updateTrail(dt);
