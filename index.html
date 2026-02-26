@@ -526,26 +526,26 @@
       <div class="packs-title">Texture Packs</div>
       <div class="packs-row">
         <div class="pack-card" id="anime-pack-card" data-pack="anime"
-             style="background:linear-gradient(135deg,rgba(255,107,149,0.15),rgba(147,112,219,0.12));border:1px solid rgba(255,150,200,0.35);--pack-shimmer1:rgba(255,150,200,0.06);--pack-shimmer2:rgba(147,112,219,0.06);">
-          <div class="pack-icon">&#x1F338;</div>
-          <div class="pack-name">Anime</div>
-          <div class="pack-desc">Sakura room, pastel ball, sparkle trail</div>
+             style="background:linear-gradient(160deg,rgba(80,30,60,0.6),rgba(60,25,80,0.4));border:1px solid rgba(255,150,200,0.3);--pack-shimmer1:rgba(255,140,180,0.08);--pack-shimmer2:rgba(180,120,255,0.06);">
+          <div class="pack-icon" style="font-size:32px;">&#x1F338;</div>
+          <div class="pack-name" style="background:linear-gradient(90deg,#ffb7c5,#d4a0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:15px;">Anime</div>
+          <div class="pack-desc">Soft pastel room, dreamy glow, cherry blossom ball</div>
           <div class="pack-tags">
-            <span>&#x1F338; Sakura</span>
-            <span>&#x2728; Pastel</span>
+            <span style="color:#ffb7c5;">&#x1F338; Sakura</span>
+            <span style="color:#d4a0ff;">&#x2728; Dreamy</span>
           </div>
-          <button class="pack-btn" id="anime-pack-btn" style="background:linear-gradient(135deg,#ff9a9e,#a18cd1);">Equip</button>
+          <button class="pack-btn" id="anime-pack-btn" style="background:linear-gradient(135deg,#ff8fa3,#c084fc);">Equip</button>
         </div>
         <div class="pack-card" id="cyber-pack-card" data-pack="cyber"
-             style="background:linear-gradient(135deg,rgba(0,255,200,0.12),rgba(0,150,255,0.1));border:1px solid rgba(0,255,200,0.3);--pack-shimmer1:rgba(0,255,200,0.06);--pack-shimmer2:rgba(0,150,255,0.06);">
-          <div class="pack-icon">&#x1F916;</div>
-          <div class="pack-name">Cyber Neon</div>
-          <div class="pack-desc">Neon grid room, glitch ball, laser trail</div>
+             style="background:linear-gradient(160deg,rgba(0,20,30,0.8),rgba(0,10,40,0.6));border:1px solid rgba(0,255,200,0.25);--pack-shimmer1:rgba(0,255,200,0.1);--pack-shimmer2:rgba(100,0,255,0.08);">
+          <div class="pack-icon" style="font-size:32px;">&#x26A1;</div>
+          <div class="pack-name" style="background:linear-gradient(90deg,#00ffc8,#6600ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:15px;">Cyber Neon</div>
+          <div class="pack-desc">Dark reflective room, neon glow edges, electric ball</div>
           <div class="pack-tags">
-            <span>&#x26A1; Neon</span>
-            <span>&#x1F4A0; Grid</span>
+            <span style="color:#00ffc8;">&#x26A1; Neon</span>
+            <span style="color:#8866ff;">&#x1F4A0; Cyber</span>
           </div>
-          <button class="pack-btn" id="cyber-pack-btn" style="background:linear-gradient(135deg,#00ffc8,#0096ff);">Equip</button>
+          <button class="pack-btn" id="cyber-pack-btn" style="background:linear-gradient(135deg,#00ffc8,#6600ff);">Equip</button>
         </div>
       </div>
     </div>
@@ -1222,27 +1222,43 @@
 
     // Animated ball effect — called every frame for dynamic tier visuals
     function animateBallTier(time, dt) {
-      const streak = state.streak;
       const tier = currentBallTier;
       const pack = activePack; // '', 'anime', or 'cyber'
 
       if (tier === 'sparkle') {
         if (pack === 'anime') {
-          // Magical Girl — soft pastel hue shift (lavender-pink-lilac)
-          const hue = 0.75 + 0.1 * Math.sin(time * 0.8);
-          const sat = 0.5 + 0.15 * Math.sin(time * 1.5);
-          ballMat.color.setHSL(hue, sat, 0.75);
-          ballMat.emissive.setHSL(hue, sat + 0.1, 0.45);
-          glowMat.color.setHSL(hue, sat, 0.75);
-          glowMat.opacity = 0.2 + 0.06 * Math.sin(time * 2);
+          // Magical Girl — dreamy slow pastel breathing between pink-lavender-white
+          const breath = Math.sin(time * 0.6) * 0.5 + 0.5; // 0-1 slow
+          const hue = 0.88 + 0.08 * Math.sin(time * 0.4); // pink-magenta range
+          const sat = 0.35 + 0.2 * breath;
+          const lit = 0.72 + 0.08 * breath;
+          ballMat.color.setHSL(hue, sat, lit);
+          ballMat.emissive.setHSL(hue, sat + 0.15, lit * 0.55);
+          glowMat.color.setHSL(hue, sat * 0.8, lit);
+          glowMat.opacity = 0.18 + 0.08 * breath;
+          ballMat.emissiveIntensity = 0.15 + 0.1 * breath;
         } else if (pack === 'cyber') {
-          // Hologram — rapid cyan-magenta flip
-          const hue = 0.5 + 0.15 * Math.sin(time * 3);
-          ballMat.color.setHSL(hue, 1, 0.6);
-          ballMat.emissive.setHSL(hue, 1, 0.4);
-          glowMat.color.setHSL(hue, 1, 0.6);
-          glowMat.opacity = 0.22 + 0.08 * Math.sin(time * 6);
-          if (Math.random() > 0.96) { ballMat.emissiveIntensity = 0.8; glowMat.opacity = 0.4; }
+          // Hologram — sharp cyan-magenta snap with scanline glitch
+          const snap = Math.floor(time * 4) % 2; // hard toggle
+          const glitch = Math.random() > 0.92;
+          if (glitch) {
+            ballMat.color.setRGB(1, 1, 1);
+            ballMat.emissive.setRGB(1, 1, 1);
+            ballMat.emissiveIntensity = 1.0;
+            glowMat.opacity = 0.5;
+          } else if (snap === 0) {
+            ballMat.color.setRGB(0, 1, 1); // cyan
+            ballMat.emissive.setRGB(0, 0.8, 0.8);
+            glowMat.color.setRGB(0, 1, 1);
+            glowMat.opacity = 0.25;
+            ballMat.emissiveIntensity = 0.3;
+          } else {
+            ballMat.color.setRGB(1, 0, 0.6); // magenta
+            ballMat.emissive.setRGB(0.8, 0, 0.5);
+            glowMat.color.setRGB(1, 0, 0.6);
+            glowMat.opacity = 0.25;
+            ballMat.emissiveIntensity = 0.3;
+          }
         } else {
           const hue = (time * 0.4) % 1;
           ballMat.color.setHSL(hue, 0.8, 0.6);
@@ -1252,22 +1268,31 @@
 
       } else if (tier === 'fire') {
         if (pack === 'anime') {
-          // Fox Fire — warm amber pulse
-          const flicker = 0.3 + 0.15 * Math.sin(time * 8) + 0.08 * Math.sin(time * 17);
-          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, flicker);
-          const f = 0.5 + 0.5 * Math.sin(time * 5);
-          ballMat.color.setRGB(1, 0.65 + f * 0.15, 0.35 + f * 0.15);
-          ballMat.emissive.setRGB(1, 0.55 + f * 0.15, 0.2);
-          glowMat.color.setRGB(1, 0.7 + f * 0.1, 0.4);
-          glowMat.opacity = 0.22 + 0.08 * Math.sin(time * 10);
+          // Kitsune Fire — gentle warm amber with soft golden breathing
+          const breath = Math.sin(time * 1.2) * 0.5 + 0.5;
+          const warm = Math.sin(time * 0.7) * 0.5 + 0.5;
+          ballMat.color.setRGB(1, 0.7 + warm * 0.12, 0.4 + breath * 0.15);
+          ballMat.emissive.setRGB(0.9, 0.5 + warm * 0.2, 0.15 + breath * 0.1);
+          glowMat.color.setRGB(1, 0.75 + warm * 0.1, 0.45);
+          glowMat.opacity = 0.2 + 0.1 * breath;
+          ballMat.emissiveIntensity = 0.2 + 0.12 * breath;
         } else if (pack === 'cyber') {
-          // Plasma Core — hot magenta-red strobe
-          const strobe = 0.5 + 0.5 * Math.sin(time * 15);
-          ballMat.color.setRGB(1, 0.05 + strobe * 0.15, 0.3 + strobe * 0.15);
-          ballMat.emissive.setRGB(0.9, 0.0, 0.25 + strobe * 0.2);
-          glowMat.color.setRGB(1, 0.1, 0.4);
-          glowMat.opacity = 0.25 + 0.1 * strobe;
-          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.3 + strobe * 0.25);
+          // Plasma Core — aggressive magenta strobe with white-hot spikes
+          const saw = (time * 8) % 1; // sawtooth wave
+          const spike = saw < 0.1 ? 1 : 0;
+          const base = 0.5 + 0.5 * Math.sin(time * 12);
+          if (spike || Math.random() > 0.94) {
+            ballMat.color.setRGB(1, 0.9, 0.9);
+            ballMat.emissive.setRGB(1, 0.3, 0.5);
+            ballMat.emissiveIntensity = 0.9;
+            glowMat.opacity = 0.45;
+          } else {
+            ballMat.color.setRGB(1, 0.0 + base * 0.1, 0.35 + base * 0.1);
+            ballMat.emissive.setRGB(0.95, 0.0, 0.3 + base * 0.15);
+            glowMat.color.setRGB(1, 0.05, 0.4);
+            glowMat.opacity = 0.22 + 0.12 * base;
+            ballMat.emissiveIntensity = 0.25 + 0.2 * base;
+          }
         } else {
           const flicker = 0.3 + 0.2 * Math.sin(time * 12) + 0.1 * Math.sin(time * 23);
           ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, flicker);
@@ -1280,20 +1305,26 @@
 
       } else if (tier === 'ice') {
         if (pack === 'anime') {
-          // Ice Queen — frost shimmer
-          const shimmer = 0.6 + 0.4 * Math.sin(time * 7 + Math.sin(time * 2) * 1.5);
-          ballMat.emissive.setRGB(0.45 * shimmer, 0.7 * shimmer, 0.85 * shimmer);
-          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.15 + shimmer * 0.12);
-          ballMat.color.setRGB(0.7 + 0.08 * shimmer, 0.88 + 0.08 * shimmer, 1.0);
-          glowMat.opacity = 0.2 + 0.07 * shimmer;
+          // Snow Princess — gentle white-blue with crystalline sparkle moments
+          const breath = Math.sin(time * 0.8) * 0.5 + 0.5;
+          const sparkle = Math.sin(time * 4 + Math.sin(time * 1.5) * 3) * 0.5 + 0.5;
+          ballMat.color.setRGB(0.75 + 0.15 * breath, 0.88 + 0.08 * sparkle, 1.0);
+          ballMat.emissive.setRGB(0.4 + 0.2 * sparkle, 0.6 + 0.15 * breath, 0.85);
+          ballMat.emissiveIntensity = 0.12 + 0.1 * sparkle;
+          glowMat.color.setRGB(0.8, 0.92, 1.0);
+          glowMat.opacity = 0.18 + 0.08 * breath;
         } else if (pack === 'cyber') {
-          // Cryo Circuit — electric blue pulse with digital flicker
-          const pulse = 0.5 + 0.5 * Math.sin(time * 9);
-          ballMat.color.setRGB(0.2 + pulse * 0.1, 0.8 + pulse * 0.1, 1.0);
-          ballMat.emissive.setRGB(0.1, 0.6 + pulse * 0.2, 0.9);
-          glowMat.color.setRGB(0.3, 0.85, 1.0);
-          glowMat.opacity = 0.22 + 0.08 * pulse;
-          if (Math.random() > 0.95) { ballMat.emissiveIntensity = 0.9; ballMat.emissive.setRGB(0.5, 1, 1); }
+          // Cryo Circuit — hard digital blue pulse, sharp contrast
+          const step = Math.floor(time * 6) % 3;
+          const pulse = Math.sin(time * 11) * 0.5 + 0.5;
+          const blues = [[0.1, 0.7, 1], [0.2, 0.9, 0.95], [0.0, 0.5, 1]];
+          const c = blues[step];
+          ballMat.color.setRGB(c[0] + pulse * 0.1, c[1], c[2]);
+          ballMat.emissive.setRGB(c[0] * 0.6, c[1] * 0.7 + pulse * 0.15, c[2] * 0.85);
+          glowMat.color.setRGB(0.15, 0.8, 1);
+          glowMat.opacity = 0.2 + 0.1 * pulse;
+          ballMat.emissiveIntensity = 0.2 + 0.15 * pulse;
+          if (Math.random() > 0.96) { ballMat.emissiveIntensity = 0.8; ballMat.emissive.setRGB(0.5, 1, 1); glowMat.opacity = 0.4; }
         } else {
           const shimmer = 0.6 + 0.4 * Math.sin(time * 10 + Math.sin(time * 3) * 2);
           ballMat.emissive.setRGB(0.25 * shimmer, 0.5 * shimmer, 0.9 * shimmer);
@@ -1304,34 +1335,38 @@
 
       } else if (tier === 'electric') {
         if (pack === 'anime') {
-          // Thunder God — violet sparks
-          const flash = Math.random();
-          if (flash > 0.94) {
-            ballMat.emissiveIntensity = 0.9;
-            ballMat.emissive.setRGB(0.85, 0.75, 1);
-            glowMat.color.setRGB(0.85, 0.75, 1);
-            glowMat.opacity = 0.4;
+          // Raijin — soft violet glow with gentle occasional bright sparks
+          const breath = Math.sin(time * 1.0) * 0.5 + 0.5;
+          const spark = Math.random() > 0.95;
+          if (spark) {
+            ballMat.emissiveIntensity = 0.7;
+            ballMat.emissive.setRGB(0.9, 0.8, 1);
+            glowMat.color.setRGB(0.9, 0.8, 1);
+            glowMat.opacity = 0.35;
           } else {
-            const pulse = 0.5 + 0.5 * Math.sin(time * 10);
-            ballMat.color.setRGB(0.55 + pulse * 0.1, 0.45 + pulse * 0.1, 0.9 + pulse * 0.1);
-            ballMat.emissive.setRGB(0.4 + pulse * 0.15, 0.3 + pulse * 0.1, 0.8 + pulse * 0.15);
-            glowMat.color.setRGB(0.6, 0.5 + pulse * 0.15, 1.0);
-            glowMat.opacity = 0.24 + pulse * 0.08;
+            ballMat.color.setRGB(0.55 + breath * 0.08, 0.45 + breath * 0.08, 0.92);
+            ballMat.emissive.setRGB(0.4 + breath * 0.1, 0.3 + breath * 0.08, 0.75 + breath * 0.1);
+            glowMat.color.setRGB(0.6, 0.5 + breath * 0.1, 1.0);
+            glowMat.opacity = 0.2 + 0.08 * breath;
+            ballMat.emissiveIntensity = 0.18 + 0.08 * breath;
           }
         } else if (pack === 'cyber') {
-          // Overclock — bright yellow-green with glitch flashes
-          const flash = Math.random();
-          if (flash > 0.9) {
-            ballMat.emissiveIntensity = 1.0;
-            ballMat.emissive.setRGB(1, 1, 0.5);
+          // Overclock — rapid yellow-green strobe, aggressive glitch
+          const glitch = Math.random();
+          if (glitch > 0.88) {
+            // Hard white glitch frame
+            ballMat.emissiveIntensity = 1.2;
+            ballMat.emissive.setRGB(1, 1, 0.6);
+            ballMat.color.setRGB(1, 1, 0.8);
             glowMat.color.setRGB(1, 1, 0.5);
-            glowMat.opacity = 0.45;
+            glowMat.opacity = 0.5;
           } else {
-            const pulse = 0.5 + 0.5 * Math.sin(time * 18);
-            ballMat.color.setRGB(0.7 + pulse * 0.15, 0.95, 0.05);
-            ballMat.emissive.setRGB(0.6 + pulse * 0.2, 0.85, 0.0);
-            glowMat.color.setRGB(0.8, 1, 0.2);
-            glowMat.opacity = 0.26 + pulse * 0.1;
+            const buzz = Math.sin(time * 25) * 0.5 + 0.5; // fast buzzing
+            ballMat.color.setRGB(0.7 + buzz * 0.2, 1, 0.0);
+            ballMat.emissive.setRGB(0.6 + buzz * 0.25, 0.9, 0.0);
+            glowMat.color.setRGB(0.8, 1, 0.15);
+            glowMat.opacity = 0.24 + buzz * 0.12;
+            ballMat.emissiveIntensity = 0.3 + buzz * 0.2;
           }
         } else {
           const flash = Math.random();
@@ -1351,25 +1386,26 @@
 
       } else if (tier === 'wind') {
         if (pack === 'anime') {
-          // Spirit Wind — ethereal mint-teal drift
-          const sw = time * 2;
-          const r = 0.55 + 0.1 * Math.sin(sw);
-          const g = 0.88 + 0.08 * Math.sin(sw + 2);
-          const b = 0.7 + 0.12 * Math.sin(sw + 4);
-          ballMat.color.setRGB(r, g, b);
-          ballMat.emissive.setRGB(r * 0.45, g * 0.55, b * 0.45);
-          glowMat.color.setRGB(r, g, b);
-          glowMat.opacity = 0.18 + 0.06 * Math.sin(time * 3);
-          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.2 + 0.08 * Math.sin(time * 3));
+          // Sylph — dreamy floating mint-green with gentle waving
+          const wave = Math.sin(time * 0.9) * 0.5 + 0.5;
+          const drift = Math.sin(time * 1.4 + 1) * 0.5 + 0.5;
+          ballMat.color.setRGB(0.5 + 0.15 * wave, 0.9 + 0.06 * drift, 0.65 + 0.1 * wave);
+          ballMat.emissive.setRGB(0.3 + 0.1 * wave, 0.6 + 0.1 * drift, 0.4 + 0.1 * wave);
+          glowMat.color.setRGB(0.55, 0.95, 0.7);
+          glowMat.opacity = 0.16 + 0.07 * wave;
+          ballMat.emissiveIntensity = 0.15 + 0.08 * drift;
         } else if (pack === 'cyber') {
-          // Data Stream — pulsing teal-green with scan line effect
-          const sw = time * 4;
-          const scan = 0.5 + 0.5 * Math.sin(sw);
-          ballMat.color.setRGB(0.0, 0.9 + 0.1 * scan, 0.45 + 0.15 * scan);
-          ballMat.emissive.setRGB(0.0, 0.7 + 0.15 * scan, 0.35);
-          glowMat.color.setRGB(0.0, 1.0, 0.55);
-          glowMat.opacity = 0.2 + 0.08 * scan;
-          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.25 + 0.1 * scan);
+          // Data Stream — matrix green with rapid digital stepping
+          const step = Math.floor(time * 8) % 4;
+          const greens = [[0, 1, 0.5], [0, 0.85, 0.4], [0.1, 1, 0.6], [0, 0.7, 0.35]];
+          const g = greens[step];
+          const pulse = Math.sin(time * 15) * 0.5 + 0.5;
+          ballMat.color.setRGB(g[0], g[1], g[2]);
+          ballMat.emissive.setRGB(g[0] * 0.6, g[1] * 0.7, g[2] * 0.6);
+          glowMat.color.setRGB(0, 1, 0.55);
+          glowMat.opacity = 0.18 + 0.12 * pulse;
+          ballMat.emissiveIntensity = 0.25 + 0.15 * pulse;
+          if (Math.random() > 0.95) { ballMat.color.setRGB(0.2, 0.2, 0.2); glowMat.opacity = 0.05; } // flicker off
         } else {
           const sw = time * 3;
           const r = 0.3 + 0.2 * Math.sin(sw);
@@ -1384,35 +1420,51 @@
 
       } else if (tier === 'storm') {
         if (pack === 'anime') {
-          // Final Form — divine gold-white cycle with sakura accents
-          const cycle = (time * 1.5) % 4;
+          // Ultimate Form — slow majestic cycle: gold → sakura pink → lavender → pure white
+          const cycle = (time * 0.8) % 4; // slower, more regal
           let cr, cg, cb;
-          if (cycle < 1) { cr = 1; cg = 0.85 + cycle * 0.1; cb = 0.5 + cycle * 0.2; }
-          else if (cycle < 2) { const t = cycle - 1; cr = 1; cg = 0.7 + 0.15 * t; cb = 0.75 + 0.1 * t; }
-          else if (cycle < 3) { const t = cycle - 2; cr = 0.8 + 0.1 * t; cg = 0.7 + 0.15 * t; cb = 1.0; }
-          else { const t = cycle - 3; cr = 0.95 + 0.05 * t; cg = 0.92 + 0.08 * t; cb = 0.9 + 0.1 * t; }
+          if (cycle < 1) {
+            // Gold aura
+            const t = cycle;
+            cr = 1; cg = 0.84 + t * 0.08; cb = 0.4 + t * 0.25;
+          } else if (cycle < 2) {
+            // Sakura bloom
+            const t = cycle - 1;
+            cr = 1; cg = 0.68 + t * 0.1; cb = 0.72 + t * 0.08;
+          } else if (cycle < 3) {
+            // Lavender dream
+            const t = cycle - 2;
+            cr = 0.82 + t * 0.08; cg = 0.7 + t * 0.12; cb = 1.0;
+          } else {
+            // Ascension white
+            const t = cycle - 3;
+            cr = 0.92 + t * 0.08; cg = 0.9 + t * 0.1; cb = 0.95 + t * 0.05;
+          }
+          const breath = Math.sin(time * 1.5) * 0.5 + 0.5;
           ballMat.color.setRGB(cr, cg, cb);
-          ballMat.emissive.setRGB(cr * 0.65, cg * 0.65, cb * 0.65);
+          ballMat.emissive.setRGB(cr * 0.6, cg * 0.6, cb * 0.6);
           glowMat.color.setRGB(cr, cg, cb);
-          const stormPulse = 0.6 + 0.4 * Math.sin(time * 7);
-          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.3 + stormPulse * 0.25);
-          glowMat.opacity = 0.28 + stormPulse * 0.12;
-          if (Math.random() > 0.96) { ballMat.emissiveIntensity = 1.0; ballMat.emissive.setRGB(1, 0.95, 0.85); }
+          ballMat.emissiveIntensity = 0.25 + 0.2 * breath;
+          glowMat.opacity = 0.25 + 0.12 * breath;
+          if (Math.random() > 0.97) { ballMat.emissiveIntensity = 0.9; ballMat.emissive.setRGB(1, 0.95, 0.88); }
         } else if (pack === 'cyber') {
-          // Singularity — white core cycling through neon edges
-          const cycle = (time * 2.5) % 4;
-          let cr, cg, cb;
-          if (cycle < 1) { cr = 0; cg = 1; cb = 0.8; } // neon cyan
-          else if (cycle < 2) { cr = 1; cg = 0; cb = 0.4; } // neon magenta
-          else if (cycle < 3) { cr = 0.8; cg = 1; cb = 0; } // neon green
-          else { cr = 0.3; cg = 0.5; cb = 1; } // neon blue
-          const w = 0.6 + 0.4 * Math.sin(time * 12); // white mix
-          ballMat.color.setRGB(cr * 0.4 + w * 0.6, cg * 0.4 + w * 0.6, cb * 0.4 + w * 0.6);
-          ballMat.emissive.setRGB(cr * 0.8, cg * 0.8, cb * 0.8);
-          glowMat.color.setRGB(cr, cg, cb);
-          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.4 + w * 0.3);
-          glowMat.opacity = 0.3 + w * 0.15;
-          if (Math.random() > 0.93) { ballMat.emissiveIntensity = 1.2; ballMat.emissive.setRGB(1, 1, 1); glowMat.opacity = 0.5; }
+          // Singularity — hard-cut neon color cycling with constant white flicker
+          const slot = Math.floor(time * 3) % 4; // hard snap every ~0.33s
+          const neons = [[0, 1, 0.8], [1, 0, 0.5], [0.7, 1, 0], [0.2, 0.4, 1]]; // cyan, magenta, green, blue
+          const c = neons[slot];
+          const intensity = 0.5 + 0.5 * Math.sin(time * 20); // rapid pulse
+          ballMat.color.setRGB(c[0] * 0.5 + 0.5, c[1] * 0.5 + 0.5, c[2] * 0.5 + 0.5);
+          ballMat.emissive.setRGB(c[0], c[1], c[2]);
+          glowMat.color.setRGB(c[0], c[1], c[2]);
+          ballMat.emissiveIntensity = 0.35 + 0.3 * intensity;
+          glowMat.opacity = 0.28 + 0.18 * intensity;
+          // Frequent bright glitch flashes
+          if (Math.random() > 0.9) {
+            ballMat.emissiveIntensity = 1.3;
+            ballMat.emissive.setRGB(1, 1, 1);
+            ballMat.color.setRGB(1, 1, 1);
+            glowMat.opacity = 0.55;
+          }
         } else {
           const cycle = (time * 2) % 4;
           let cr, cg, cb;
@@ -2366,7 +2418,16 @@
 
     const TEXTURE_PACKS = {
       anime: {
-        room: { wall: 0x3d2b4a, floor: 0x4a3358, edge: 0x9a6fb0, fog: 0x2a1a38, ambient: 0x806090, accent1: 0xff8fa3, accent2: 0xc49bff },
+        room: {
+          wall: 0x4a3060, floor: 0x553868, edge: 0xd4a0e0,
+          fog: 0x2e1a3e, ambient: 0xa07ab0,
+          accent1: 0xff8fa3, accent2: 0xd4a0ff,
+          // Material properties for a soft, dreamy look
+          wallRoughness: 0.95, wallMetalness: 0.0,
+          floorRoughness: 0.85, floorMetalness: 0.02,
+          edgeOpacity: 0.6,
+          mainLightIntensity: 70, accentIntensity: 18,
+        },
         tiers: {
           default:  { color: 0xffb7c5, emissive: 0xff8fa3, roughness: 0.1, metalness: 0.7, glowColor: 0xffb7c5, glowOpacity: 0.22 },
           sparkle:  { color: 0xd8b4fe, emissive: 0xc084fc, roughness: 0.05, metalness: 0.85, glowColor: 0xe0b0ff, glowOpacity: 0.24 },
@@ -2378,21 +2439,23 @@
         },
       },
       cyber: {
-        room: { wall: 0x0a1628, floor: 0x0d1f33, edge: 0x00ffc8, fog: 0x050d18, ambient: 0x003344, accent1: 0x00ffc8, accent2: 0x0096ff },
+        room: {
+          wall: 0x040810, floor: 0x060c14, edge: 0x00ffc8,
+          fog: 0x020408, ambient: 0x001a22,
+          accent1: 0x00ffc8, accent2: 0x6600ff,
+          // Material properties for a slick reflective sci-fi look
+          wallRoughness: 0.4, wallMetalness: 0.3,
+          floorRoughness: 0.15, floorMetalness: 0.7,
+          edgeOpacity: 0.9,
+          mainLightIntensity: 50, accentIntensity: 25,
+        },
         tiers: {
-          // Neon Cyan default
           default:  { color: 0x00ffc8, emissive: 0x00cc99, roughness: 0.05, metalness: 0.9, glowColor: 0x00ffc8, glowOpacity: 0.25 },
-          // Hologram — shifting cyan-magenta
           sparkle:  { color: 0x00ffff, emissive: 0x00cccc, roughness: 0.02, metalness: 0.95, glowColor: 0x66ffff, glowOpacity: 0.28 },
-          // Plasma Core — hot magenta-orange
           fire:     { color: 0xff0066, emissive: 0xcc0044, roughness: 0.15, metalness: 0.6, glowColor: 0xff3388, glowOpacity: 0.30 },
-          // Cryo Circuit — electric blue-white
           ice:      { color: 0x44ddff, emissive: 0x22aadd, roughness: 0.0, metalness: 0.95, glowColor: 0x88eeff, glowOpacity: 0.26 },
-          // Overclock — bright yellow-green
           electric: { color: 0xccff00, emissive: 0x99cc00, roughness: 0.1, metalness: 0.8, glowColor: 0xddff44, glowOpacity: 0.32 },
-          // Data Stream — teal-green pulse
           wind:     { color: 0x00ff88, emissive: 0x00cc66, roughness: 0.12, metalness: 0.7, glowColor: 0x44ffaa, glowOpacity: 0.24 },
-          // Singularity — pure white core with rainbow edge
           storm:    { color: 0xffffff, emissive: 0xccccff, roughness: 0.0, metalness: 1.0, glowColor: 0xffffff, glowOpacity: 0.40 },
         },
       },
@@ -2400,8 +2463,16 @@
 
     function getActivePack() { return TEXTURE_PACKS[activePack] || null; }
 
+    const ORIG_ROOM_MAT = {
+      wallRoughness: 0.85, wallMetalness: 0.05,
+      floorRoughness: 0.6, floorMetalness: 0.1,
+      edgeOpacity: 0.4,
+      mainLightIntensity: 60, accentIntensity: 15,
+    };
+
     function applyRoom(pack) {
       const t = pack ? pack.room : ORIG_THEME;
+      const m = pack ? pack.room : ORIG_ROOM_MAT;
       wallMat.color.setHex(t.wall);
       floorMat.color.setHex(t.floor);
       edgeMat.color.setHex(t.edge);
@@ -2409,6 +2480,15 @@
       ambientLight.color.setHex(t.ambient);
       accentLight1.color.setHex(t.accent1);
       accentLight2.color.setHex(t.accent2);
+      // Material properties
+      wallMat.roughness = m.wallRoughness;
+      wallMat.metalness = m.wallMetalness;
+      floorMat.roughness = m.floorRoughness;
+      floorMat.metalness = m.floorMetalness;
+      edgeMat.opacity = m.edgeOpacity;
+      mainLight.intensity = m.mainLightIntensity;
+      accentLight1.intensity = m.accentIntensity;
+      accentLight2.intensity = m.accentIntensity;
     }
 
     function syncPackVisuals() {
