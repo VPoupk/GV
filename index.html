@@ -282,272 +282,99 @@
       letter-spacing: 1px;
     }
 
-    /* VIP Pass Card */
-    .vip-card {
-      background: linear-gradient(135deg, rgba(156,39,176,0.15), rgba(233,30,99,0.08));
-      border: 1px solid rgba(206,147,216,0.4);
-      border-radius: 18px;
-      padding: 20px 28px;
-      margin-top: 24px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      max-width: 360px;
+    /* Texture Packs Section */
+    .packs-section {
+      margin-top: 20px;
+      max-width: 400px;
       width: 100%;
     }
-    .vip-card::before {
-      content: '';
-      position: absolute;
-      top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background: conic-gradient(from 0deg, transparent, rgba(206,147,216,0.05), transparent, rgba(233,30,99,0.05), transparent);
-      animation: vip-shimmer 8s linear infinite;
-    }
-    @keyframes vip-shimmer { to { transform: rotate(360deg); } }
-    .vip-card > * { position: relative; z-index: 1; }
-    .vip-icon { font-size: 26px; margin-bottom: 4px; }
-    .vip-label {
+    .packs-title {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 3px;
-      background: linear-gradient(90deg, #ce93d8, #f48fb1, #ce93d8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-    .vip-desc {
-      font-size: 13px;
-      color: rgba(255,255,255,0.55);
-      margin-bottom: 12px;
-      line-height: 1.5;
-    }
-    .vip-perks {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .vip-perk {
-      background: rgba(255,255,255,0.06);
-      border-radius: 8px;
-      padding: 4px 12px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.7);
-      font-weight: 600;
-    }
-    .vip-btn {
-      padding: 12px 36px;
-      font-size: 16px;
-      font-weight: 700;
-      border: none;
-      border-radius: 30px;
-      background: linear-gradient(135deg, #ce93d8, #e91e63);
-      color: #fff;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      letter-spacing: 0.5px;
-    }
-    .vip-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(233,30,99,0.4);
-    }
-    .vip-price {
-      font-size: 12px;
-      color: rgba(255,255,255,0.35);
-      margin-top: 8px;
-    }
-    .vip-active-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, #ce93d8, #e91e63);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 12px;
-      border-radius: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 6px;
-    }
-
-    /* VIP Purchase Overlay */
-    .vip-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(8px);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-    }
-    .vip-overlay.show { display: flex; }
-    .vip-modal {
-      background: linear-gradient(160deg, #1a1a2e, #16213e);
-      border: 1px solid rgba(206,147,216,0.3);
-      border-radius: 24px;
-      padding: 36px 32px;
-      max-width: 380px;
-      width: 90%;
-      text-align: center;
-      position: relative;
-      animation: vip-pop 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    }
-    @keyframes vip-pop {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    .vip-modal-icon { font-size: 48px; margin-bottom: 8px; }
-    .vip-modal-title {
-      font-size: 22px;
-      font-weight: 800;
-      background: linear-gradient(90deg, #ffd700, #f48fb1, #ce93d8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 6px;
-    }
-    .vip-modal-price {
-      font-size: 32px;
-      font-weight: 800;
-      color: #fff;
-      margin: 10px 0;
-    }
-    .vip-modal-price small {
-      font-size: 14px;
       color: rgba(255,255,255,0.4);
-      font-weight: 400;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 10px;
     }
-    .vip-modal-perks {
-      list-style: none;
-      padding: 0;
-      margin: 18px 0 24px;
-      text-align: left;
-    }
-    .vip-modal-perks li {
-      padding: 8px 0;
-      font-size: 15px;
-      color: rgba(255,255,255,0.85);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+    .packs-row {
       display: flex;
-      align-items: center;
       gap: 10px;
+      justify-content: center;
     }
-    .vip-modal-perks li:last-child { border-bottom: none; }
-    .vip-modal-perks .perk-icon { font-size: 20px; flex-shrink: 0; }
-    .vip-confirm-btn {
-      width: 100%;
-      padding: 16px;
-      font-size: 18px;
-      font-weight: 800;
-      border: none;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #ffd700, #e91e63);
-      color: #fff;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      letter-spacing: 0.5px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    }
-    .vip-confirm-btn:hover {
-      transform: scale(1.03);
-      box-shadow: 0 0 40px rgba(233,30,99,0.5);
-    }
-    .vip-cancel-btn {
-      margin-top: 14px;
-      background: none;
-      border: none;
-      color: rgba(255,255,255,0.35);
-      font-size: 14px;
-      cursor: pointer;
-      padding: 8px 20px;
-    }
-    .vip-cancel-btn:hover { color: rgba(255,255,255,0.6); }
-    .vip-success {
-      animation: vip-success-pop 0.5s ease;
-    }
-    @keyframes vip-success-pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
+    @keyframes pack-shimmer { to { transform: rotate(360deg); } }
 
     /* Combo Timer Bar */
 
-    /* Game Pass Card */
-    .gamepass-card {
-      background: linear-gradient(135deg, rgba(255,107,149,0.15), rgba(147,112,219,0.12));
-      border: 1px solid rgba(255,150,200,0.35);
-      border-radius: 18px;
-      padding: 18px 24px;
-      margin-top: 16px;
+    /* Texture Pack Card */
+    .pack-card {
+      flex: 1;
+      min-width: 0;
+      border-radius: 16px;
+      padding: 14px 12px;
       text-align: center;
       position: relative;
       overflow: hidden;
-      max-width: 360px;
-      width: 100%;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.3s;
     }
-    .gamepass-card::before {
+    .pack-card:hover { transform: scale(1.03); }
+    .pack-card::before {
       content: '';
       position: absolute;
       top: -50%; left: -50%;
       width: 200%; height: 200%;
-      background: conic-gradient(from 0deg, transparent, rgba(255,150,200,0.06), transparent, rgba(147,112,219,0.06), transparent);
-      animation: vip-shimmer 6s linear infinite;
+      background: conic-gradient(from 0deg, transparent, var(--pack-shimmer1, rgba(255,150,200,0.06)), transparent, var(--pack-shimmer2, rgba(147,112,219,0.06)), transparent);
+      animation: pack-shimmer 6s linear infinite;
     }
-    .gamepass-card > * { position: relative; z-index: 1; }
-    .gamepass-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      background: linear-gradient(90deg, #ff9a9e, #a18cd1, #ff9a9e);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 700;
-      margin-bottom: 4px;
+    .pack-card > * { position: relative; z-index: 1; }
+    .pack-card.equipped {
+      border-width: 2px;
     }
-    .gamepass-icon { font-size: 24px; margin-bottom: 4px; }
-    .gamepass-desc {
-      font-size: 13px;
-      color: rgba(255,255,255,0.55);
-      margin-bottom: 10px;
-      line-height: 1.4;
-    }
-    .gamepass-preview {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-    .gamepass-preview span {
-      background: rgba(255,255,255,0.06);
-      border-radius: 8px;
-      padding: 4px 10px;
-      font-size: 11px;
-      color: rgba(255,255,255,0.7);
-      font-weight: 600;
-    }
-    .gamepass-toggle {
-      padding: 10px 30px;
+    .pack-icon { font-size: 28px; margin-bottom: 2px; }
+    .pack-name {
       font-size: 14px;
       font-weight: 700;
+      color: #fff;
+      margin-bottom: 3px;
+    }
+    .pack-desc {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .pack-tags {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .pack-tags span {
+      background: rgba(255,255,255,0.06);
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.65);
+      font-weight: 600;
+    }
+    .pack-btn {
+      padding: 7px 22px;
+      font-size: 12px;
+      font-weight: 700;
       border: none;
-      border-radius: 30px;
-      background: linear-gradient(135deg, #ff9a9e, #a18cd1);
+      border-radius: 20px;
       color: #fff;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    .gamepass-toggle:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 25px rgba(161,140,209,0.4);
-    }
-    .gamepass-toggle.active {
+    .pack-btn:hover { transform: scale(1.05); }
+    .pack-btn.equipped-btn {
       background: linear-gradient(135deg, #66bb6a, #43a047);
     }
-    .gamepass-toggle.active:hover {
-      box-shadow: 0 0 25px rgba(102,187,106,0.4);
+    .pack-btn.equipped-btn:hover {
+      box-shadow: 0 0 20px rgba(102,187,106,0.4);
     }
 
     #combo-bar-wrap {
@@ -695,31 +522,32 @@
       <button id="start-lb-btn" class="overlay-btn secondary">Leaderboard</button>
       <button id="start-stats-btn" class="overlay-btn secondary">Stats</button>
     </div>
-    <div class="vip-card" id="vip-card">
-      <div class="vip-icon">&#x2B50;</div>
-      <div class="vip-label">VIP Pass</div>
-      <div class="vip-desc">Unlock exclusive perks and stand out on the leaderboard</div>
-      <div class="vip-perks">
-        <span class="vip-perk">&#x2B50; VIP Badge</span>
-        <span class="vip-perk">&#x1F451; Gold Name</span>
-        <span class="vip-perk">&#x1F525; 2x Score</span>
+    <div class="packs-section">
+      <div class="packs-title">Texture Packs</div>
+      <div class="packs-row">
+        <div class="pack-card" id="anime-pack-card" data-pack="anime"
+             style="background:linear-gradient(135deg,rgba(255,107,149,0.15),rgba(147,112,219,0.12));border:1px solid rgba(255,150,200,0.35);--pack-shimmer1:rgba(255,150,200,0.06);--pack-shimmer2:rgba(147,112,219,0.06);">
+          <div class="pack-icon">&#x1F338;</div>
+          <div class="pack-name">Anime</div>
+          <div class="pack-desc">Sakura room, pastel ball, sparkle trail</div>
+          <div class="pack-tags">
+            <span>&#x1F338; Sakura</span>
+            <span>&#x2728; Pastel</span>
+          </div>
+          <button class="pack-btn" id="anime-pack-btn" style="background:linear-gradient(135deg,#ff9a9e,#a18cd1);">Equip</button>
+        </div>
+        <div class="pack-card" id="cyber-pack-card" data-pack="cyber"
+             style="background:linear-gradient(135deg,rgba(0,255,200,0.12),rgba(0,150,255,0.1));border:1px solid rgba(0,255,200,0.3);--pack-shimmer1:rgba(0,255,200,0.06);--pack-shimmer2:rgba(0,150,255,0.06);">
+          <div class="pack-icon">&#x1F916;</div>
+          <div class="pack-name">Cyber Neon</div>
+          <div class="pack-desc">Neon grid room, glitch ball, laser trail</div>
+          <div class="pack-tags">
+            <span>&#x26A1; Neon</span>
+            <span>&#x1F4A0; Grid</span>
+          </div>
+          <button class="pack-btn" id="cyber-pack-btn" style="background:linear-gradient(135deg,#00ffc8,#0096ff);">Equip</button>
+        </div>
       </div>
-      <div id="vip-btn-area">
-        <button class="vip-btn" id="vip-buy-btn">Get VIP — £0.99</button>
-        <div class="vip-price">One-time purchase</div>
-      </div>
-    </div>
-    <div class="gamepass-card" id="anime-pass-card">
-      <div class="gamepass-icon">&#x1F338;</div>
-      <div class="gamepass-label">Game Pass</div>
-      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">Anime Pack</div>
-      <div class="gamepass-desc">Sakura-themed room with pastel colors, glowing cherry blossom ball, and sparkle trail</div>
-      <div class="gamepass-preview">
-        <span>&#x1F338; Sakura Ball</span>
-        <span>&#x1F3E0; Pastel Room</span>
-        <span>&#x2728; Sparkle Trail</span>
-      </div>
-      <button class="gamepass-toggle" id="anime-pass-btn">Equip</button>
     </div>
   </div>
 
@@ -820,53 +648,7 @@
     const nameInput = document.getElementById('name-input');
     nameInput.value = localStorage.getItem(NAME_KEY) || '';
 
-    // ── VIP Pass ─────────────────────────────────────────────
-    const VIP_KEY = 'bouncingBall_vip';
-    function isVIP() { return localStorage.getItem(VIP_KEY) === 'true'; }
-
-    function updateVIPCard() {
-      const btnArea = document.getElementById('vip-btn-area');
-      if (isVIP()) {
-        btnArea.innerHTML = '<div class="vip-active-badge">VIP Active</div>';
-      }
-    }
-
-    const vipOverlay = document.getElementById('vip-overlay');
-    const vipModal = document.getElementById('vip-modal');
-
-    document.getElementById('vip-buy-btn').addEventListener('click', () => {
-      vipOverlay.classList.add('show');
-    });
-
-    document.getElementById('vip-cancel-btn').addEventListener('click', () => {
-      vipOverlay.classList.remove('show');
-    });
-
-    vipOverlay.addEventListener('click', (e) => {
-      if (e.target === vipOverlay) vipOverlay.classList.remove('show');
-    });
-
-    document.getElementById('vip-confirm-btn').addEventListener('click', () => {
-      // ── PAYMENT: Replace this block with your Stripe/PayPal checkout ──
-      // Example: window.open('https://buy.stripe.com/YOUR_LINK', '_blank');
-      // Then activate VIP only after payment confirmation.
-      // For now, activates VIP directly (beta/free mode):
-      localStorage.setItem(VIP_KEY, 'true');
-      updateVIPCard();
-
-      // Success animation
-      vipModal.innerHTML =
-        '<div style="padding:30px 0;">' +
-        '<div style="font-size:64px;animation:vip-success-pop 0.5s ease;">&#x2705;</div>' +
-        '<div style="font-size:22px;font-weight:800;color:#4caf50;margin:12px 0;">VIP Activated!</div>' +
-        '<div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:20px;">All perks are now active</div>' +
-        '<button onclick="document.getElementById(\'vip-overlay\').classList.remove(\'show\')" ' +
-        'style="padding:12px 36px;font-size:16px;font-weight:700;border:none;border-radius:30px;' +
-        'background:linear-gradient(135deg,#4caf50,#2e7d32);color:#fff;cursor:pointer;">Let\'s Go!</button>' +
-        '</div>';
-    });
-
-    updateVIPCard();
+    // VIP removed — no longer used
 
     // ── Sound Effects (Web Audio API) ────────────────────────
     let audioCtx = null;
@@ -1110,7 +892,7 @@
       const newFlags = { score: null, streak: null, session: null, newChampion: false };
 
       function insert(list, value) {
-        const entry = { value, name: name || 'Anonymous', date: Date.now(), vip: isVIP() };
+        const entry = { value, name: name || 'Anonymous', date: Date.now() };
         let idx = list.findIndex(e => value > e.value);
         if (idx === -1) idx = list.length;
         if (idx >= LB_MAX) return null;
@@ -1134,7 +916,6 @@
             time: Math.round(sessionSecs),
             rating,
             date: Date.now(),
-            vip: isVIP(),
           };
           newFlags.newChampion = true;
         }
@@ -1214,7 +995,7 @@
           `<div class="grand-champion">` +
             `<div class="gc-crown">&#x1F451;</div>` +
             `<div class="gc-title">Grand Champion</div>` +
-            `<div class="gc-name"${c.vip ? ' style="color:#ffd700;"' : ''}>${c.vip ? '&#x2B50; ' : ''}${escapeHtml(c.name)}${isNew ? '<span class="gc-new-badge">NEW</span>' : ''}</div>` +
+            `<div class="gc-name">${escapeHtml(c.name)}${isNew ? '<span class="gc-new-badge">NEW</span>' : ''}</div>` +
             `<div class="gc-stats">` +
               `<div class="gc-stat"><span class="gc-label">Score</span><span class="gc-val">${c.score.toLocaleString()}</span></div>` +
               `<div class="gc-stat"><span class="gc-label">Streak</span><span class="gc-val">${c.streak}</span></div>` +
@@ -1241,9 +1022,7 @@
           ? lb[cat.key].map((e, i) => {
               const isNew = newFlags && newFlags[cat.key] === i;
               const rawName = escapeHtml(e.name || 'Anonymous');
-              const vipBadge = e.vip ? '<span style="color:#ffd700;font-size:11px;margin-right:4px;">&#x2B50;</span>' : '';
-              const nameStyle = e.vip ? 'style="color:#ffd700;"' : '';
-              return `<li><span class="lb-rank">#${i + 1}</span><span class="lb-name" ${nameStyle}>${vipBadge}${rawName}</span> <span class="lb-val">${cat.fmt(e.value)}${isNew ? '<span class="lb-new">NEW</span>' : ''}</span></li>`;
+              return `<li><span class="lb-rank">#${i + 1}</span><span class="lb-name">${rawName}</span> <span class="lb-val">${cat.fmt(e.value)}${isNew ? '<span class="lb-new">NEW</span>' : ''}</span></li>`;
             }).join('')
           : '<li style="color:rgba(255,255,255,0.3)">No records yet</li>';
         return `<div class="lb-col ${cat.cls}"><h3>${cat.title}</h3><ol>${rows}</ol></div>`;
@@ -1445,16 +1224,25 @@
     function animateBallTier(time, dt) {
       const streak = state.streak;
       const tier = currentBallTier;
+      const pack = activePack; // '', 'anime', or 'cyber'
 
       if (tier === 'sparkle') {
-        if (animePackActive) {
+        if (pack === 'anime') {
           // Magical Girl — soft pastel hue shift (lavender-pink-lilac)
-          const hue = 0.75 + 0.1 * Math.sin(time * 0.8); // stays in purple-pink range
+          const hue = 0.75 + 0.1 * Math.sin(time * 0.8);
           const sat = 0.5 + 0.15 * Math.sin(time * 1.5);
           ballMat.color.setHSL(hue, sat, 0.75);
           ballMat.emissive.setHSL(hue, sat + 0.1, 0.45);
           glowMat.color.setHSL(hue, sat, 0.75);
           glowMat.opacity = 0.2 + 0.06 * Math.sin(time * 2);
+        } else if (pack === 'cyber') {
+          // Hologram — rapid cyan-magenta flip
+          const hue = 0.5 + 0.15 * Math.sin(time * 3);
+          ballMat.color.setHSL(hue, 1, 0.6);
+          ballMat.emissive.setHSL(hue, 1, 0.4);
+          glowMat.color.setHSL(hue, 1, 0.6);
+          glowMat.opacity = 0.22 + 0.08 * Math.sin(time * 6);
+          if (Math.random() > 0.96) { ballMat.emissiveIntensity = 0.8; glowMat.opacity = 0.4; }
         } else {
           const hue = (time * 0.4) % 1;
           ballMat.color.setHSL(hue, 0.8, 0.6);
@@ -1463,8 +1251,8 @@
         }
 
       } else if (tier === 'fire') {
-        if (animePackActive) {
-          // Fox Fire — warm amber pulse with soft golden glow
+        if (pack === 'anime') {
+          // Fox Fire — warm amber pulse
           const flicker = 0.3 + 0.15 * Math.sin(time * 8) + 0.08 * Math.sin(time * 17);
           ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, flicker);
           const f = 0.5 + 0.5 * Math.sin(time * 5);
@@ -1472,6 +1260,14 @@
           ballMat.emissive.setRGB(1, 0.55 + f * 0.15, 0.2);
           glowMat.color.setRGB(1, 0.7 + f * 0.1, 0.4);
           glowMat.opacity = 0.22 + 0.08 * Math.sin(time * 10);
+        } else if (pack === 'cyber') {
+          // Plasma Core — hot magenta-red strobe
+          const strobe = 0.5 + 0.5 * Math.sin(time * 15);
+          ballMat.color.setRGB(1, 0.05 + strobe * 0.15, 0.3 + strobe * 0.15);
+          ballMat.emissive.setRGB(0.9, 0.0, 0.25 + strobe * 0.2);
+          glowMat.color.setRGB(1, 0.1, 0.4);
+          glowMat.opacity = 0.25 + 0.1 * strobe;
+          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.3 + strobe * 0.25);
         } else {
           const flicker = 0.3 + 0.2 * Math.sin(time * 12) + 0.1 * Math.sin(time * 23);
           ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, flicker);
@@ -1483,13 +1279,21 @@
         }
 
       } else if (tier === 'ice') {
-        if (animePackActive) {
-          // Ice Queen — soft frost white-blue shimmer
+        if (pack === 'anime') {
+          // Ice Queen — frost shimmer
           const shimmer = 0.6 + 0.4 * Math.sin(time * 7 + Math.sin(time * 2) * 1.5);
           ballMat.emissive.setRGB(0.45 * shimmer, 0.7 * shimmer, 0.85 * shimmer);
           ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.15 + shimmer * 0.12);
           ballMat.color.setRGB(0.7 + 0.08 * shimmer, 0.88 + 0.08 * shimmer, 1.0);
           glowMat.opacity = 0.2 + 0.07 * shimmer;
+        } else if (pack === 'cyber') {
+          // Cryo Circuit — electric blue pulse with digital flicker
+          const pulse = 0.5 + 0.5 * Math.sin(time * 9);
+          ballMat.color.setRGB(0.2 + pulse * 0.1, 0.8 + pulse * 0.1, 1.0);
+          ballMat.emissive.setRGB(0.1, 0.6 + pulse * 0.2, 0.9);
+          glowMat.color.setRGB(0.3, 0.85, 1.0);
+          glowMat.opacity = 0.22 + 0.08 * pulse;
+          if (Math.random() > 0.95) { ballMat.emissiveIntensity = 0.9; ballMat.emissive.setRGB(0.5, 1, 1); }
         } else {
           const shimmer = 0.6 + 0.4 * Math.sin(time * 10 + Math.sin(time * 3) * 2);
           ballMat.emissive.setRGB(0.25 * shimmer, 0.5 * shimmer, 0.9 * shimmer);
@@ -1499,8 +1303,8 @@
         }
 
       } else if (tier === 'electric') {
-        if (animePackActive) {
-          // Thunder God — deep indigo pulse with violet sparks
+        if (pack === 'anime') {
+          // Thunder God — violet sparks
           const flash = Math.random();
           if (flash > 0.94) {
             ballMat.emissiveIntensity = 0.9;
@@ -1513,6 +1317,21 @@
             ballMat.emissive.setRGB(0.4 + pulse * 0.15, 0.3 + pulse * 0.1, 0.8 + pulse * 0.15);
             glowMat.color.setRGB(0.6, 0.5 + pulse * 0.15, 1.0);
             glowMat.opacity = 0.24 + pulse * 0.08;
+          }
+        } else if (pack === 'cyber') {
+          // Overclock — bright yellow-green with glitch flashes
+          const flash = Math.random();
+          if (flash > 0.9) {
+            ballMat.emissiveIntensity = 1.0;
+            ballMat.emissive.setRGB(1, 1, 0.5);
+            glowMat.color.setRGB(1, 1, 0.5);
+            glowMat.opacity = 0.45;
+          } else {
+            const pulse = 0.5 + 0.5 * Math.sin(time * 18);
+            ballMat.color.setRGB(0.7 + pulse * 0.15, 0.95, 0.05);
+            ballMat.emissive.setRGB(0.6 + pulse * 0.2, 0.85, 0.0);
+            glowMat.color.setRGB(0.8, 1, 0.2);
+            glowMat.opacity = 0.26 + pulse * 0.1;
           }
         } else {
           const flash = Math.random();
@@ -1531,7 +1350,7 @@
         }
 
       } else if (tier === 'wind') {
-        if (animePackActive) {
+        if (pack === 'anime') {
           // Spirit Wind — ethereal mint-teal drift
           const sw = time * 2;
           const r = 0.55 + 0.1 * Math.sin(sw);
@@ -1542,6 +1361,15 @@
           glowMat.color.setRGB(r, g, b);
           glowMat.opacity = 0.18 + 0.06 * Math.sin(time * 3);
           ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.2 + 0.08 * Math.sin(time * 3));
+        } else if (pack === 'cyber') {
+          // Data Stream — pulsing teal-green with scan line effect
+          const sw = time * 4;
+          const scan = 0.5 + 0.5 * Math.sin(sw);
+          ballMat.color.setRGB(0.0, 0.9 + 0.1 * scan, 0.45 + 0.15 * scan);
+          ballMat.emissive.setRGB(0.0, 0.7 + 0.15 * scan, 0.35);
+          glowMat.color.setRGB(0.0, 1.0, 0.55);
+          glowMat.opacity = 0.2 + 0.08 * scan;
+          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.25 + 0.1 * scan);
         } else {
           const sw = time * 3;
           const r = 0.3 + 0.2 * Math.sin(sw);
@@ -1555,62 +1383,50 @@
         }
 
       } else if (tier === 'storm') {
-        if (animePackActive) {
+        if (pack === 'anime') {
           // Final Form — divine gold-white cycle with sakura accents
           const cycle = (time * 1.5) % 4;
           let cr, cg, cb;
-          if (cycle < 1) {
-            // Golden phase
-            cr = 1; cg = 0.85 + cycle * 0.1; cb = 0.5 + cycle * 0.2;
-          } else if (cycle < 2) {
-            // Sakura pink phase
-            const t = cycle - 1;
-            cr = 1; cg = 0.7 + 0.15 * t; cb = 0.75 + 0.1 * t;
-          } else if (cycle < 3) {
-            // Lavender phase
-            const t = cycle - 2;
-            cr = 0.8 + 0.1 * t; cg = 0.7 + 0.15 * t; cb = 1.0;
-          } else {
-            // Pure white phase
-            const t = cycle - 3;
-            cr = 0.95 + 0.05 * t; cg = 0.92 + 0.08 * t; cb = 0.9 + 0.1 * t;
-          }
+          if (cycle < 1) { cr = 1; cg = 0.85 + cycle * 0.1; cb = 0.5 + cycle * 0.2; }
+          else if (cycle < 2) { const t = cycle - 1; cr = 1; cg = 0.7 + 0.15 * t; cb = 0.75 + 0.1 * t; }
+          else if (cycle < 3) { const t = cycle - 2; cr = 0.8 + 0.1 * t; cg = 0.7 + 0.15 * t; cb = 1.0; }
+          else { const t = cycle - 3; cr = 0.95 + 0.05 * t; cg = 0.92 + 0.08 * t; cb = 0.9 + 0.1 * t; }
           ballMat.color.setRGB(cr, cg, cb);
           ballMat.emissive.setRGB(cr * 0.65, cg * 0.65, cb * 0.65);
           glowMat.color.setRGB(cr, cg, cb);
           const stormPulse = 0.6 + 0.4 * Math.sin(time * 7);
           ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.3 + stormPulse * 0.25);
           glowMat.opacity = 0.28 + stormPulse * 0.12;
-          if (Math.random() > 0.96) {
-            ballMat.emissiveIntensity = 1.0;
-            ballMat.emissive.setRGB(1, 0.95, 0.85);
-          }
+          if (Math.random() > 0.96) { ballMat.emissiveIntensity = 1.0; ballMat.emissive.setRGB(1, 0.95, 0.85); }
+        } else if (pack === 'cyber') {
+          // Singularity — white core cycling through neon edges
+          const cycle = (time * 2.5) % 4;
+          let cr, cg, cb;
+          if (cycle < 1) { cr = 0; cg = 1; cb = 0.8; } // neon cyan
+          else if (cycle < 2) { cr = 1; cg = 0; cb = 0.4; } // neon magenta
+          else if (cycle < 3) { cr = 0.8; cg = 1; cb = 0; } // neon green
+          else { cr = 0.3; cg = 0.5; cb = 1; } // neon blue
+          const w = 0.6 + 0.4 * Math.sin(time * 12); // white mix
+          ballMat.color.setRGB(cr * 0.4 + w * 0.6, cg * 0.4 + w * 0.6, cb * 0.4 + w * 0.6);
+          ballMat.emissive.setRGB(cr * 0.8, cg * 0.8, cb * 0.8);
+          glowMat.color.setRGB(cr, cg, cb);
+          ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.4 + w * 0.3);
+          glowMat.opacity = 0.3 + w * 0.15;
+          if (Math.random() > 0.93) { ballMat.emissiveIntensity = 1.2; ballMat.emissive.setRGB(1, 1, 1); glowMat.opacity = 0.5; }
         } else {
           const cycle = (time * 2) % 4;
           let cr, cg, cb;
-          if (cycle < 1) {
-            const t = cycle;
-            cr = 1; cg = 0.4 + t * 0.3; cb = 0.1;
-          } else if (cycle < 2) {
-            const t = cycle - 1;
-            cr = 0.5 + 0.2 * t; cg = 0.85; cb = 1.0;
-          } else if (cycle < 3) {
-            const t = cycle - 2;
-            cr = 0.4 + 0.4 * t; cg = 0.4 + 0.3 * t; cb = 1.0;
-          } else {
-            const t = cycle - 3;
-            cr = 0.4; cg = 0.9 + 0.1 * t; cb = 0.65 + 0.15 * t;
-          }
+          if (cycle < 1) { const t = cycle; cr = 1; cg = 0.4 + t * 0.3; cb = 0.1; }
+          else if (cycle < 2) { const t = cycle - 1; cr = 0.5 + 0.2 * t; cg = 0.85; cb = 1.0; }
+          else if (cycle < 3) { const t = cycle - 2; cr = 0.4 + 0.4 * t; cg = 0.4 + 0.3 * t; cb = 1.0; }
+          else { const t = cycle - 3; cr = 0.4; cg = 0.9 + 0.1 * t; cb = 0.65 + 0.15 * t; }
           ballMat.color.setRGB(cr, cg, cb);
           ballMat.emissive.setRGB(cr * 0.7, cg * 0.7, cb * 0.7);
           glowMat.color.setRGB(cr, cg, cb);
           const stormPulse = 0.6 + 0.4 * Math.sin(time * 10);
           ballMat.emissiveIntensity = Math.max(ballMat.emissiveIntensity, 0.3 + stormPulse * 0.3);
           glowMat.opacity = 0.25 + stormPulse * 0.15;
-          if (Math.random() > 0.95) {
-            ballMat.emissiveIntensity = 1.2;
-            ballMat.emissive.setRGB(1, 1, 1);
-          }
+          if (Math.random() > 0.95) { ballMat.emissiveIntensity = 1.2; ballMat.emissive.setRGB(1, 1, 1); }
         }
       }
     }
@@ -2345,8 +2161,7 @@
       const elapsed = clock.elapsedTime - ballSpawnTime;
       const timeMult = Math.max(TIME_MIN_MULT, 1 - TIME_COEFF * elapsed);
 
-      const vipMult = isVIP() ? 2 : 1;
-      const points = Math.round(10 * streakMult * sizeMult * timeMult * vipMult);
+      const points = Math.round(10 * streakMult * sizeMult * timeMult);
       state.score += points;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
 
@@ -2530,32 +2345,10 @@
       showScreen('leaderboard');
     }
 
-    // ── Anime Game Pass ──────────────────────────────────────────
-    const ANIME_PASS_KEY = 'bouncingBall_animePack';
-    let animePackActive = localStorage.getItem(ANIME_PASS_KEY) === '1';
+    // ── Texture Packs System ──────────────────────────────────────
+    const PACK_KEY = 'bouncingBall_activePack';
+    let activePack = localStorage.getItem(PACK_KEY) || ''; // '' = none
 
-    const ANIME_THEME = {
-      wall: 0x3d2b4a, floor: 0x4a3358, edge: 0x9a6fb0,
-      fog: 0x2a1a38, ambient: 0x806090,
-      accent1: 0xff8fa3, accent2: 0xc49bff,
-      tiers: {
-        // Sakura (default) — cherry blossom pink
-        default:  { color: 0xffb7c5, emissive: 0xff8fa3, roughness: 0.1, metalness: 0.7, glowColor: 0xffb7c5, glowOpacity: 0.22 },
-        // Magical Girl sparkle — lavender with shimmering violet
-        sparkle:  { color: 0xd8b4fe, emissive: 0xc084fc, roughness: 0.05, metalness: 0.85, glowColor: 0xe0b0ff, glowOpacity: 0.24 },
-        // Fox Fire — warm amber/orange spirit flame
-        fire:     { color: 0xffbe76, emissive: 0xff9f43, roughness: 0.2, metalness: 0.5, glowColor: 0xffd193, glowOpacity: 0.28 },
-        // Ice Queen — frost blue with soft white shimmer
-        ice:      { color: 0xb8e4ff, emissive: 0x7ec8e3, roughness: 0.02, metalness: 0.9, glowColor: 0xd0f0ff, glowOpacity: 0.25 },
-        // Thunder God — deep indigo with bright violet
-        electric: { color: 0x9d8aff, emissive: 0x7c5ce7, roughness: 0.1, metalness: 0.75, glowColor: 0xb8a9ff, glowOpacity: 0.30 },
-        // Spirit Wind — soft mint green, ethereal
-        wind:     { color: 0xa8edca, emissive: 0x6bcb8b, roughness: 0.15, metalness: 0.55, glowColor: 0xc0f5d8, glowOpacity: 0.22 },
-        // Final Form — radiant white-gold, divine aura
-        storm:    { color: 0xfff5e0, emissive: 0xffd700, roughness: 0.0, metalness: 1.0, glowColor: 0xfff8e7, glowOpacity: 0.38 },
-      },
-    };
-    // Store originals for reverting
     const ORIG_THEME = {
       wall: 0x2c2c3e, floor: 0x3a3a4e, edge: 0x5a5a7a,
       fog: 0x1a1a2e, ambient: 0x404060,
@@ -2564,8 +2357,51 @@
     const ORIG_TIERS = {};
     for (const k in BALL_TIERS) ORIG_TIERS[k] = { ...BALL_TIERS[k] };
 
-    function applyAnimeRoom(on) {
-      const t = on ? ANIME_THEME : ORIG_THEME;
+    // backward compat: migrate old anime key
+    if (localStorage.getItem('bouncingBall_animePack') === '1') {
+      activePack = 'anime';
+      localStorage.setItem(PACK_KEY, 'anime');
+      localStorage.removeItem('bouncingBall_animePack');
+    }
+
+    const TEXTURE_PACKS = {
+      anime: {
+        room: { wall: 0x3d2b4a, floor: 0x4a3358, edge: 0x9a6fb0, fog: 0x2a1a38, ambient: 0x806090, accent1: 0xff8fa3, accent2: 0xc49bff },
+        tiers: {
+          default:  { color: 0xffb7c5, emissive: 0xff8fa3, roughness: 0.1, metalness: 0.7, glowColor: 0xffb7c5, glowOpacity: 0.22 },
+          sparkle:  { color: 0xd8b4fe, emissive: 0xc084fc, roughness: 0.05, metalness: 0.85, glowColor: 0xe0b0ff, glowOpacity: 0.24 },
+          fire:     { color: 0xffbe76, emissive: 0xff9f43, roughness: 0.2, metalness: 0.5, glowColor: 0xffd193, glowOpacity: 0.28 },
+          ice:      { color: 0xb8e4ff, emissive: 0x7ec8e3, roughness: 0.02, metalness: 0.9, glowColor: 0xd0f0ff, glowOpacity: 0.25 },
+          electric: { color: 0x9d8aff, emissive: 0x7c5ce7, roughness: 0.1, metalness: 0.75, glowColor: 0xb8a9ff, glowOpacity: 0.30 },
+          wind:     { color: 0xa8edca, emissive: 0x6bcb8b, roughness: 0.15, metalness: 0.55, glowColor: 0xc0f5d8, glowOpacity: 0.22 },
+          storm:    { color: 0xfff5e0, emissive: 0xffd700, roughness: 0.0, metalness: 1.0, glowColor: 0xfff8e7, glowOpacity: 0.38 },
+        },
+      },
+      cyber: {
+        room: { wall: 0x0a1628, floor: 0x0d1f33, edge: 0x00ffc8, fog: 0x050d18, ambient: 0x003344, accent1: 0x00ffc8, accent2: 0x0096ff },
+        tiers: {
+          // Neon Cyan default
+          default:  { color: 0x00ffc8, emissive: 0x00cc99, roughness: 0.05, metalness: 0.9, glowColor: 0x00ffc8, glowOpacity: 0.25 },
+          // Hologram — shifting cyan-magenta
+          sparkle:  { color: 0x00ffff, emissive: 0x00cccc, roughness: 0.02, metalness: 0.95, glowColor: 0x66ffff, glowOpacity: 0.28 },
+          // Plasma Core — hot magenta-orange
+          fire:     { color: 0xff0066, emissive: 0xcc0044, roughness: 0.15, metalness: 0.6, glowColor: 0xff3388, glowOpacity: 0.30 },
+          // Cryo Circuit — electric blue-white
+          ice:      { color: 0x44ddff, emissive: 0x22aadd, roughness: 0.0, metalness: 0.95, glowColor: 0x88eeff, glowOpacity: 0.26 },
+          // Overclock — bright yellow-green
+          electric: { color: 0xccff00, emissive: 0x99cc00, roughness: 0.1, metalness: 0.8, glowColor: 0xddff44, glowOpacity: 0.32 },
+          // Data Stream — teal-green pulse
+          wind:     { color: 0x00ff88, emissive: 0x00cc66, roughness: 0.12, metalness: 0.7, glowColor: 0x44ffaa, glowOpacity: 0.24 },
+          // Singularity — pure white core with rainbow edge
+          storm:    { color: 0xffffff, emissive: 0xccccff, roughness: 0.0, metalness: 1.0, glowColor: 0xffffff, glowOpacity: 0.40 },
+        },
+      },
+    };
+
+    function getActivePack() { return TEXTURE_PACKS[activePack] || null; }
+
+    function applyRoom(pack) {
+      const t = pack ? pack.room : ORIG_THEME;
       wallMat.color.setHex(t.wall);
       floorMat.color.setHex(t.floor);
       edgeMat.color.setHex(t.edge);
@@ -2575,36 +2411,50 @@
       accentLight2.color.setHex(t.accent2);
     }
 
-    function syncAnimePackVisuals() {
+    function syncPackVisuals() {
+      const pack = getActivePack();
       for (const k in BALL_TIERS) {
-        if (animePackActive && ANIME_THEME.tiers[k]) {
-          Object.assign(BALL_TIERS[k], ANIME_THEME.tiers[k]);
+        if (pack && pack.tiers[k]) {
+          Object.assign(BALL_TIERS[k], pack.tiers[k]);
         } else {
           Object.assign(BALL_TIERS[k], ORIG_TIERS[k]);
         }
       }
-      applyAnimeRoom(animePackActive);
-      // Force re-apply current tier
+      applyRoom(pack);
       const tier = currentBallTier;
       currentBallTier = '';
       applyBallTier(tier || 'default');
     }
 
-    const animeBtn = document.getElementById('anime-pass-btn');
-    function updateAnimeBtn() {
-      animeBtn.textContent = animePackActive ? 'Unequip' : 'Equip';
-      animeBtn.classList.toggle('active', animePackActive);
+    function updatePackButtons() {
+      ['anime', 'cyber'].forEach(id => {
+        const btn = document.getElementById(id + '-pack-btn');
+        const card = document.getElementById(id + '-pack-card');
+        const isActive = activePack === id;
+        btn.textContent = isActive ? 'Unequip' : 'Equip';
+        btn.classList.toggle('equipped-btn', isActive);
+        card.classList.toggle('equipped', isActive);
+        card.style.borderWidth = isActive ? '2px' : '1px';
+      });
     }
-    animeBtn.addEventListener('click', () => {
-      animePackActive = !animePackActive;
-      localStorage.setItem(ANIME_PASS_KEY, animePackActive ? '1' : '0');
-      updateAnimeBtn();
-      syncAnimePackVisuals();
-    });
-    updateAnimeBtn();
-    syncAnimePackVisuals();
 
-    // animeTrailOverride is checked at trail spawn call site
+    ['anime', 'cyber'].forEach(id => {
+      document.getElementById(id + '-pack-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        activePack = activePack === id ? '' : id;
+        localStorage.setItem(PACK_KEY, activePack);
+        updatePackButtons();
+        syncPackVisuals();
+      });
+      document.getElementById(id + '-pack-card').addEventListener('click', () => {
+        activePack = activePack === id ? '' : id;
+        localStorage.setItem(PACK_KEY, activePack);
+        updatePackButtons();
+        syncPackVisuals();
+      });
+    });
+    updatePackButtons();
+    syncPackVisuals();
 
     // ── Button Wiring ────────────────────────────────────────────
     const nameError = document.getElementById('name-error');
@@ -2792,7 +2642,8 @@
         if (trailTimer > 0.03 && !catchAnimActive) {
           trailTimer = 0;
           let trailColor = ballMat.color.getHex();
-          if (animePackActive && ANIME_THEME.tiers[currentBallTier]) trailColor = ANIME_THEME.tiers[currentBallTier].color;
+          const ap = getActivePack();
+          if (ap && ap.tiers[currentBallTier]) trailColor = ap.tiers[currentBallTier].color;
           spawnTrailParticle(ballPos, trailColor);
         }
         updateTrail(dt);
@@ -2813,20 +2664,5 @@
     animate();
   </script>
 
-  <!-- VIP Purchase Modal -->
-  <div class="vip-overlay" id="vip-overlay">
-    <div class="vip-modal" id="vip-modal">
-      <div class="vip-modal-icon">&#x1F451;</div>
-      <div class="vip-modal-title">VIP Pass</div>
-      <div class="vip-modal-price">£0.99 <small>one-time</small></div>
-      <ul class="vip-modal-perks">
-        <li><span class="perk-icon">&#x2B50;</span> VIP star badge next to your name</li>
-        <li><span class="perk-icon">&#x1F451;</span> Gold highlighted name on leaderboard</li>
-        <li><span class="perk-icon">&#x1F525;</span> 2x score multiplier on all points</li>
-      </ul>
-      <button class="vip-confirm-btn" id="vip-confirm-btn">Purchase VIP — £0.99</button>
-      <button class="vip-cancel-btn" id="vip-cancel-btn">No thanks</button>
-    </div>
-  </div>
 </body>
 </html>
