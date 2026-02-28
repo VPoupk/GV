@@ -359,6 +359,17 @@
       color: rgba(255,255,255,0.65);
       font-weight: 600;
     }
+    .pack-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffdd57;
+      margin-bottom: 6px;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .pack-price.owned {
+      color: #66bb6a;
+      font-size: 11px;
+    }
     .pack-btn {
       padding: 7px 22px;
       font-size: 12px;
@@ -375,6 +386,78 @@
     }
     .pack-btn.equipped-btn:hover {
       box-shadow: 0 0 20px rgba(102,187,106,0.4);
+    }
+    .pack-btn.buy-btn {
+      background: linear-gradient(135deg, #ffdd57, #f5a623);
+      color: #1a1a2e;
+    }
+    .pack-btn.buy-btn:hover {
+      box-shadow: 0 0 20px rgba(255,221,87,0.4);
+    }
+
+    /* Purchase confirmation modal */
+    #purchase-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    #purchase-modal.show { display: flex; }
+    .purchase-box {
+      background: linear-gradient(160deg, #1a1a2e, #2a2a4e);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 30px 36px;
+      text-align: center;
+      max-width: 340px;
+      width: 90%;
+    }
+    .purchase-box h2 {
+      color: #fff;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    .purchase-box .purchase-pack-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .purchase-box .purchase-price {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffdd57;
+      margin: 12px 0;
+    }
+    .purchase-box p {
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+    .purchase-box .purchase-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .purchase-box .purchase-actions button {
+      padding: 10px 28px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .purchase-box .purchase-actions button:hover { transform: scale(1.05); }
+    .purchase-confirm-btn {
+      background: linear-gradient(135deg, #ffdd57, #f5a623);
+      color: #1a1a2e;
+    }
+    .purchase-cancel-btn {
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
     }
 
     #combo-bar-wrap {
@@ -534,6 +617,7 @@
             <span style="color:#ffb7c5;">&#x1F338; Sakura</span>
             <span style="color:#d4a0ff;">&#x2728; Dreamy</span>
           </div>
+          <div class="pack-price" id="anime-pack-price">&#163;0.49</div>
           <button class="pack-btn" id="anime-pack-btn" style="background:linear-gradient(135deg,#ff8fa3,#c084fc);">Equip</button>
         </div>
         <div class="pack-card" id="cyber-pack-card" data-pack="cyber"
@@ -545,6 +629,7 @@
             <span style="color:#00ffc8;">&#x26A1; Neon</span>
             <span style="color:#8866ff;">&#x1F4A0; Cyber</span>
           </div>
+          <div class="pack-price" id="cyber-pack-price">&#163;0.49</div>
           <button class="pack-btn" id="cyber-pack-btn" style="background:linear-gradient(135deg,#00ffc8,#6600ff);">Equip</button>
         </div>
       </div>
@@ -610,6 +695,20 @@
   <div id="combo-label" class="">COMBO</div>
   <div id="combo-bar-wrap" class="">
     <div id="combo-bar"></div>
+  </div>
+
+  <!-- Purchase Confirmation Modal -->
+  <div id="purchase-modal">
+    <div class="purchase-box">
+      <h2>Purchase Pack</h2>
+      <div class="purchase-pack-name" id="purchase-pack-name"></div>
+      <div class="purchase-price">&#163;0.49</div>
+      <p>This is a one-time purchase. The pack will be saved to your browser.</p>
+      <div class="purchase-actions">
+        <button class="purchase-confirm-btn" id="purchase-confirm-btn">Buy Now</button>
+        <button class="purchase-cancel-btn" id="purchase-cancel-btn">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <!-- Achievement Toasts -->
@@ -2506,13 +2605,104 @@
       applyBallTier(tier || 'default');
     }
 
+    // ── Pack Purchase System ──────────────────────────────────────
+    const PURCHASED_KEY = 'bouncingBall_purchasedPacks';
+    function loadPurchased() {
+      try { return JSON.parse(localStorage.getItem(PURCHASED_KEY)) || {}; } catch { return {}; }
+    }
+    function savePurchased(obj) { localStorage.setItem(PURCHASED_KEY, JSON.stringify(obj)); }
+    function isPackOwned(id) { return !!loadPurchased()[id]; }
+
+    const PACK_DISPLAY_NAMES = { anime: 'Anime', cyber: 'Cyber Neon' };
+    let pendingPurchasePack = '';
+
+    const purchaseModal = document.getElementById('purchase-modal');
+    const purchasePackName = document.getElementById('purchase-pack-name');
+    const purchaseConfirmBtn = document.getElementById('purchase-confirm-btn');
+    const purchaseCancelBtn = document.getElementById('purchase-cancel-btn');
+
+    function showPurchaseModal(id) {
+      pendingPurchasePack = id;
+      purchasePackName.textContent = PACK_DISPLAY_NAMES[id] || id;
+      // Style the name to match the pack
+      if (id === 'anime') {
+        purchasePackName.style.background = 'linear-gradient(90deg,#ffb7c5,#d4a0ff)';
+      } else {
+        purchasePackName.style.background = 'linear-gradient(90deg,#00ffc8,#6600ff)';
+      }
+      purchasePackName.style.webkitBackgroundClip = 'text';
+      purchasePackName.style.webkitTextFillColor = 'transparent';
+      purchaseModal.classList.add('show');
+    }
+
+    function hidePurchaseModal() {
+      purchaseModal.classList.remove('show');
+      pendingPurchasePack = '';
+    }
+
+    purchaseCancelBtn.addEventListener('click', hidePurchaseModal);
+    purchaseModal.addEventListener('click', (e) => { if (e.target === purchaseModal) hidePurchaseModal(); });
+
+    purchaseConfirmBtn.addEventListener('click', () => {
+      if (!pendingPurchasePack) return;
+      const id = pendingPurchasePack;
+      const purchased = loadPurchased();
+      purchased[id] = true;
+      savePurchased(purchased);
+      // Auto-equip after purchase
+      activePack = id;
+      localStorage.setItem(PACK_KEY, activePack);
+      hidePurchaseModal();
+      updatePackButtons();
+      syncPackVisuals();
+    });
+
+    function handlePackAction(id) {
+      if (!isPackOwned(id)) {
+        showPurchaseModal(id);
+        return;
+      }
+      activePack = activePack === id ? '' : id;
+      localStorage.setItem(PACK_KEY, activePack);
+      updatePackButtons();
+      syncPackVisuals();
+    }
+
     function updatePackButtons() {
       ['anime', 'cyber'].forEach(id => {
         const btn = document.getElementById(id + '-pack-btn');
         const card = document.getElementById(id + '-pack-card');
+        const priceEl = document.getElementById(id + '-pack-price');
+        const owned = isPackOwned(id);
         const isActive = activePack === id;
-        btn.textContent = isActive ? 'Unequip' : 'Equip';
-        btn.classList.toggle('equipped-btn', isActive);
+
+        // Update price display
+        if (owned) {
+          priceEl.textContent = 'Owned';
+          priceEl.classList.add('owned');
+        } else {
+          priceEl.innerHTML = '&#163;0.49';
+          priceEl.classList.remove('owned');
+        }
+
+        // Update button
+        btn.classList.remove('equipped-btn', 'buy-btn');
+        if (!owned) {
+          btn.textContent = 'Buy \u00A30.49';
+          btn.classList.add('buy-btn');
+          // Reset to original pack gradient
+          if (id === 'anime') btn.style.background = '';
+          else btn.style.background = '';
+        } else if (isActive) {
+          btn.textContent = 'Unequip';
+          btn.classList.add('equipped-btn');
+        } else {
+          btn.textContent = 'Equip';
+          // Reset to original pack gradient
+          if (id === 'anime') btn.style.background = 'linear-gradient(135deg,#ff8fa3,#c084fc)';
+          else btn.style.background = 'linear-gradient(135deg,#00ffc8,#6600ff)';
+        }
+
         card.classList.toggle('equipped', isActive);
         card.style.borderWidth = isActive ? '2px' : '1px';
       });
@@ -2521,18 +2711,19 @@
     ['anime', 'cyber'].forEach(id => {
       document.getElementById(id + '-pack-btn').addEventListener('click', (e) => {
         e.stopPropagation();
-        activePack = activePack === id ? '' : id;
-        localStorage.setItem(PACK_KEY, activePack);
-        updatePackButtons();
-        syncPackVisuals();
+        handlePackAction(id);
       });
       document.getElementById(id + '-pack-card').addEventListener('click', () => {
-        activePack = activePack === id ? '' : id;
-        localStorage.setItem(PACK_KEY, activePack);
-        updatePackButtons();
-        syncPackVisuals();
+        handlePackAction(id);
       });
     });
+
+    // If a pack is equipped but not owned (e.g. from before purchase system), unequip it
+    if (activePack && !isPackOwned(activePack)) {
+      activePack = '';
+      localStorage.setItem(PACK_KEY, '');
+    }
+
     updatePackButtons();
     syncPackVisuals();
 
