@@ -624,10 +624,10 @@
              style="background:linear-gradient(160deg,rgba(0,20,30,0.8),rgba(0,10,40,0.6));border:1px solid rgba(0,255,200,0.25);--pack-shimmer1:rgba(0,255,200,0.1);--pack-shimmer2:rgba(100,0,255,0.08);">
           <div class="pack-icon" style="font-size:32px;">&#x26A1;</div>
           <div class="pack-name" style="background:linear-gradient(90deg,#00ffc8,#6600ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:15px;">Cyber Neon</div>
-          <div class="pack-desc">Dark reflective room, neon glow edges, electric ball</div>
+          <div class="pack-desc">Robot uprising, PAL bots, Tron grids, Matrix code</div>
           <div class="pack-tags">
-            <span style="color:#00ffc8;">&#x26A1; Neon</span>
-            <span style="color:#8866ff;">&#x1F4A0; Cyber</span>
+            <span style="color:#ff3344;">&#x1F916; PAL Bot</span>
+            <span style="color:#00ffc8;">&#x1F5A5; Matrix</span>
           </div>
           <div class="pack-price" id="cyber-pack-price">&#163;0.49</div>
           <button class="pack-btn" id="cyber-pack-btn" style="background:linear-gradient(135deg,#00ffc8,#6600ff);">Equip</button>
@@ -846,6 +846,42 @@
         playTone(110, 'sine', 0.3, 0.12);
         playTone(220, 'triangle', 0.2, 0.08);
         setTimeout(() => playTone(440, 'sine', 0.15, 0.1), 80);
+      }
+    }
+
+    // Cyber pack power-up sounds — robotic / digital movie-inspired
+    function sndCyberPower(streak) {
+      if (streak >= 22) {
+        // Singularity Override — chaotic digital crash with descending glitch
+        [1200, 900, 600, 300, 150].forEach((f, i) => {
+          setTimeout(() => playTone(f, 'sawtooth', 0.15, 0.08), i * 40);
+        });
+        playNoise(0.15, 0.1);
+        setTimeout(() => playTone(80, 'square', 0.4, 0.1), 200);
+      } else if (streak >= 17) {
+        // Tron Light Cycle — smooth ascending hum with high ring
+        [330, 440, 554, 660].forEach((f, i) => {
+          setTimeout(() => playTone(f, 'triangle', 0.2, 0.09), i * 50);
+        });
+        setTimeout(() => playTone(1320, 'sine', 0.3, 0.06), 180);
+      } else if (streak >= 12) {
+        // Matrix Code — rapid digital chirps like falling code
+        [800, 1000, 600, 1200].forEach((f, i) => {
+          setTimeout(() => playTone(f, 'square', 0.08, 0.07), i * 35);
+        });
+        playNoise(0.05, 0.04);
+      } else if (streak >= 8) {
+        // Cryo Protocol — cold descending tone with ice crackle
+        [880, 660, 440].forEach((f, i) => {
+          setTimeout(() => playTone(f, 'sine', 0.25, 0.08), i * 80);
+        });
+        playNoise(0.03, 0.03);
+      } else {
+        // Terminator Core — heavy bass impact with metallic ring
+        playTone(80, 'sawtooth', 0.35, 0.12);
+        playTone(160, 'square', 0.2, 0.06);
+        setTimeout(() => playTone(640, 'sine', 0.15, 0.08), 100);
+        playNoise(0.08, 0.05);
       }
     }
 
@@ -1372,24 +1408,31 @@
           // Sparkle flash every few seconds like a transformation sequence
           if (Math.random() > 0.96) { ballMat.emissiveIntensity = 0.8; ballMat.emissive.setRGB(1, 0.85, 1); glowMat.opacity = 0.45; }
         } else if (pack === 'cyber') {
-          // Hologram — sharp cyan-magenta snap with scanline glitch
-          const snap = Math.floor(time * 4) % 2; // hard toggle
-          const glitch = Math.random() > 0.92;
+          // Holographic Avatar — Ready Player One digital form with glitch corruption
+          const snap = Math.floor(time * 5) % 3;
+          const glitch = Math.random() > 0.9;
           if (glitch) {
-            ballMat.color.setRGB(1, 1, 1);
+            // Digital corruption — white noise flicker like a broken hologram
+            ballMat.color.setRGB(Math.random(), Math.random(), Math.random());
             ballMat.emissive.setRGB(1, 1, 1);
-            ballMat.emissiveIntensity = 1.0;
-            glowMat.opacity = 0.5;
+            ballMat.emissiveIntensity = 1.2;
+            glowMat.opacity = 0.55;
           } else if (snap === 0) {
-            ballMat.color.setRGB(0, 1, 1); // cyan
-            ballMat.emissive.setRGB(0, 0.8, 0.8);
+            ballMat.color.setRGB(0, 1, 1); // cyan hologram
+            ballMat.emissive.setRGB(0, 0.9, 0.9);
             glowMat.color.setRGB(0, 1, 1);
-            glowMat.opacity = 0.25;
-            ballMat.emissiveIntensity = 0.3;
+            glowMat.opacity = 0.28;
+            ballMat.emissiveIntensity = 0.35;
+          } else if (snap === 1) {
+            ballMat.color.setRGB(1, 0, 0.5); // magenta pixel
+            ballMat.emissive.setRGB(0.9, 0, 0.4);
+            glowMat.color.setRGB(1, 0.2, 0.6);
+            glowMat.opacity = 0.28;
+            ballMat.emissiveIntensity = 0.35;
           } else {
-            ballMat.color.setRGB(1, 0, 0.6); // magenta
-            ballMat.emissive.setRGB(0.8, 0, 0.5);
-            glowMat.color.setRGB(1, 0, 0.6);
+            ballMat.color.setRGB(0.2, 0.6, 1); // blue scan line
+            ballMat.emissive.setRGB(0.1, 0.5, 0.9);
+            glowMat.color.setRGB(0.3, 0.6, 1);
             glowMat.opacity = 0.25;
             ballMat.emissiveIntensity = 0.3;
           }
@@ -1413,21 +1456,22 @@
           // Ki explosion flare
           if (Math.random() > 0.93) { ballMat.emissiveIntensity = 1.2; ballMat.emissive.setRGB(1, 0.9, 0.3); glowMat.opacity = 0.55; }
         } else if (pack === 'cyber') {
-          // Plasma Core — aggressive magenta strobe with white-hot spikes
-          const saw = (time * 8) % 1; // sawtooth wave
-          const spike = saw < 0.1 ? 1 : 0;
-          const base = 0.5 + 0.5 * Math.sin(time * 12);
-          if (spike || Math.random() > 0.94) {
-            ballMat.color.setRGB(1, 0.9, 0.9);
-            ballMat.emissive.setRGB(1, 0.3, 0.5);
-            ballMat.emissiveIntensity = 0.9;
-            glowMat.opacity = 0.45;
+          // Terminator Core — molten red-orange reactor with white-hot meltdown spikes
+          const pulse = Math.sin(time * 6) * 0.5 + 0.5;
+          const heartbeat = Math.sin(time * 3) * 0.5 + 0.5;
+          const meltdown = Math.random() > 0.92;
+          if (meltdown) {
+            // Reactor overload flash
+            ballMat.color.setRGB(1, 0.95, 0.8);
+            ballMat.emissive.setRGB(1, 0.6, 0.2);
+            ballMat.emissiveIntensity = 1.1;
+            glowMat.opacity = 0.5;
           } else {
-            ballMat.color.setRGB(1, 0.0 + base * 0.1, 0.35 + base * 0.1);
-            ballMat.emissive.setRGB(0.95, 0.0, 0.3 + base * 0.15);
-            glowMat.color.setRGB(1, 0.05, 0.4);
-            glowMat.opacity = 0.22 + 0.12 * base;
-            ballMat.emissiveIntensity = 0.25 + 0.2 * base;
+            ballMat.color.setRGB(1, 0.2 + pulse * 0.15, 0.0 + heartbeat * 0.08);
+            ballMat.emissive.setRGB(0.95, 0.12 + pulse * 0.1, 0.0);
+            glowMat.color.setRGB(1, 0.25, 0.05);
+            glowMat.opacity = 0.28 + 0.15 * heartbeat;
+            ballMat.emissiveIntensity = 0.3 + 0.25 * pulse;
           }
         } else {
           const flicker = 0.3 + 0.2 * Math.sin(time * 12) + 0.1 * Math.sin(time * 23);
@@ -1452,17 +1496,17 @@
           // Ice crystal shatter flash
           if (Math.random() > 0.95) { ballMat.emissiveIntensity = 0.9; ballMat.emissive.setRGB(0.7, 0.9, 1); glowMat.opacity = 0.45; }
         } else if (pack === 'cyber') {
-          // Cryo Circuit — hard digital blue pulse, sharp contrast
-          const step = Math.floor(time * 6) % 3;
-          const pulse = Math.sin(time * 11) * 0.5 + 0.5;
-          const blues = [[0.1, 0.7, 1], [0.2, 0.9, 0.95], [0.0, 0.5, 1]];
-          const c = blues[step];
-          ballMat.color.setRGB(c[0] + pulse * 0.1, c[1], c[2]);
-          ballMat.emissive.setRGB(c[0] * 0.6, c[1] * 0.7 + pulse * 0.15, c[2] * 0.85);
-          glowMat.color.setRGB(0.15, 0.8, 1);
-          glowMat.opacity = 0.2 + 0.1 * pulse;
-          ballMat.emissiveIntensity = 0.2 + 0.15 * pulse;
-          if (Math.random() > 0.96) { ballMat.emissiveIntensity = 0.8; ballMat.emissive.setRGB(0.5, 1, 1); glowMat.opacity = 0.4; }
+          // Cryo Protocol — cold blue tech freeze with scanning sweep (I, Robot / Minority Report)
+          const sweep = (time * 2) % 1; // scanning bar effect
+          const frost = Math.sin(time * 4) * 0.5 + 0.5;
+          const pulse = Math.sin(time * 8) * 0.5 + 0.5;
+          ballMat.color.setRGB(0.15 + sweep * 0.15, 0.7 + frost * 0.15, 1.0);
+          ballMat.emissive.setRGB(0.08 + pulse * 0.1, 0.55 + frost * 0.2, 0.95);
+          glowMat.color.setRGB(0.2, 0.8, 1);
+          glowMat.opacity = 0.22 + 0.12 * frost;
+          ballMat.emissiveIntensity = 0.22 + 0.18 * pulse;
+          // Stasis lock flash
+          if (Math.random() > 0.95) { ballMat.emissiveIntensity = 0.9; ballMat.emissive.setRGB(0.6, 1, 1); glowMat.opacity = 0.45; ballMat.color.setRGB(0.8, 1, 1); }
         } else {
           const shimmer = 0.6 + 0.4 * Math.sin(time * 10 + Math.sin(time * 3) * 2);
           ballMat.emissive.setRGB(0.25 * shimmer, 0.5 * shimmer, 0.9 * shimmer);
@@ -1492,22 +1536,23 @@
             ballMat.emissiveIntensity = 0.25 + 0.2 * surge;
           }
         } else if (pack === 'cyber') {
-          // Overclock — rapid yellow-green strobe, aggressive glitch
-          const glitch = Math.random();
-          if (glitch > 0.88) {
-            // Hard white glitch frame
-            ballMat.emissiveIntensity = 1.2;
-            ballMat.emissive.setRGB(1, 1, 0.6);
-            ballMat.color.setRGB(1, 1, 0.8);
-            glowMat.color.setRGB(1, 1, 0.5);
+          // Matrix Code Rain — cascading green digital characters (The Matrix)
+          const rain = Math.sin(time * 12) * 0.5 + 0.5; // fast digital rain pulse
+          const cascade = Math.sin(time * 3) * 0.5 + 0.5;
+          const glitch = Math.random() > 0.9;
+          if (glitch) {
+            // "I know kung fu" flash — bright white-green burst
+            ballMat.emissiveIntensity = 1.3;
+            ballMat.emissive.setRGB(0.5, 1, 0.5);
+            ballMat.color.setRGB(0.8, 1, 0.8);
+            glowMat.color.setRGB(0.4, 1, 0.4);
             glowMat.opacity = 0.5;
           } else {
-            const buzz = Math.sin(time * 25) * 0.5 + 0.5; // fast buzzing
-            ballMat.color.setRGB(0.7 + buzz * 0.2, 1, 0.0);
-            ballMat.emissive.setRGB(0.6 + buzz * 0.25, 0.9, 0.0);
-            glowMat.color.setRGB(0.8, 1, 0.15);
-            glowMat.opacity = 0.24 + buzz * 0.12;
-            ballMat.emissiveIntensity = 0.3 + buzz * 0.2;
+            ballMat.color.setRGB(0.0, 0.8 + rain * 0.2, 0.15 + cascade * 0.15);
+            ballMat.emissive.setRGB(0.0, 0.7 + cascade * 0.2, 0.1 + rain * 0.1);
+            glowMat.color.setRGB(0.0, 1, 0.3);
+            glowMat.opacity = 0.25 + rain * 0.15;
+            ballMat.emissiveIntensity = 0.28 + cascade * 0.22;
           }
         } else {
           const flash = Math.random();
@@ -1539,17 +1584,17 @@
           // Chakra burst
           if (Math.random() > 0.94) { ballMat.emissiveIntensity = 0.9; ballMat.emissive.setRGB(0.4, 0.8, 1); glowMat.opacity = 0.5; }
         } else if (pack === 'cyber') {
-          // Data Stream — matrix green with rapid digital stepping
-          const step = Math.floor(time * 8) % 4;
-          const greens = [[0, 1, 0.5], [0, 0.85, 0.4], [0.1, 1, 0.6], [0, 0.7, 0.35]];
-          const g = greens[step];
-          const pulse = Math.sin(time * 15) * 0.5 + 0.5;
-          ballMat.color.setRGB(g[0], g[1], g[2]);
-          ballMat.emissive.setRGB(g[0] * 0.6, g[1] * 0.7, g[2] * 0.6);
-          glowMat.color.setRGB(0, 1, 0.55);
-          glowMat.opacity = 0.18 + 0.12 * pulse;
-          ballMat.emissiveIntensity = 0.25 + 0.15 * pulse;
-          if (Math.random() > 0.95) { ballMat.color.setRGB(0.2, 0.2, 0.2); glowMat.opacity = 0.05; } // flicker off
+          // Tron Light Cycle — bright cyan-blue neon trail with grid energy (Tron Legacy)
+          const cycle = (time * 5) % 1; // rapid neon pulse like a light trail
+          const grid = Math.sin(time * 2.5) * 0.5 + 0.5;
+          const pulse = Math.sin(time * 10) * 0.5 + 0.5;
+          ballMat.color.setRGB(0.0, 0.7 + cycle * 0.2, 1.0);
+          ballMat.emissive.setRGB(0.0, 0.6 + grid * 0.2, 0.9 + pulse * 0.1);
+          glowMat.color.setRGB(0.0, 0.8, 1.0);
+          glowMat.opacity = 0.24 + 0.14 * grid;
+          ballMat.emissiveIntensity = 0.25 + 0.2 * pulse;
+          // Derez flash — disc wars hit
+          if (Math.random() > 0.94) { ballMat.emissiveIntensity = 1.0; ballMat.emissive.setRGB(0.5, 1, 1); ballMat.color.setRGB(0.8, 1, 1); glowMat.opacity = 0.5; }
         } else {
           const sw = time * 3;
           const r = 0.3 + 0.2 * Math.sin(sw);
@@ -1593,22 +1638,30 @@
           // Divine power flashes — frequent and intense
           if (Math.random() > 0.92) { ballMat.emissiveIntensity = 1.3; ballMat.emissive.setRGB(1, 1, 1); glowMat.opacity = 0.6; }
         } else if (pack === 'cyber') {
-          // Singularity — hard-cut neon color cycling with constant white flicker
-          const slot = Math.floor(time * 3) % 4; // hard snap every ~0.33s
-          const neons = [[0, 1, 0.8], [1, 0, 0.5], [0.7, 1, 0], [0.2, 0.4, 1]]; // cyan, magenta, green, blue
-          const c = neons[slot];
-          const intensity = 0.5 + 0.5 * Math.sin(time * 20); // rapid pulse
+          // Singularity Override — PAL bot total takeover, chaotic system collapse
+          // Cycles through all movie themes: red PAL eye → green Matrix → cyan Tron → white overload
+          const slot = Math.floor(time * 2.5) % 5;
+          const movieColors = [
+            [1, 0.15, 0.2],    // PAL bot red (Mitchells)
+            [0, 0.9, 0.3],     // Matrix green
+            [0, 0.8, 1],       // Tron cyan
+            [1, 0.3, 0.0],     // Terminator orange
+            [0.9, 0.9, 1],     // System white
+          ];
+          const c = movieColors[slot];
+          const intensity = 0.5 + 0.5 * Math.sin(time * 18);
+          const chaos = Math.sin(time * 7) * 0.5 + 0.5;
           ballMat.color.setRGB(c[0] * 0.5 + 0.5, c[1] * 0.5 + 0.5, c[2] * 0.5 + 0.5);
           ballMat.emissive.setRGB(c[0], c[1], c[2]);
           glowMat.color.setRGB(c[0], c[1], c[2]);
-          ballMat.emissiveIntensity = 0.35 + 0.3 * intensity;
-          glowMat.opacity = 0.28 + 0.18 * intensity;
-          // Frequent bright glitch flashes
-          if (Math.random() > 0.9) {
-            ballMat.emissiveIntensity = 1.3;
+          ballMat.emissiveIntensity = 0.4 + 0.35 * intensity;
+          glowMat.opacity = 0.3 + 0.2 * chaos;
+          // Constant system error glitch flashes
+          if (Math.random() > 0.85) {
+            ballMat.emissiveIntensity = 1.5;
             ballMat.emissive.setRGB(1, 1, 1);
             ballMat.color.setRGB(1, 1, 1);
-            glowMat.opacity = 0.55;
+            glowMat.opacity = 0.6;
           }
         } else {
           const cycle = (time * 2) % 4;
@@ -2105,56 +2158,75 @@
       const tier = getBallTierForStreak(streak);
       const p = pos.clone();
       const isAnime = activePack === 'anime';
-      // Anime pack gets larger, more dramatic explosions
-      const animeScale = isAnime ? 1.3 : 1.0;
+      const isCyber = activePack === 'cyber';
+      // Packs get larger, more dramatic explosions
+      const packScale = (isAnime || isCyber) ? 1.3 : 1.0;
 
       if (streak >= 22) {
-        // STORM / ULTRA INSTINCT: massive layered explosion
-        spawnExplosion(p, 'flash', 1.5 * animeScale, { duration: 0.3, renderOrder: 3 });
-        spawnExplosion(p, tier, 1.8 * animeScale, { renderOrder: 2 });
-        spawnExplosion(p, 'ring', 2.0 * animeScale, { duration: 1.2, renderOrder: 1, rotSpeed: 0 });
-        setTimeout(() => spawnExplosion(p, 'ring', 2.5 * animeScale, { duration: 1.4, renderOrder: 1, rotSpeed: 0 }), 100);
+        // STORM / ULTRA INSTINCT / SINGULARITY OVERRIDE
+        spawnExplosion(p, 'flash', 1.5 * packScale, { duration: 0.3, renderOrder: 3 });
+        spawnExplosion(p, tier, 1.8 * packScale, { renderOrder: 2 });
+        spawnExplosion(p, 'ring', 2.0 * packScale, { duration: 1.2, renderOrder: 1, rotSpeed: 0 });
+        setTimeout(() => spawnExplosion(p, 'ring', 2.5 * packScale, { duration: 1.4, renderOrder: 1, rotSpeed: 0 }), 100);
         if (isAnime) {
-          // Extra shockwave ring for anime dramatic effect
           setTimeout(() => spawnExplosion(p, 'ring', 3.0, { duration: 1.8, renderOrder: 0, rotSpeed: 0 }), 200);
           screenFlash('rgba(200,200,255,0.6)', 0.45, 0.4);
           triggerShake(0.35, 0.90);
+        } else if (isCyber) {
+          // System crash — rapid triple flash + heavy shake
+          setTimeout(() => spawnExplosion(p, 'flash', 2.0, { duration: 0.15, renderOrder: 3 }), 80);
+          setTimeout(() => spawnExplosion(p, 'ring', 3.2, { duration: 1.6, renderOrder: 0, rotSpeed: 0 }), 150);
+          screenFlash('rgba(255,50,80,0.5)', 0.4, 0.35);
+          triggerShake(0.35, 0.88);
         } else {
           screenFlash('rgba(255,255,255,0.5)', 0.35, 0.3);
           triggerShake(0.25, 0.92);
         }
 
       } else if (streak >= 17) {
-        // WIND / RASENGAN
-        spawnExplosion(p, tier, 1.5 * animeScale, { renderOrder: 2 });
-        spawnExplosion(p, 'ring', 1.6 * animeScale, { duration: 1.0, renderOrder: 1, rotSpeed: isAnime ? 2.0 : 0 });
+        // WIND / RASENGAN / TRON LIGHT CYCLE
+        spawnExplosion(p, tier, 1.5 * packScale, { renderOrder: 2 });
+        spawnExplosion(p, 'ring', 1.6 * packScale, { duration: 1.0, renderOrder: 1, rotSpeed: isAnime ? 2.0 : (isCyber ? 3.0 : 0) });
         if (isAnime) {
           screenFlash('rgba(80,180,255,0.35)', 0.25, 0.25);
           triggerShake(0.2, 0.92);
+        } else if (isCyber) {
+          // Tron disc wars — fast spinning ring + cyan flash
+          spawnExplosion(p, 'flash', 0.7, { duration: 0.1, renderOrder: 3 });
+          screenFlash('rgba(0,200,255,0.35)', 0.25, 0.22);
+          triggerShake(0.18, 0.92);
         } else {
           screenFlash('rgba(100,255,170,0.3)', 0.2, 0.25);
           triggerShake(0.15, 0.93);
         }
 
       } else if (streak >= 12) {
-        // ELECTRIC / CHIDORI
-        spawnExplosion(p, tier, 1.4 * animeScale, { renderOrder: 2 });
-        spawnExplosion(p, 'ring', 1.4 * animeScale, { duration: 0.9, renderOrder: 1, rotSpeed: 0 });
+        // ELECTRIC / CHIDORI / MATRIX CODE
+        spawnExplosion(p, tier, 1.4 * packScale, { renderOrder: 2 });
+        spawnExplosion(p, 'ring', 1.4 * packScale, { duration: 0.9, renderOrder: 1, rotSpeed: 0 });
         if (isAnime) {
-          // Extra flash for lightning strike feel
           spawnExplosion(p, 'flash', 0.8, { duration: 0.15, renderOrder: 3 });
           screenFlash('rgba(170,130,255,0.35)', 0.22, 0.2);
           triggerShake(0.15, 0.93);
+        } else if (isCyber) {
+          // Matrix bullet-time flash — green tinted
+          spawnExplosion(p, 'flash', 0.9, { duration: 0.12, renderOrder: 3 });
+          screenFlash('rgba(0,255,80,0.3)', 0.2, 0.2);
+          triggerShake(0.12, 0.93);
         } else {
           screenFlash('rgba(120,150,255,0.3)', 0.18, 0.2);
           triggerShake(0.1, 0.94);
         }
 
       } else if (streak >= 8) {
-        // ICE / ICE MAKE
-        spawnExplosion(p, tier, 1.3 * animeScale, { renderOrder: 2 });
+        // ICE / ICE MAKE / CRYO PROTOCOL
+        spawnExplosion(p, tier, 1.3 * packScale, { renderOrder: 2 });
         if (isAnime) {
           screenFlash('rgba(100,200,255,0.25)', 0.15, 0.18);
+          triggerShake(0.08, 0.95);
+        } else if (isCyber) {
+          // Stasis lock — cold blue flash
+          screenFlash('rgba(80,180,255,0.25)', 0.15, 0.18);
           triggerShake(0.08, 0.95);
         } else {
           screenFlash('rgba(150,220,255,0.2)', 0.12, 0.15);
@@ -2162,20 +2234,24 @@
         }
 
       } else if (streak >= 5) {
-        // FIRE / KI BLAST
-        spawnExplosion(p, tier, 1.2 * animeScale, { renderOrder: 2 });
+        // FIRE / KI BLAST / TERMINATOR CORE
+        spawnExplosion(p, tier, 1.2 * packScale, { renderOrder: 2 });
         if (isAnime) {
-          // Ki explosion — extra flash
           spawnExplosion(p, 'flash', 0.6, { duration: 0.12, renderOrder: 3 });
           screenFlash('rgba(255,200,50,0.25)', 0.15, 0.18);
           triggerShake(0.05, 0.95);
+        } else if (isCyber) {
+          // Reactor breach — red-orange flash
+          spawnExplosion(p, 'flash', 0.7, { duration: 0.1, renderOrder: 3 });
+          screenFlash('rgba(255,80,20,0.25)', 0.15, 0.18);
+          triggerShake(0.06, 0.95);
         } else {
           screenFlash('rgba(255,150,50,0.2)', 0.1, 0.15);
         }
 
       } else if (streak >= 3) {
-        // SPARKLE / MAGICAL GIRL
-        spawnExplosion(p, tier, 1.0 * animeScale, { renderOrder: 2 });
+        // SPARKLE / MAGICAL GIRL / HOLOGRAM
+        spawnExplosion(p, tier, 1.0 * packScale, { renderOrder: 2 });
 
       } else {
         // DEFAULT
@@ -2415,15 +2491,15 @@
       else if (sizeMult >= 3) { msgColor = '#ff9800'; }
       else { msgColor = '#4fc3f7'; }
 
-      // Anime pack: show move names from the show instead of generic messages
-      const animePack = TEXTURE_PACKS[activePack];
-      if (animePack && animePack.moveNames) {
+      // Pack-specific move names from shows/movies instead of generic messages
+      const currentPack = TEXTURE_PACKS[activePack];
+      if (currentPack && currentPack.moveNames) {
         const tier = getBallTierForStreak(state.streak);
-        const moves = animePack.moveNames[tier];
+        const moves = currentPack.moveNames[tier];
         if (moves && state.streak >= 3) {
           const moveName = moves[Math.floor(Math.random() * moves.length)];
           msg = moveName + ' +' + points;
-          // Anime pack gets themed colors per tier
+          // Anime pack themed colors
           if (activePack === 'anime') {
             if (state.streak >= 22) msgColor = '#e0e0ff';      // Ultra Instinct silver
             else if (state.streak >= 17) msgColor = '#66ccff';  // Rasengan blue
@@ -2432,13 +2508,24 @@
             else if (state.streak >= 5)  msgColor = '#ffcc44';  // Ki gold
             else msgColor = '#e0b0ff';                          // Magical pink
           }
+          // Cyber pack themed colors (movie-inspired)
+          if (activePack === 'cyber') {
+            if (state.streak >= 22) msgColor = '#ff4466';      // PAL Override red
+            else if (state.streak >= 17) msgColor = '#44ddff';  // Tron cyan
+            else if (state.streak >= 12) msgColor = '#44ff66';  // Matrix green
+            else if (state.streak >= 8)  msgColor = '#66ccff';  // Cryo blue
+            else if (state.streak >= 5)  msgColor = '#ff6633';  // Terminator orange
+            else msgColor = '#00ffcc';                          // Hologram cyan
+          }
         }
       }
       showMessage(msg, msgColor);
 
-      // Sound — anime pack gets dramatic power-up sounds
+      // Sound — packs get dramatic themed power-up sounds
       if (activePack === 'anime' && state.streak >= 5) {
         sndAnimePower(state.streak);
+      } else if (activePack === 'cyber' && state.streak >= 5) {
+        sndCyberPower(state.streak);
       } else {
         sndCatch(state.streak);
       }
@@ -2660,23 +2747,40 @@
       },
       cyber: {
         room: {
-          wall: 0x040810, floor: 0x060c14, edge: 0x00ffc8,
-          fog: 0x020408, ambient: 0x001a22,
-          accent1: 0x00ffc8, accent2: 0x6600ff,
-          // Material properties for a slick reflective sci-fi look
-          wallRoughness: 0.4, wallMetalness: 0.3,
-          floorRoughness: 0.15, floorMetalness: 0.7,
-          edgeOpacity: 0.9,
-          mainLightIntensity: 50, accentIntensity: 25,
+          wall: 0x080412, floor: 0x0a0618, edge: 0xff2244,
+          fog: 0x040208, ambient: 0x200820,
+          accent1: 0xff2244, accent2: 0x00ff88,
+          // Dark machine lair — PAL bot control room / Tron grid
+          wallRoughness: 0.3, wallMetalness: 0.4,
+          floorRoughness: 0.1, floorMetalness: 0.8,
+          edgeOpacity: 0.85,
+          mainLightIntensity: 45, accentIntensity: 28,
         },
         tiers: {
-          default:  { color: 0x00ffc8, emissive: 0x00cc99, roughness: 0.05, metalness: 0.9, glowColor: 0x00ffc8, glowOpacity: 0.25 },
-          sparkle:  { color: 0x00ffff, emissive: 0x00cccc, roughness: 0.02, metalness: 0.95, glowColor: 0x66ffff, glowOpacity: 0.28 },
-          fire:     { color: 0xff0066, emissive: 0xcc0044, roughness: 0.15, metalness: 0.6, glowColor: 0xff3388, glowOpacity: 0.30 },
-          ice:      { color: 0x44ddff, emissive: 0x22aadd, roughness: 0.0, metalness: 0.95, glowColor: 0x88eeff, glowOpacity: 0.26 },
-          electric: { color: 0xccff00, emissive: 0x99cc00, roughness: 0.1, metalness: 0.8, glowColor: 0xddff44, glowOpacity: 0.32 },
-          wind:     { color: 0x00ff88, emissive: 0x00cc66, roughness: 0.12, metalness: 0.7, glowColor: 0x44ffaa, glowOpacity: 0.24 },
-          storm:    { color: 0xffffff, emissive: 0xccccff, roughness: 0.0, metalness: 1.0, glowColor: 0xffffff, glowOpacity: 0.40 },
+          // PAL Bot Scanner — menacing red robot eye (Mitchells vs Machines)
+          default:  { color: 0xff3344, emissive: 0xcc1122, roughness: 0.08, metalness: 0.85, glowColor: 0xff4455, glowOpacity: 0.28 },
+          // Holographic Glitch — digital avatar flicker (Ready Player One)
+          sparkle:  { color: 0x00ffff, emissive: 0x00cccc, roughness: 0.02, metalness: 0.95, glowColor: 0x66ffff, glowOpacity: 0.30 },
+          // Terminator Core — molten red-orange reactor
+          fire:     { color: 0xff4400, emissive: 0xcc2200, roughness: 0.12, metalness: 0.7, glowColor: 0xff6622, glowOpacity: 0.35 },
+          // Cryo Protocol — cold blue tech freeze (I, Robot / Minority Report)
+          ice:      { color: 0x44ddff, emissive: 0x1199dd, roughness: 0.0, metalness: 0.95, glowColor: 0x88eeff, glowOpacity: 0.28 },
+          // Matrix Code — digital green rain (The Matrix)
+          electric: { color: 0x00ff44, emissive: 0x00cc22, roughness: 0.05, metalness: 0.85, glowColor: 0x44ff66, glowOpacity: 0.35 },
+          // Tron Light Cycle — bright cyan-blue neon grid (Tron Legacy)
+          wind:     { color: 0x00ccff, emissive: 0x0088cc, roughness: 0.05, metalness: 0.9, glowColor: 0x44ddff, glowOpacity: 0.30 },
+          // Singularity Override — all-consuming white AI takeover
+          storm:    { color: 0xffffff, emissive: 0xddddff, roughness: 0.0, metalness: 1.0, glowColor: 0xffffff, glowOpacity: 0.45 },
+        },
+        // Movie-inspired power names shown on catch per tier
+        moveNames: {
+          default: ['PAL Scan!', 'Bot Detected!', 'System Alert!'],
+          sparkle: ['AVATAR LOADED!', 'Hologram Shift!', 'Digital Form!'],
+          fire: ['HASTA LA VISTA!', 'Core Meltdown!', 'Reactor Breach!', 'Judgement Day!'],
+          ice: ['CRYO FREEZE!', 'Protocol Zero!', 'Stasis Lock!'],
+          electric: ['ENTER THE MATRIX!', 'Code Rain!', 'Red Pill!', 'I Know Kung Fu!'],
+          wind: ['LIGHT CYCLE!', 'Grid Runner!', 'Disc Wars!', 'End of Line!'],
+          storm: ['SINGULARITY!', 'PAL OVERRIDE!', 'System Crash!', 'Rise of the Machines!'],
         },
       },
     };
