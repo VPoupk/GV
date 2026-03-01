@@ -1817,238 +1817,363 @@
       ctx.fillRect(0, 0, S, S);
     }
 
-    // Default / Tier 1: cyan spirals with bright cyan particles
-    const texDefault = makeExplosionTexture((ctx, S, H) => {
-      drawSpiralExplosion(ctx, S, H, {
-        glowInner: 'rgba(150,240,255,0.6)', glowMid: 'rgba(60,200,255,0.3)', glowOuter: 'rgba(20,120,220,0)',
-        spirals: 4, turns: 4,
-        spiralColor: (s, a) => `rgba(100,220,255,${a})`,
-        lineWidth: 9, shadowColor: 'rgba(60,200,255,0.9)', shadowBlur: 22,
-        particles: 45, particleBright: 'rgba(200,250,255,1)', particleFade: 'rgba(80,210,255,0)',
-        centerMid: 'rgba(150,240,255,0.9)', centerOuter: 'rgba(60,200,255,0)',
-      });
-    });
-
-    // Tier 2: rainbow spirals — each arm a different hue, bright particles
-    const texSparkle = makeExplosionTexture((ctx, S, H) => {
-      // Background rainbow glow
-      const bg = ctx.createRadialGradient(H, H, 0, H, H, H);
-      bg.addColorStop(0, 'rgba(255,255,255,0.5)');
-      bg.addColorStop(0.4, 'rgba(255,200,255,0.3)');
-      bg.addColorStop(1, 'rgba(200,100,255,0)');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, S, S);
-      // Rainbow spirals
-      const spiralCount = 6;
-      for (let s = 0; s < spiralCount; s++) {
-        const hue = (s / spiralCount) * 360;
-        const off = (s / spiralCount) * Math.PI * 2;
-        ctx.beginPath();
-        for (let t = 0; t < 300; t++) {
-          const frac = t / 300;
-          const angle = off + frac * Math.PI * 5;
-          const r = frac * H * 0.92;
-          const x = H + Math.cos(angle) * r;
-          const y = H + Math.sin(angle) * r;
-          if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = `hsla(${hue},100%,75%,0.9)`;
-        ctx.lineWidth = 10;
-        ctx.shadowColor = `hsla(${hue},100%,65%,1)`;
-        ctx.shadowBlur = 25;
-        ctx.stroke();
-      }
-      // Rainbow particles
-      for (let i = 0; i < 60; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * H * 0.85;
-        const px = H + Math.cos(angle) * dist;
-        const py = H + Math.sin(angle) * dist;
-        const sz = 4 + Math.random() * 10;
-        const hue = Math.random() * 360;
-        const pg = ctx.createRadialGradient(px, py, 0, px, py, sz);
-        pg.addColorStop(0, `hsla(${hue},100%,90%,1)`);
-        pg.addColorStop(1, `hsla(${hue},100%,70%,0)`);
-        ctx.fillStyle = pg;
-        ctx.fillRect(px - sz, py - sz, sz * 2, sz * 2);
-      }
-      // White center
-      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
-      cg.addColorStop(0, 'rgba(255,255,255,1)');
-      cg.addColorStop(0.5, 'rgba(255,255,255,0.9)');
-      cg.addColorStop(1, 'rgba(255,220,255,0)');
-      ctx.fillStyle = cg;
-      ctx.fillRect(0, 0, S, S);
-    });
-
-    // Tier 3: fire spirals — orange/yellow/red swirls with hot particles
-    const texFire = makeExplosionTexture((ctx, S, H) => {
-      drawSpiralExplosion(ctx, S, H, {
-        glowInner: 'rgba(255,220,100,0.7)', glowMid: 'rgba(255,100,0,0.4)', glowOuter: 'rgba(180,0,0,0)',
+    // ── Pack-Aware Explosion Palettes ──────────────────────────
+    // Derive spiral explosion colors from a hex ball color
+    function paletteFromHex(hex) {
+      const r = (hex >> 16) & 255, g = (hex >> 8) & 255, b = hex & 255;
+      const br = Math.min(255, r + 55), bg = Math.min(255, g + 55), bb = Math.min(255, b + 55);
+      const dr = Math.floor(r * 0.5), dg = Math.floor(g * 0.5), db = Math.floor(b * 0.5);
+      return {
+        glowInner: `rgba(${br},${bg},${bb},0.65)`,
+        glowMid: `rgba(${r},${g},${b},0.35)`,
+        glowOuter: `rgba(${dr},${dg},${db},0)`,
         spirals: 5, turns: 4.5,
         spiralColor: (s, a) => {
-          const colors = ['rgba(255,255,150,','rgba(255,200,50,','rgba(255,140,20,','rgba(255,80,0,','rgba(255,50,0,'];
-          return colors[s % colors.length] + a + ')';
+          const t = s / 5;
+          return `rgba(${Math.min(255, Math.floor(r + t * (br - r)))},${Math.min(255, Math.floor(g + t * (bg - g)))},${Math.min(255, Math.floor(b + t * (bb - b)))},${a})`;
         },
-        lineWidth: 11, shadowColor: 'rgba(255,160,0,1)', shadowBlur: 28,
-        particles: 55, particleBright: 'rgba(255,255,180,1)', particleFade: 'rgba(255,120,0,0)',
-        centerMid: 'rgba(255,255,200,1)', centerOuter: 'rgba(255,150,30,0)',
-      });
-    });
+        lineWidth: 10, shadowColor: `rgba(${r},${g},${b},1)`, shadowBlur: 24,
+        particles: 50,
+        particleBright: `rgba(${br},${bg},${bb},1)`,
+        particleFade: `rgba(${r},${g},${b},0)`,
+        centerMid: `rgba(${br},${bg},${bb},0.9)`,
+        centerOuter: `rgba(${r},${g},${b},0)`,
+      };
+    }
 
-    // Tier 4: ice spirals — icy blue/white crystalline swirls
-    const texIce = makeExplosionTexture((ctx, S, H) => {
-      drawSpiralExplosion(ctx, S, H, {
-        glowInner: 'rgba(200,245,255,0.6)', glowMid: 'rgba(100,210,255,0.3)', glowOuter: 'rgba(50,140,255,0)',
-        spirals: 5, turns: 5,
-        spiralColor: (s, a) => {
-          const colors = ['rgba(220,250,255,','rgba(180,235,255,','rgba(140,215,255,','rgba(100,200,255,','rgba(170,230,255,'];
-          return colors[s % colors.length] + a + ')';
-        },
-        lineWidth: 9, shadowColor: 'rgba(120,210,255,1)', shadowBlur: 24,
-        particles: 50, particleBright: 'rgba(240,255,255,1)', particleFade: 'rgba(100,200,255,0)',
-        centerMid: 'rgba(220,250,255,1)', centerOuter: 'rgba(130,210,255,0)',
-      });
-    });
+    // Cinematic radial light rays (anime energy burst / movie lens flare)
+    function drawLightRays(ctx, H, color, count) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      const n = count || 8;
+      for (let i = 0; i < n; i++) {
+        const angle = (i / n) * Math.PI * 2;
+        const w = 0.04;
+        ctx.beginPath();
+        ctx.moveTo(H, H);
+        ctx.lineTo(H + Math.cos(angle - w) * H * 1.15, H + Math.sin(angle - w) * H * 1.15);
+        ctx.lineTo(H + Math.cos(angle + w) * H * 1.15, H + Math.sin(angle + w) * H * 1.15);
+        ctx.closePath();
+        const rg = ctx.createRadialGradient(H, H, 0, H, H, H);
+        rg.addColorStop(0, color);
+        rg.addColorStop(0.6, color.replace(/[\d.]+\)$/, '0.08)'));
+        rg.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = rg;
+        ctx.fill();
+      }
+      ctx.restore();
+    }
 
-    // Tier 5: electric spirals — bright blue/white jagged swirls with sparks
-    const texElectric = makeExplosionTexture((ctx, S, H) => {
-      // Aura
-      const bg = ctx.createRadialGradient(H, H, 0, H, H, H);
-      bg.addColorStop(0, 'rgba(200,220,255,0.6)');
-      bg.addColorStop(0.4, 'rgba(100,140,255,0.3)');
-      bg.addColorStop(1, 'rgba(40,60,220,0)');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, S, S);
-      // Jagged spirals (spiral path with jitter for lightning look)
-      const spiralCount = 6;
-      for (let s = 0; s < spiralCount; s++) {
-        const off = (s / spiralCount) * Math.PI * 2;
-        // Thick glow pass then bright core pass
-        for (let pass = 0; pass < 2; pass++) {
+    // Digital scan line overlay (cyber/movie CRT effect)
+    function drawScanLines(ctx, S) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'overlay';
+      for (let y = 0; y < S; y += 4) {
+        ctx.fillStyle = y % 8 === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+        ctx.fillRect(0, y, S, 1);
+      }
+      ctx.restore();
+    }
+
+    // Original ball tier colors (hardcoded to avoid timing issues with TEXTURE_PACKS)
+    const DEFAULT_TIER_COLORS = {
+      default: 0xff5252, sparkle: 0xee82ee, fire: 0xff6600,
+      ice: 0x88ddff, electric: 0x6666ff, wind: 0x66ffaa, storm: 0xffffff,
+    };
+
+    // Generate a complete set of explosion textures matching a pack's ball colors
+    function generateExplosionSet(packName) {
+      const colors = {};
+      if (packName && typeof TEXTURE_PACKS !== 'undefined' && TEXTURE_PACKS[packName] && TEXTURE_PACKS[packName].tiers) {
+        const pt = TEXTURE_PACKS[packName].tiers;
+        for (const k in DEFAULT_TIER_COLORS) colors[k] = pt[k] ? pt[k].color : DEFAULT_TIER_COLORS[k];
+      } else {
+        Object.assign(colors, DEFAULT_TIER_COLORS);
+      }
+      const isCyber = packName === 'cyber';
+      const isAnime = packName === 'anime';
+      const set = {};
+
+      // ─ Default tier ─
+      set.default = makeExplosionTexture((ctx, S, H) => {
+        const p = paletteFromHex(colors.default);
+        drawSpiralExplosion(ctx, S, H, { ...p, spirals: 4, turns: 4 });
+        if (isAnime) drawLightRays(ctx, H, 'rgba(255,200,210,0.3)', 6);
+        if (isCyber) drawScanLines(ctx, S);
+      });
+
+      // ─ Sparkle tier ─
+      set.sparkle = makeExplosionTexture((ctx, S, H) => {
+        const hex = colors.sparkle;
+        const r = (hex >> 16) & 255, g = (hex >> 8) & 255, b = hex & 255;
+        const bg = ctx.createRadialGradient(H, H, 0, H, H, H);
+        bg.addColorStop(0, 'rgba(255,255,255,0.5)');
+        bg.addColorStop(0.4, `rgba(${r},${g},${b},0.3)`);
+        bg.addColorStop(1, `rgba(${r >> 1},${g >> 1},${b >> 1},0)`);
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, S, S);
+        if (isCyber) {
+          // Holographic data stream — cyan/magenta digital fragments
+          const cyColors = [
+            { s: 'rgba(0,255,255,0.9)', sh: 'rgba(0,255,255,1)' },
+            { s: 'rgba(255,0,128,0.85)', sh: 'rgba(255,0,128,1)' },
+            { s: 'rgba(255,255,255,0.9)', sh: 'rgba(200,200,255,1)' },
+            { s: 'rgba(0,200,255,0.85)', sh: 'rgba(0,200,255,1)' },
+          ];
+          for (let si = 0; si < cyColors.length; si++) {
+            const off = (si / cyColors.length) * Math.PI * 2;
+            ctx.beginPath();
+            for (let t = 0; t < 300; t++) {
+              const frac = t / 300;
+              const angle = off + frac * Math.PI * 5;
+              const rad = frac * H * 0.92;
+              const jitter = (Math.random() - 0.5) * 6 * frac;
+              const x = H + Math.cos(angle) * rad + jitter;
+              const y = H + Math.sin(angle) * rad + jitter;
+              if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = cyColors[si].s; ctx.lineWidth = 8;
+            ctx.shadowColor = cyColors[si].sh; ctx.shadowBlur = 20;
+            ctx.stroke();
+          }
+          for (let i = 0; i < 55; i++) {
+            const a = Math.random() * Math.PI * 2, d = Math.random() * H * 0.85;
+            const px = H + Math.cos(a) * d, py = H + Math.sin(a) * d;
+            const sz = 3 + Math.random() * 8;
+            const hue = Math.random() > 0.5 ? 180 : 320;
+            const pg = ctx.createRadialGradient(px, py, 0, px, py, sz);
+            pg.addColorStop(0, `hsla(${hue},100%,85%,1)`);
+            pg.addColorStop(1, `hsla(${hue},100%,60%,0)`);
+            ctx.fillStyle = pg; ctx.fillRect(px - sz, py - sz, sz * 2, sz * 2);
+          }
+          drawScanLines(ctx, S);
+        } else if (isAnime) {
+          // Magical girl sparkle — pastel multi-color spirals with star particles
+          const anColors = ['rgba(220,180,255,', 'rgba(255,180,220,', 'rgba(180,200,255,', 'rgba(255,220,180,', 'rgba(200,255,220,'];
+          for (let si = 0; si < 5; si++) {
+            const off = (si / 5) * Math.PI * 2;
+            ctx.beginPath();
+            for (let t = 0; t < 300; t++) {
+              const frac = t / 300;
+              const angle = off + frac * Math.PI * 5;
+              const rad = frac * H * 0.92;
+              const x = H + Math.cos(angle) * rad, y = H + Math.sin(angle) * rad;
+              if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = anColors[si] + '0.9)'; ctx.lineWidth = 10;
+            ctx.shadowColor = anColors[si] + '1)'; ctx.shadowBlur = 25;
+            ctx.stroke();
+          }
+          for (let i = 0; i < 50; i++) {
+            const a = Math.random() * Math.PI * 2, d = Math.random() * H * 0.85;
+            const px = H + Math.cos(a) * d, py = H + Math.sin(a) * d;
+            const sz = 4 + Math.random() * 10;
+            const hue = Math.random() * 360;
+            const pg = ctx.createRadialGradient(px, py, 0, px, py, sz);
+            pg.addColorStop(0, `hsla(${hue},60%,90%,1)`);
+            pg.addColorStop(1, `hsla(${hue},60%,75%,0)`);
+            ctx.fillStyle = pg; ctx.fillRect(px - sz, py - sz, sz * 2, sz * 2);
+          }
+          drawLightRays(ctx, H, 'rgba(220,200,255,0.25)', 10);
+        } else {
+          // Default: rainbow spirals
+          for (let si = 0; si < 6; si++) {
+            const hue = (si / 6) * 360;
+            const off = (si / 6) * Math.PI * 2;
+            ctx.beginPath();
+            for (let t = 0; t < 300; t++) {
+              const frac = t / 300;
+              const angle = off + frac * Math.PI * 5;
+              const rad = frac * H * 0.92;
+              const x = H + Math.cos(angle) * rad, y = H + Math.sin(angle) * rad;
+              if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = `hsla(${hue},100%,75%,0.9)`; ctx.lineWidth = 10;
+            ctx.shadowColor = `hsla(${hue},100%,65%,1)`; ctx.shadowBlur = 25;
+            ctx.stroke();
+          }
+          for (let i = 0; i < 60; i++) {
+            const a = Math.random() * Math.PI * 2, d = Math.random() * H * 0.85;
+            const px = H + Math.cos(a) * d, py = H + Math.sin(a) * d;
+            const sz = 4 + Math.random() * 10;
+            const hue = Math.random() * 360;
+            const pg = ctx.createRadialGradient(px, py, 0, px, py, sz);
+            pg.addColorStop(0, `hsla(${hue},100%,90%,1)`);
+            pg.addColorStop(1, `hsla(${hue},100%,70%,0)`);
+            ctx.fillStyle = pg; ctx.fillRect(px - sz, py - sz, sz * 2, sz * 2);
+          }
+        }
+        const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
+        cg.addColorStop(0, 'rgba(255,255,255,1)');
+        cg.addColorStop(0.5, `rgba(${Math.min(255, r + 30)},${Math.min(255, g + 30)},${Math.min(255, b + 30)},0.9)`);
+        cg.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = cg;
+        ctx.fillRect(0, 0, S, S);
+      });
+
+      // ─ Fire tier ─
+      set.fire = makeExplosionTexture((ctx, S, H) => {
+        const p = paletteFromHex(colors.fire);
+        drawSpiralExplosion(ctx, S, H, { ...p, spirals: 5, turns: 4.5, lineWidth: 11, shadowBlur: 28 });
+        if (isAnime) drawLightRays(ctx, H, 'rgba(255,200,50,0.3)', 10);
+        if (isCyber) drawScanLines(ctx, S);
+      });
+
+      // ─ Ice tier ─
+      set.ice = makeExplosionTexture((ctx, S, H) => {
+        const p = paletteFromHex(colors.ice);
+        drawSpiralExplosion(ctx, S, H, { ...p, spirals: 5, turns: 5 });
+        if (isAnime) drawLightRays(ctx, H, 'rgba(180,230,255,0.2)', 8);
+        if (isCyber) drawScanLines(ctx, S);
+      });
+
+      // ─ Electric tier ─
+      set.electric = makeExplosionTexture((ctx, S, H) => {
+        const hex = colors.electric;
+        const r = (hex >> 16) & 255, g = (hex >> 8) & 255, b = hex & 255;
+        const br = Math.min(255, r + 80), bg = Math.min(255, g + 80), bb = Math.min(255, b + 80);
+        const abg = ctx.createRadialGradient(H, H, 0, H, H, H);
+        abg.addColorStop(0, `rgba(${br},${bg},${bb},0.6)`);
+        abg.addColorStop(0.4, `rgba(${r},${g},${b},0.3)`);
+        abg.addColorStop(1, `rgba(${r >> 2},${g >> 2},${b >> 2},0)`);
+        ctx.fillStyle = abg; ctx.fillRect(0, 0, S, S);
+        for (let si = 0; si < 6; si++) {
+          const off = (si / 6) * Math.PI * 2;
+          for (let pass = 0; pass < 2; pass++) {
+            ctx.beginPath();
+            for (let t = 0; t < 300; t++) {
+              const frac = t / 300;
+              const angle = off + frac * Math.PI * 5;
+              const rad = frac * H * 0.92;
+              const jitter = (Math.random() - 0.5) * 18 * frac;
+              const x = H + Math.cos(angle) * rad + jitter;
+              const y = H + Math.sin(angle) * rad + jitter;
+              if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            if (pass === 0) {
+              ctx.strokeStyle = `rgba(${r},${g},${b},0.7)`; ctx.lineWidth = 14;
+              ctx.shadowColor = `rgba(${r},${g},${b},1)`; ctx.shadowBlur = 30;
+            } else {
+              ctx.strokeStyle = `rgba(${br},${bg},${bb},1)`; ctx.lineWidth = 5;
+              ctx.shadowColor = `rgba(${br},${bg},${bb},1)`; ctx.shadowBlur = 15;
+            }
+            ctx.stroke();
+          }
+        }
+        for (let i = 0; i < 55; i++) {
+          const a = Math.random() * Math.PI * 2, d = Math.random() * H * 0.85;
+          const px = H + Math.cos(a) * d, py = H + Math.sin(a) * d;
+          const sz = 3 + Math.random() * 9;
+          const pg = ctx.createRadialGradient(px, py, 0, px, py, sz);
+          pg.addColorStop(0, `rgba(${br},${bg},${bb},1)`);
+          pg.addColorStop(1, `rgba(${r},${g},${b},0)`);
+          ctx.fillStyle = pg; ctx.fillRect(px - sz, py - sz, sz * 2, sz * 2);
+        }
+        const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
+        cg.addColorStop(0, 'rgba(255,255,255,1)');
+        cg.addColorStop(0.4, `rgba(${br},${bg},${bb},0.9)`);
+        cg.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = cg; ctx.fillRect(0, 0, S, S);
+        if (isCyber) drawScanLines(ctx, S);
+        if (isAnime) drawLightRays(ctx, H, `rgba(${r},${g},${b},0.25)`, 8);
+      });
+
+      // ─ Wind tier ─
+      set.wind = makeExplosionTexture((ctx, S, H) => {
+        const p = paletteFromHex(colors.wind);
+        drawSpiralExplosion(ctx, S, H, { ...p, spirals: 5, turns: 5 });
+        if (isAnime) drawLightRays(ctx, H, 'rgba(100,200,255,0.25)', 8);
+        if (isCyber) drawScanLines(ctx, S);
+      });
+
+      // ─ Storm tier ─
+      set.storm = makeExplosionTexture((ctx, S, H) => {
+        const bg = ctx.createRadialGradient(H, H, 0, H, H, H);
+        bg.addColorStop(0, 'rgba(255,255,255,0.7)');
+        let stormPalette;
+        if (isCyber) {
+          // Singularity — all movie themes collide: PAL red, Tron cyan, Matrix green, Terminator orange
+          bg.addColorStop(0.3, 'rgba(255,200,220,0.5)');
+          bg.addColorStop(0.6, 'rgba(180,50,80,0.25)');
+          bg.addColorStop(1, 'rgba(80,0,30,0)');
+          stormPalette = [
+            { s: 'rgba(255,50,80,0.9)', sh: 'rgba(255,0,50,1)' },
+            { s: 'rgba(0,255,255,0.9)', sh: 'rgba(0,255,255,1)' },
+            { s: 'rgba(0,255,80,0.9)', sh: 'rgba(0,255,60,1)' },
+            { s: 'rgba(0,200,255,0.9)', sh: 'rgba(0,180,255,1)' },
+            { s: 'rgba(255,80,0,0.9)', sh: 'rgba(255,60,0,1)' },
+            { s: 'rgba(255,255,255,0.95)', sh: 'rgba(200,200,255,1)' },
+          ];
+        } else if (isAnime) {
+          // Ultra Instinct — silver divine aura with all element traces
+          bg.addColorStop(0.3, 'rgba(200,200,255,0.5)');
+          bg.addColorStop(0.6, 'rgba(120,120,200,0.25)');
+          bg.addColorStop(1, 'rgba(50,50,120,0)');
+          stormPalette = [
+            { s: 'rgba(255,215,0,0.9)', sh: 'rgba(255,200,0,1)' },
+            { s: 'rgba(180,220,255,0.9)', sh: 'rgba(130,200,255,1)' },
+            { s: 'rgba(200,170,255,0.9)', sh: 'rgba(170,130,255,1)' },
+            { s: 'rgba(100,180,255,0.9)', sh: 'rgba(70,160,255,1)' },
+            { s: 'rgba(255,190,210,0.9)', sh: 'rgba(255,160,190,1)' },
+            { s: 'rgba(230,230,255,0.95)', sh: 'rgba(200,200,255,1)' },
+          ];
+        } else {
+          bg.addColorStop(0.3, 'rgba(220,200,255,0.5)');
+          bg.addColorStop(0.6, 'rgba(120,120,255,0.25)');
+          bg.addColorStop(1, 'rgba(50,50,180,0)');
+          stormPalette = [
+            { s: 'rgba(255,220,80,0.9)', sh: 'rgba(255,160,0,1)' },
+            { s: 'rgba(180,240,255,0.9)', sh: 'rgba(100,210,255,1)' },
+            { s: 'rgba(200,210,255,0.9)', sh: 'rgba(120,160,255,1)' },
+            { s: 'rgba(130,255,190,0.9)', sh: 'rgba(80,255,150,1)' },
+            { s: 'rgba(255,180,255,0.9)', sh: 'rgba(220,100,255,1)' },
+            { s: 'rgba(255,255,150,0.9)', sh: 'rgba(255,255,50,1)' },
+          ];
+        }
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
+        for (let si = 0; si < stormPalette.length; si++) {
+          const off = (si / stormPalette.length) * Math.PI * 2;
           ctx.beginPath();
           for (let t = 0; t < 300; t++) {
             const frac = t / 300;
-            const angle = off + frac * Math.PI * 5;
-            const r = frac * H * 0.92;
-            const jitter = (Math.random() - 0.5) * 18 * frac;
-            const x = H + Math.cos(angle) * r + jitter;
-            const y = H + Math.sin(angle) * r + jitter;
+            const angle = off + frac * Math.PI * 6;
+            const rad = frac * H * 0.94;
+            const jitter = (Math.random() - 0.5) * 8 * frac;
+            const x = H + Math.cos(angle) * rad + jitter;
+            const y = H + Math.sin(angle) * rad + jitter;
             if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
           }
-          if (pass === 0) {
-            ctx.strokeStyle = 'rgba(80,130,255,0.7)';
-            ctx.lineWidth = 14;
-            ctx.shadowColor = 'rgba(100,160,255,1)';
-            ctx.shadowBlur = 30;
-          } else {
-            ctx.strokeStyle = 'rgba(230,240,255,1)';
-            ctx.lineWidth = 5;
-            ctx.shadowColor = 'rgba(200,220,255,1)';
-            ctx.shadowBlur = 15;
-          }
+          ctx.strokeStyle = stormPalette[si].s; ctx.lineWidth = 12;
+          ctx.shadowColor = stormPalette[si].sh; ctx.shadowBlur = 30;
           ctx.stroke();
         }
-      }
-      // Bright spark particles
-      for (let i = 0; i < 55; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * H * 0.85;
-        const px = H + Math.cos(angle) * dist;
-        const py = H + Math.sin(angle) * dist;
-        const sz = 3 + Math.random() * 9;
-        const pg = ctx.createRadialGradient(px, py, 0, px, py, sz);
-        pg.addColorStop(0, 'rgba(230,240,255,1)');
-        pg.addColorStop(1, 'rgba(100,150,255,0)');
-        ctx.fillStyle = pg;
-        ctx.fillRect(px - sz, py - sz, sz * 2, sz * 2);
-      }
-      // White center
-      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.25);
-      cg.addColorStop(0, 'rgba(255,255,255,1)');
-      cg.addColorStop(0.4, 'rgba(210,225,255,0.9)');
-      cg.addColorStop(1, 'rgba(100,140,255,0)');
-      ctx.fillStyle = cg;
-      ctx.fillRect(0, 0, S, S);
-    });
-
-    // Tier 6: wind — bright green spirals with glowing particle trails
-    const texWind = makeExplosionTexture((ctx, S, H) => {
-      drawSpiralExplosion(ctx, S, H, {
-        glowInner: 'rgba(120,255,200,0.6)', glowMid: 'rgba(60,220,140,0.3)', glowOuter: 'rgba(20,150,80,0)',
-        spirals: 5, turns: 5,
-        spiralColor: (s, a) => {
-          const colors = ['rgba(140,255,200,','rgba(100,255,180,','rgba(80,255,160,','rgba(120,255,190,','rgba(160,255,210,'];
-          return colors[s % colors.length] + a + ')';
-        },
-        lineWidth: 10, shadowColor: 'rgba(80,255,160,1)', shadowBlur: 24,
-        particles: 55, particleBright: 'rgba(200,255,230,1)', particleFade: 'rgba(80,255,150,0)',
-        centerMid: 'rgba(160,255,210,0.9)', centerOuter: 'rgba(80,230,140,0)',
-      });
-    });
-
-    // Tier 7: storm — massive multi-color spirals, all elements interleaved
-    const texStorm = makeExplosionTexture((ctx, S, H) => {
-      // Intense background glow
-      const bg = ctx.createRadialGradient(H, H, 0, H, H, H);
-      bg.addColorStop(0, 'rgba(255,255,255,0.7)');
-      bg.addColorStop(0.3, 'rgba(220,200,255,0.5)');
-      bg.addColorStop(0.6, 'rgba(120,120,255,0.25)');
-      bg.addColorStop(1, 'rgba(50,50,180,0)');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, S, S);
-      // Interleaved element-colored spirals (fire, ice, electric, wind)
-      const stormColors = [
-        { stroke: 'rgba(255,220,80,0.9)', shadow: 'rgba(255,160,0,1)' },    // fire
-        { stroke: 'rgba(180,240,255,0.9)', shadow: 'rgba(100,210,255,1)' },  // ice
-        { stroke: 'rgba(200,210,255,0.9)', shadow: 'rgba(120,160,255,1)' },  // electric
-        { stroke: 'rgba(130,255,190,0.9)', shadow: 'rgba(80,255,150,1)' },   // wind
-        { stroke: 'rgba(255,180,255,0.9)', shadow: 'rgba(220,100,255,1)' },  // bonus purple
-        { stroke: 'rgba(255,255,150,0.9)', shadow: 'rgba(255,255,50,1)' },   // bonus gold
-      ];
-      for (let s = 0; s < stormColors.length; s++) {
-        const off = (s / stormColors.length) * Math.PI * 2;
-        ctx.beginPath();
-        for (let t = 0; t < 300; t++) {
-          const frac = t / 300;
-          const angle = off + frac * Math.PI * 6;
-          const r = frac * H * 0.94;
-          const jitter = (Math.random() - 0.5) * 8 * frac;
-          const x = H + Math.cos(angle) * r + jitter;
-          const y = H + Math.sin(angle) * r + jitter;
-          if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        for (let i = 0; i < 80; i++) {
+          const a = Math.random() * Math.PI * 2, d = Math.random() * H * 0.88;
+          const px = H + Math.cos(a) * d, py = H + Math.sin(a) * d;
+          const sz = 5 + Math.random() * 12;
+          const hue = Math.random() * 360;
+          const pg = ctx.createRadialGradient(px, py, 0, px, py, sz);
+          pg.addColorStop(0, `hsla(${hue},100%,90%,1)`);
+          pg.addColorStop(1, `hsla(${hue},100%,70%,0)`);
+          ctx.fillStyle = pg; ctx.fillRect(px - sz, py - sz, sz * 2, sz * 2);
         }
-        ctx.strokeStyle = stormColors[s].stroke;
-        ctx.lineWidth = 12;
-        ctx.shadowColor = stormColors[s].shadow;
-        ctx.shadowBlur = 30;
-        ctx.stroke();
-      }
-      // Multi-colored storm particles
-      for (let i = 0; i < 80; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * H * 0.88;
-        const px = H + Math.cos(angle) * dist;
-        const py = H + Math.sin(angle) * dist;
-        const sz = 5 + Math.random() * 12;
-        const hue = Math.random() * 360;
-        const pg = ctx.createRadialGradient(px, py, 0, px, py, sz);
-        pg.addColorStop(0, `hsla(${hue},100%,90%,1)`);
-        pg.addColorStop(1, `hsla(${hue},100%,70%,0)`);
-        ctx.fillStyle = pg;
-        ctx.fillRect(px - sz, py - sz, sz * 2, sz * 2);
-      }
-      // Huge white-hot center
-      const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.3);
-      cg.addColorStop(0, 'rgba(255,255,255,1)');
-      cg.addColorStop(0.3, 'rgba(255,255,255,0.95)');
-      cg.addColorStop(0.6, 'rgba(220,210,255,0.6)');
-      cg.addColorStop(1, 'rgba(150,140,255,0)');
-      ctx.fillStyle = cg;
-      ctx.fillRect(0, 0, S, S);
-    });
+        const cg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.3);
+        cg.addColorStop(0, 'rgba(255,255,255,1)');
+        cg.addColorStop(0.3, 'rgba(255,255,255,0.95)');
+        cg.addColorStop(0.6, 'rgba(220,210,255,0.6)');
+        cg.addColorStop(1, 'rgba(150,140,255,0)');
+        ctx.fillStyle = cg; ctx.fillRect(0, 0, S, S);
+        if (isCyber) drawScanLines(ctx, S);
+        if (isAnime) drawLightRays(ctx, H, 'rgba(220,215,255,0.3)', 12);
+      });
 
-    // Shockwave ring texture — expanding ring for layered explosions
+      return set;
+    }
+
+    // Generate initial default-pack explosion set
+    let currentExplosionSet = generateExplosionSet('');
+
+    // Shockwave ring texture — shared across all packs
     const texRing = makeExplosionTexture((ctx, S, H) => {
       ctx.lineWidth = 30;
       const rg = ctx.createRadialGradient(H, H, H * 0.45, H, H, H * 0.85);
@@ -2061,7 +2186,7 @@
       ctx.fillRect(0, 0, S, S);
     });
 
-    // Bright flash texture — pure white center burst
+    // Bright flash texture — shared across all packs
     const texFlash = makeExplosionTexture((ctx, S, H) => {
       const fg = ctx.createRadialGradient(H, H, 0, H, H, H * 0.6);
       fg.addColorStop(0, 'rgba(255,255,255,1)');
@@ -2073,10 +2198,15 @@
     });
 
     const explosionTextures = {
-      default: texDefault, sparkle: texSparkle, fire: texFire,
-      ice: texIce, electric: texElectric, wind: texWind, storm: texStorm,
+      ...currentExplosionSet,
       ring: texRing, flash: texFlash,
     };
+
+    // Refresh explosion textures when pack changes
+    function refreshExplosionTextures(packName) {
+      currentExplosionSet = generateExplosionSet(packName);
+      Object.assign(explosionTextures, currentExplosionSet);
+    }
 
     // ── Screen Flash Overlay ───────────────────────────────────
     const screenFlashEl = document.createElement('div');
@@ -2110,7 +2240,7 @@
 
     for (let i = 0; i < POOL_SIZE; i++) {
       const mat = new THREE.SpriteMaterial({
-        map: texDefault,
+        map: explosionTextures.default,
         transparent: true,
         opacity: 0,
         depthWrite: false,
@@ -2124,7 +2254,7 @@
 
     function spawnExplosion(pos, tier, sizeMult, opts) {
       opts = opts || {};
-      const tex = explosionTextures[tier] || texDefault;
+      const tex = explosionTextures[tier] || explosionTextures.default;
       const maxScale = (sizeMult || 1) * 3;
       const duration = opts.duration || (tier === 'storm' ? 1.6 : tier === 'default' ? 0.7 : 1.0);
       // Find a free sprite
@@ -2828,6 +2958,7 @@
         }
       }
       applyRoom(pack);
+      refreshExplosionTextures(activePack);
       const tier = currentBallTier;
       currentBallTier = '';
       applyBallTier(tier || 'default');
