@@ -611,7 +611,7 @@
         <div class="pack-card" id="anime-pack-card" data-pack="anime"
              style="background:linear-gradient(160deg,rgba(80,30,60,0.6),rgba(60,25,80,0.4));border:1px solid rgba(255,150,200,0.3);--pack-shimmer1:rgba(255,140,180,0.08);--pack-shimmer2:rgba(180,120,255,0.06);">
           <div class="pack-icon" style="font-size:32px;">&#x1F338;</div>
-          <div class="pack-name" style="background:linear-gradient(90deg,#ffb7c5,#d4a0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:15px;">Sakura</div>
+          <div class="pack-name" style="background:linear-gradient(90deg,#ffb7c5,#d4a0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:15px;">Anime</div>
           <div class="pack-desc">Soft pastel room, dreamy glow, cherry blossom ball</div>
           <div class="pack-tags">
             <span style="color:#ffb7c5;">&#x1F338; Sakura</span>
@@ -2613,7 +2613,7 @@
     function savePurchased(obj) { localStorage.setItem(PURCHASED_KEY, JSON.stringify(obj)); }
     function isPackOwned(id) { return !!loadPurchased()[id]; }
 
-    const PACK_DISPLAY_NAMES = { anime: 'Sakura', cyber: 'Cyber Neon' };
+    const PACK_DISPLAY_NAMES = { anime: 'Anime', cyber: 'Cyber Neon' };
     let pendingPurchasePack = '';
 
     const purchaseModal = document.getElementById('purchase-modal');
